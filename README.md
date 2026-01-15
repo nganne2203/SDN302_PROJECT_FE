@@ -345,8 +345,8 @@ MIT License - xem file [LICENSE](LICENSE) để biết thêm chi tiết.
 
 ## 👥 Team
 
-- **SWD392 Team** - *Development*
+- **SDN302 Team** - *Development*
 
 ---
 
-Made with ❤️ by SWD392 Team
+Made with ❤️ by SDN302 Team
