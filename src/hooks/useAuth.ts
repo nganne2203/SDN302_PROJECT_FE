@@ -1,9 +1,20 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { loginThunk, registerThunk, logoutThunk } from '@/features/auth/authThunks'
+import { 
+  loginThunk, 
+  registerThunk, 
+  logoutThunk,
+  verifyOTPThunk,
+  resendOTPThunk
+} from '@/features/auth/authThunks'
 import { clearCredentials, clearError } from '@/features/auth/authSlices'
-import type { LoginPayload, RegisterPayload } from '@/features/auth/authTypes'
+import type { 
+  LoginPayload, 
+  RegisterPayload,
+  VerifyOTPPayload,
+  ResendOTPPayload
+} from '@/features/auth/authTypes'
 import { ROUTES } from '@/constants/constant'
 
 export const useAuth = () => {
@@ -27,12 +38,12 @@ export const useAuth = () => {
     async (data: RegisterPayload) => {
       const result = await dispatch(registerThunk(data))
       if (registerThunk.fulfilled.match(result)) {
-        navigate(ROUTES.HOME)
+        // Don't auto-navigate, let the Register page handle OTP flow
         return true
       }
       return false
     },
-    [dispatch, navigate]
+    [dispatch]
   )
 
   const logout = useCallback(async () => {
@@ -45,6 +56,28 @@ export const useAuth = () => {
     dispatch(clearError())
   }, [dispatch])
 
+  const verifyOTP = useCallback(
+    async (data: VerifyOTPPayload) => {
+      const result = await dispatch(verifyOTPThunk(data))
+      if (verifyOTPThunk.fulfilled.match(result)) {
+        return true
+      }
+      return false
+    },
+    [dispatch]
+  )
+
+  const resendOTP = useCallback(
+    async (data: ResendOTPPayload) => {
+      const result = await dispatch(resendOTPThunk(data))
+      if (resendOTPThunk.fulfilled.match(result)) {
+        return true
+      }
+      return false
+    },
+    [dispatch]
+  )
+
   return {
     isAuthenticated,
     user,
@@ -54,6 +87,8 @@ export const useAuth = () => {
     register,
     logout,
     clearAuthError,
+    verifyOTP,
+    resendOTP,
   }
 }
 

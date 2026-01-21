@@ -4,7 +4,9 @@ import type {
   ApiResponse, 
   AuthResponse, 
   LoginRequest, 
-  RegisterRequest 
+  RegisterRequest,
+  VerifyOTPRequest,
+  ResendOTPRequest
 } from '@/types/api'
 
 export const authApi = {
@@ -49,6 +51,22 @@ export const authApi = {
     const response = await apiClient.post<ApiResponse<null>>(
       API_ENDPOINTS.AUTH.RESET_PASSWORD,
       { token, newPassword }
+    )
+    return response.data
+  },
+
+  verifyOTP: async (data: VerifyOTPRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.AUTH.VERIFY_OTP,
+      data
+    )
+    return response.data
+  },
+
+  resendOTP: async (data: ResendOTPRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.AUTH.RESEND_OTP,
+      data
     )
     return response.data
   },

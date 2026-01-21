@@ -14,6 +14,7 @@ export interface AuthState {
 export interface LoginPayload {
   email: string
   password: string
+  captchaToken?: string
 }
 
 export interface RegisterPayload {
@@ -21,6 +22,24 @@ export interface RegisterPayload {
   password: string
   fullName: string
   phoneNumber?: string
+  captchaToken?: string
+}
+
+export interface RegisterApiPayload {
+  fullname: string
+  email: string
+  password: string
+  phone?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+  avatar?: string
 }
 
 export interface AuthSuccessPayload {
@@ -35,4 +54,16 @@ export interface TokenPayload {
   role: UserRole
   exp: number
   iat: number
+}
+
+// OTP Verification Types
+export interface VerifyOTPPayload {
+  email: string
+  code: string
+  type: 'verify_email' | 'reset_password'
+}
+
+export interface ResendOTPPayload {
+  email: string
+  type: 'verify_email' | 'reset_password'
 }
