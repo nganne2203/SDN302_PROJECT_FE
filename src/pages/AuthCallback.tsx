@@ -14,7 +14,7 @@ const AuthCallback = () => {
   const dispatch = useAppDispatch()
   const hasProcessed = useRef(false)
 
-  const processTokens = (accessToken: string, refreshToken: string, isNewUser: boolean) => {
+  const processTokens = (accessToken: string, refreshToken: string, isNewUser: boolean, hasPassword: boolean) => {
     const user = decodeJWT(accessToken)
 
     if (!user) {
@@ -26,6 +26,7 @@ const AuthCallback = () => {
     setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
     setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
+    setStorage('hasPassword', String(hasPassword))
 
     // Update Redux state
     dispatch(setCredentials({
@@ -51,6 +52,7 @@ const AuthCallback = () => {
       try {
         const accessToken = searchParams.get('accessToken')
         const isNewUser = searchParams.get('isNewUser') === 'true'
+        const hasPassword = searchParams.get('hasPassword') === 'true'
 
         console.log('AuthCallback - Current URL:', window.location.href)
         console.log('AuthCallback - Search params:', Object.fromEntries(searchParams.entries()))
@@ -104,7 +106,7 @@ const AuthCallback = () => {
           refreshToken = accessToken
         }
 
-        processTokens(accessToken, refreshToken, isNewUser)
+        processTokens(accessToken, refreshToken, isNewUser, hasPassword)
       } catch (error) {
         console.error('OAuth callback error:', error)
         toast.error('Đăng nhập thất bại: Có lỗi xảy ra')
