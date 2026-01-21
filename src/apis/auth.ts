@@ -4,7 +4,8 @@ import type {
   ApiResponse, 
   AuthResponse, 
   LoginRequest, 
-  RegisterRequest 
+  RegisterRequest,
+  
 } from '@/types/api'
 
 export const authApi = {
@@ -26,6 +27,11 @@ export const authApi = {
 
   logout: async (): Promise<ApiResponse<null>> => {
     const response = await apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.LOGOUT)
+    return response.data
+  },
+
+  logoutAll: async (): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.LOGOUT_ALL)
     return response.data
   },
 
