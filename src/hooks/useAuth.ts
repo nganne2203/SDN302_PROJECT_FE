@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { loginThunk, registerThunk, logoutThunk } from '@/features/auth/authThunks'
+import { loginThunk, registerThunk, logoutThunk, logoutAllThunk } from '@/features/auth/authThunks'
 import { clearCredentials, clearError } from '@/features/auth/authSlices'
 import type { LoginPayload, RegisterPayload } from '@/features/auth/authTypes'
 import { ROUTES } from '@/constants/constant'
@@ -41,6 +41,12 @@ export const useAuth = () => {
     navigate(ROUTES.LOGIN)
   }, [dispatch, navigate])
 
+  const logoutAll = useCallback(async () => {
+    await dispatch(logoutAllThunk())
+    dispatch(clearCredentials())
+    navigate(ROUTES.LOGIN)
+  }, [dispatch, navigate])
+
   const clearAuthError = useCallback(() => {
     dispatch(clearError())
   }, [dispatch])
@@ -53,6 +59,7 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    logoutAll,
     clearAuthError,
   }
 }
