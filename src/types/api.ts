@@ -8,7 +8,7 @@ export interface ApiResponse<T> {
 export interface ApiError {
   success: boolean
   message: string
-  errors?: Record<string, string[]>
+  errors?: Record<string, string[]> | string[]
 }
 
 export interface PaginatedResponse<T> {
@@ -33,19 +33,42 @@ export interface PaginationMeta {
 export interface LoginRequest {
   email: string
   password: string
+  captchaToken?: string
 }
 
 export interface RegisterRequest {
+  fullname: string
   email: string
   password: string
-  fullName: string
-  phoneNumber?: string
+  phone?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+  avatar?: string
+  captchaToken?: string
 }
 
 export interface AuthResponse {
   accessToken: string
   refreshToken: string
   user: UserInfo
+}
+
+export interface VerifyOTPRequest {
+  email: string
+  code: string
+  type: 'verify_email' | 'reset_password'
+}
+
+export interface ResendOTPRequest {
+  email: string
+  type: 'verify_email' | 'reset_password'
 }
 
 export interface UserInfo {

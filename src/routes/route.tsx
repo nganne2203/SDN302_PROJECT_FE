@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { ROUTES } from '@/constants/constant'
 
@@ -7,7 +8,9 @@ import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 // Lazy loaded components
 const Home = lazy(() => import('@/pages/Home'))
 const Login = lazy(() => import('@/pages/Login'))
+const Register = lazy(() => import('@/pages/Register'))
 const Cart = lazy(() => import('@/pages/Cart'))
+const AuthCallback = lazy(() => import('@/pages/AuthCallback'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -34,8 +37,16 @@ export const routes: RouteObject[] = [
     element: withSuspense(Login),
   },
   {
+    path: ROUTES.REGISTER,
+    element: withSuspense(Register),
+  },
+  {
     path: ROUTES.CART,
     element: withSuspense(Cart),
+  },
+  {
+    path: '/auth/callback',
+    element: withSuspense(AuthCallback),
   },
   // Add more routes as needed
   {

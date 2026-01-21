@@ -19,6 +19,10 @@ export const API_ENDPOINTS = {
     REFRESH_TOKEN: '/auth/refresh-token',
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_OTP: '/auth/verify-otp',
+    RESEND_OTP: '/auth/resend-verification-code',
+    GOOGLE_LOGIN: '/auth/google',
+    GOOGLE_CALLBACK: '/auth/google/callback',
   },
   // User
   USER: {
@@ -93,6 +97,24 @@ export const ROUTES = {
     USERS: '/admin/users',
     CATEGORIES: '/admin/categories',
   },
+} as const
+
+// User Roles
+export const USER_ROLES = {
+  CUSTOMER: 'CUSTOMER',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF',
+} as const
+
+export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+
+// Role Labels
+export const ROLE_LABELS: Record<UserRole, string> = {
+  [USER_ROLES.CUSTOMER]: 'Khách hàng',
+  [USER_ROLES.ADMIN]: 'Quản trị viên',
+  [USER_ROLES.MANAGER]: 'Quản lý',
+  [USER_ROLES.STAFF]: 'Nhân viên',
 } as const
 
 // Order Status Labels
