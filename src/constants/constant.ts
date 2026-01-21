@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_OTP: '/auth/verify-otp',
     RESEND_OTP: '/auth/resend-verification-code',
+    GOOGLE_LOGIN: '/auth/google',
+    GOOGLE_CALLBACK: '/auth/google/callback',
   },
   // User
   USER: {

@@ -10,6 +10,7 @@ const Home = lazy(() => import('@/pages/Home'))
 const Login = lazy(() => import('@/pages/Login'))
 const Register = lazy(() => import('@/pages/Register'))
 const Cart = lazy(() => import('@/pages/Cart'))
+const AuthCallback = lazy(() => import('@/pages/AuthCallback'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -42,6 +43,10 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.CART,
     element: withSuspense(Cart),
+  },
+  {
+    path: '/auth/callback',
+    element: withSuspense(AuthCallback),
   },
   // Add more routes as needed
   {

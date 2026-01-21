@@ -7,7 +7,7 @@ import ButtonCommon from '@/components/common/ButtonCommon'
 import { registerSchema, type RegisterFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
 import { Link } from 'react-router-dom'
-import { ROUTES } from '@/constants/constant'
+import { ROUTES, API_ENDPOINTS } from '@/constants/constant'
 import { useState, useRef } from 'react'
 import OTPVerificationModal from '@/components/auth/OTPVerificationModal'
 import { useNavigate } from 'react-router-dom'
@@ -74,6 +74,11 @@ const Register = () => {
   const handleOTPSuccess = () => {
     // Navigate to login page after successful verification
     navigate(ROUTES.LOGIN)
+  }
+
+  const handleGoogleLogin = () => {
+    // Redirect to Google OAuth endpoint
+    window.location.href = `${env.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
   }
 
   return (
@@ -259,6 +264,7 @@ const Register = () => {
         <div className="space-y-3">
           <button 
             type="button"
+            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <img
