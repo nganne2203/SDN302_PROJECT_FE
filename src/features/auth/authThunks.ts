@@ -65,3 +65,19 @@ export const logoutThunk = createAsyncThunk<void, void>(
     }
   }
 )
+
+export const logoutAllThunk = createAsyncThunk<void, void>(
+  'auth/logoutAll',
+  async () => {
+    try {
+      await authApi.logoutAll()
+    } catch {
+      // Continue with logout even if API fails
+    } finally {
+      // Always clear storage
+      removeStorage(STORAGE_KEYS.ACCESS_TOKEN)  
+      removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
+      removeStorage(STORAGE_KEYS.USER_INFO)
+    } 
+  }
+)
