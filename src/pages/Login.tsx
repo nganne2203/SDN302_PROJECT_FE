@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from 'antd'
@@ -34,14 +35,12 @@ const Login = () => {
   }
 
   const handleGoogleLogin = () => {
-    // Redirect to Google OAuth endpoint
     window.location.href = `${env.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
   }
 
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return
 
-    // Validate reCAPTCHA
     if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
       toast.error('Vui lòng xác minh bạn không phải là robot')
       return
@@ -54,19 +53,17 @@ const Login = () => {
     
     if (success) {
       toast.success('Đăng nhập thành công!')
-      // Reset reCAPTCHA after successful login
       recaptchaRef.current?.reset()
       setRecaptchaToken(null)
     } else if (error) {
       toast.error(error)
-      // Reset reCAPTCHA after failed login
       recaptchaRef.current?.reset()
       setRecaptchaToken(null)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         {/* Logo/Title */}
         <div className="text-center mb-8">
