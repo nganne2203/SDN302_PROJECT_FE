@@ -31,6 +31,11 @@ export const authApi = {
     return response.data
   },
 
+  logoutAll: async (): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.LOGOUT_ALL)
+    return response.data
+  },
+
   refreshToken: async (refreshToken: string): Promise<ApiResponse<AuthResponse>> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
       API_ENDPOINTS.AUTH.REFRESH_TOKEN,

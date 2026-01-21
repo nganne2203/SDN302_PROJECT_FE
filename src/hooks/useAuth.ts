@@ -5,6 +5,7 @@ import {
   loginThunk, 
   registerThunk, 
   logoutThunk,
+  logoutAllThunk,
   verifyOTPThunk,
   resendOTPThunk
 } from '@/features/auth/authThunks'
@@ -52,6 +53,12 @@ export const useAuth = () => {
     navigate(ROUTES.LOGIN)
   }, [dispatch, navigate])
 
+  const logoutAll = useCallback(async () => {
+    await dispatch(logoutAllThunk())
+    dispatch(clearCredentials())
+    navigate(ROUTES.LOGIN)
+  }, [dispatch, navigate])
+
   const clearAuthError = useCallback(() => {
     dispatch(clearError())
   }, [dispatch])
@@ -86,6 +93,7 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    logoutAll,
     clearAuthError,
     verifyOTP,
     resendOTP,
