@@ -5,12 +5,7 @@ import { setCredentials } from '@/features/auth/authSlices'
 import { STORAGE_KEYS, ROUTES } from '@/constants/constant'
 import { setStorage } from '@/utils/storage'
 import { toast } from '@/utils/toast'
-<<<<<<< zutiendat
-import { env } from '@/configs/env'
-import type { UserInfo } from '@/types/api'
-=======
 import { userApi } from '@/apis/user'
->>>>>>> local
 
 const AuthCallback = () => {
   const navigate = useNavigate()
@@ -18,39 +13,6 @@ const AuthCallback = () => {
   const dispatch = useAppDispatch()
   const hasProcessed = useRef(false)
 
-<<<<<<< zutiendat
-  const processTokens = (accessToken: string, refreshToken: string, isNewUser: boolean, hasPassword: boolean) => {
-    const user = decodeJWT(accessToken)
-
-    if (!user) {
-      toast.error('Đăng nhập thất bại: Token không hợp lệ')
-      navigate(ROUTES.LOGIN)
-      return
-    }
-
-    setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
-    setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
-    setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
-    setStorage('hasPassword', String(hasPassword))
-
-    // Update Redux state
-    dispatch(setCredentials({
-      user,
-      accessToken,
-      refreshToken,
-    }))
-
-    if (isNewUser) {
-      toast.success('Đăng ký thành công! Chào mừng bạn đến với cửa hàng!')
-    } else {
-      toast.success('Đăng nhập thành công!')
-    }
-
-    navigate(ROUTES.HOME)
-  }
-
-=======
->>>>>>> local
   useEffect(() => {
     if (hasProcessed.current) return
     hasProcessed.current = true
@@ -91,9 +53,6 @@ const AuthCallback = () => {
         const user = profileResponse.data
         setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
 
-<<<<<<< zutiendat
-        processTokens(accessToken, refreshToken, isNewUser, hasPassword)
-=======
         dispatch(setCredentials({
           user,
           accessToken,
@@ -102,7 +61,6 @@ const AuthCallback = () => {
 
         toast.success(isNewUser ? 'Đăng ký thành công! Chào mừng bạn đến với cửa hàng!' : 'Đăng nhập thành công!')
         navigate(ROUTES.HOME, { replace: true })
->>>>>>> local
       } catch (error) {
         console.error('OAuth callback error:', error)
         toast.error('Đăng nhập thất bại: Có lỗi xảy ra')
