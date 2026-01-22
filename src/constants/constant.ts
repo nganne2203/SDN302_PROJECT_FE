@@ -21,14 +21,28 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_OTP: '/auth/verify-otp',
     RESEND_OTP: '/auth/resend-verification-code',
+<<<<<<< zutiendat
+=======
+    PROFILE: '/auth/profile',
+    SET_PASSWORD: '/auth/set-password',
+>>>>>>> local
     GOOGLE_LOGIN: '/auth/google',
     GOOGLE_CALLBACK: '/auth/google/callback',
   },
   // User
   USER: {
+<<<<<<< zutiendat
     PROFILE: '/users/profile',
     UPDATE_PROFILE: '/users/profile',
     CHANGE_PASSWORD: '/users/change-password',
+=======
+    // Backend exposes current user profile via /auth/profile
+    PROFILE: '/auth/profile',
+    // Backend updates current user via /users/me
+    UPDATE_PROFILE: '/users/me',
+    // Backend changes password via /auth/change-password (requires Bearer)
+    CHANGE_PASSWORD: '/auth/change-password',
+>>>>>>> local
     ADDRESSES: '/users/addresses',
   },
   // Products
@@ -82,6 +96,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
+  SET_PASSWORD: '/set-password',
   PRODUCTS: '/products',
   PRODUCT_DETAIL: '/products/:id',
   CART: '/cart',

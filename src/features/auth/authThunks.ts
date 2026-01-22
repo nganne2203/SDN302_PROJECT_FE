@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { authApi } from '@/apis/auth'
+import { userApi } from '@/apis/user'
 import { STORAGE_KEYS } from '@/constants/constant'
 import { setStorage, removeStorage } from '@/utils/storage'
 import type { 
@@ -17,11 +18,22 @@ export const loginThunk = createAsyncThunk<AuthSuccessPayload, LoginPayload>(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await authApi.login(credentials)
+<<<<<<< zutiendat
       const { accessToken, refreshToken, user } = response.data
+=======
+      const { accessToken, refreshToken } = response.data
+>>>>>>> local
 
       // Store tokens
       setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
       setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+<<<<<<< zutiendat
+=======
+
+      // Fetch user profile (backend does not return user in /auth/login)
+      const profileResponse = await userApi.getProfile()
+      const user = profileResponse.data
+>>>>>>> local
       setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
 
       return { accessToken, refreshToken, user }

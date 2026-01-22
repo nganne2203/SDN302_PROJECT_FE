@@ -1,6 +1,11 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
+<<<<<<< zutiendat
 import type { ApiResponse, UserInfo, ShippingAddress } from '@/types/api'
+=======
+import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse } from '@/types/api'
+import { mapBackendUserToUserInfo } from '@/utils/userMapper'
+>>>>>>> local
 
 export interface UpdateProfileRequest {
   fullName?: string
@@ -15,8 +20,16 @@ export interface ChangePasswordRequest {
 
 export const userApi = {
   getProfile: async (): Promise<ApiResponse<UserInfo>> => {
+<<<<<<< zutiendat
     const response = await apiClient.get<ApiResponse<UserInfo>>(API_ENDPOINTS.USER.PROFILE)
     return response.data
+=======
+    const response = await apiClient.get<ApiResponse<ProfileResponse>>(API_ENDPOINTS.USER.PROFILE)
+    return {
+      ...response.data,
+      data: mapBackendUserToUserInfo(response.data.data.user),
+    }
+>>>>>>> local
   },
 
   updateProfile: async (data: UpdateProfileRequest): Promise<ApiResponse<UserInfo>> => {

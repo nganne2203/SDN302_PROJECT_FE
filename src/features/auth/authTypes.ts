@@ -60,10 +60,10 @@ export interface TokenPayload {
 export interface VerifyOTPPayload {
   email: string
   code: string
-  type: 'verify_email' | 'reset_password'
+  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
 }
 
 export interface ResendOTPPayload {
   email: string
-  type: 'verify_email' | 'reset_password'
+  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
 }

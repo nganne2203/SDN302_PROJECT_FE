@@ -2,7 +2,12 @@ import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
 import type { 
   ApiResponse, 
+<<<<<<< zutiendat
   AuthResponse, 
+=======
+  AuthTokens,
+  SimpleResponse,
+>>>>>>> local
   LoginRequest, 
   RegisterRequest,
   VerifyOTPRequest,
@@ -10,16 +15,28 @@ import type {
 } from '@/types/api'
 
 export const authApi = {
+<<<<<<< zutiendat
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
+=======
+  // Backend returns tokens only; user must be fetched via /auth/profile
+  login: async (data: LoginRequest): Promise<ApiResponse<AuthTokens>> => {
+    const response = await apiClient.post<ApiResponse<AuthTokens>>(
+>>>>>>> local
       API_ENDPOINTS.AUTH.LOGIN,
       data
     )
     return response.data
   },
 
+<<<<<<< zutiendat
   register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
+=======
+  // Backend returns created user (no tokens) + message
+  register: async (data: RegisterRequest): Promise<ApiResponse<any>> => {
+    const response = await apiClient.post<ApiResponse<any>>(
+>>>>>>> local
       API_ENDPOINTS.AUTH.REGISTER,
       data
     )
@@ -36,8 +53,13 @@ export const authApi = {
     return response.data
   },
 
+<<<<<<< zutiendat
   refreshToken: async (refreshToken: string): Promise<ApiResponse<AuthResponse>> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
+=======
+  refreshToken: async (refreshToken: string): Promise<ApiResponse<AuthTokens>> => {
+    const response = await apiClient.post<ApiResponse<AuthTokens>>(
+>>>>>>> local
       API_ENDPOINTS.AUTH.REFRESH_TOKEN,
       { refreshToken }
     )
@@ -75,6 +97,17 @@ export const authApi = {
     )
     return response.data
   },
+<<<<<<< zutiendat
+=======
+
+  setPassword: async (password: string): Promise<SimpleResponse> => {
+    const response = await apiClient.post<SimpleResponse>(
+      API_ENDPOINTS.AUTH.SET_PASSWORD,
+      { password }
+    )
+    return response.data
+  },
+>>>>>>> local
 }
 
 export default authApi
