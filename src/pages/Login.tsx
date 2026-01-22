@@ -1,16 +1,16 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Input } from 'antd'
-import { Mail, Lock } from 'lucide-react'
-import { toast } from '@/utils/toast'
-import ButtonCommon from '@/components/common/ButtonCommon'
-import { loginSchema, type LoginFormData } from '@/utils/validator'
-import useAuth from '@/hooks/useAuth'
-import { Link } from 'react-router-dom'
-import { ROUTES } from '@/constants/constant'
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "antd";
+import { Mail, Lock } from "lucide-react";
+import { toast } from "@/utils/toast";
+import ButtonCommon from "@/components/common/ButtonCommon";
+import { loginSchema, type LoginFormData } from "@/utils/validator";
+import useAuth from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/constants/constant";
 
 const Login = () => {
-  const { login, isLoading, error } = useAuth()
+  const { login, isLoading, error } = useAuth();
 
   const {
     register,
@@ -19,19 +19,21 @@ const Login = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
-    const success = await login(data)
+    console.log(data);
+
+    const success = await login(data);
     if (success) {
-      toast.success('Đăng nhập thành công!')
+      toast.success("Đăng nhập thành công!");
     } else if (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
@@ -49,14 +51,16 @@ const Login = () => {
               Email
             </label>
             <Input
-              {...register('email')}
+              {...register("email")}
               prefix={<Mail className="w-4 h-4 text-gray-400" />}
               placeholder="Nhập email của bạn"
               size="large"
-              status={errors.email ? 'error' : ''}
+              status={errors.email ? "error" : ""}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -65,23 +69,30 @@ const Login = () => {
               Mật khẩu
             </label>
             <Input.Password
-              {...register('password')}
+              {...register("password")}
               prefix={<Lock className="w-4 h-4 text-gray-400" />}
               placeholder="Nhập mật khẩu"
               size="large"
-              status={errors.password ? 'error' : ''}
+              status={errors.password ? "error" : ""}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="flex items-center justify-between">
             <label className="flex items-center">
               <input type="checkbox" className="rounded border-gray-300" />
-              <span className="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
+              <span className="ml-2 text-sm text-gray-600">
+                Ghi nhớ đăng nhập
+              </span>
             </label>
-            <Link to="#" className="text-sm text-blue-600 hover:underline">
+            <Link
+              to={ROUTES.RESET_PASSWORD}
+              className="text-sm text-blue-600 hover:underline"
+            >
               Quên mật khẩu?
             </Link>
           </div>
@@ -121,14 +132,17 @@ const Login = () => {
 
         {/* Register Link */}
         <p className="mt-8 text-center text-gray-600">
-          Chưa có tài khoản?{' '}
-          <Link to={ROUTES.REGISTER} className="text-blue-600 font-semibold hover:underline">
+          Chưa có tài khoản?{" "}
+          <Link
+            to={ROUTES.REGISTER}
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Đăng ký ngay
           </Link>
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

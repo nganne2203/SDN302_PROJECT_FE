@@ -1,27 +1,29 @@
-import { createBrowserRouter, type RouteObject } from 'react-router-dom'
-import { ROUTES } from '@/constants/constant'
+import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import { ROUTES } from "@/constants/constant";
 
 // Lazy load pages for better performance
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
+import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 
 // Lazy loaded components
-const Home = lazy(() => import('@/pages/Home'))
-const Login = lazy(() => import('@/pages/Login'))
-const Cart = lazy(() => import('@/pages/Cart'))
+const Home = lazy(() => import("@/pages/Home"));
+const Login = lazy(() => import("@/pages/Login"));
+const Cart = lazy(() => import("@/pages/Cart"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 
 // Loading fallback component
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
   </div>
-)
+);
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (
   <Suspense fallback={<LoadingFallback />}>
     <Component />
   </Suspense>
-)
+);
 
 // Route configuration
 export const routes: RouteObject[] = [
@@ -37,9 +39,17 @@ export const routes: RouteObject[] = [
     path: ROUTES.CART,
     element: withSuspense(Cart),
   },
+  {
+    path: ROUTES.PROFILE,
+    element: withSuspense(Profile),
+  },
+   {
+    path: ROUTES.RESET_PASSWORD,
+    element: withSuspense(ResetPassword),
+  },
   // Add more routes as needed
   {
-    path: '*',
+    path: "*",
     element: (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -49,9 +59,9 @@ export const routes: RouteObject[] = [
       </div>
     ),
   },
-]
+];
 
 // Create browser router
-export const router = createBrowserRouter(routes)
+export const router = createBrowserRouter(routes);
 
-export default router
+export default router;
