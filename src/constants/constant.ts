@@ -21,15 +21,14 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_OTP: '/auth/verify-otp',
     RESEND_OTP: '/auth/resend-verification-code',
-    PROFILE: '/auth/profile',
     GOOGLE_LOGIN: '/auth/google',
     GOOGLE_CALLBACK: '/auth/google/callback',
   },
   // User
   USER: {
-    PROFILE: '/auth/profile',
-    UPDATE_PROFILE: '/users/me',
-    CHANGE_PASSWORD: '/auth/change-password',
+    PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/profile',
+    CHANGE_PASSWORD: '/users/change-password',
     ADDRESSES: '/users/addresses',
   },
   // Products

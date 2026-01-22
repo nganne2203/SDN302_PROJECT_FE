@@ -8,8 +8,6 @@ import type {
   VerifyOTPRequest,
   ResendOTPRequest
 } from '@/types/api'
-import type { UserInfo } from '@/types/api'
-import { mapBackendUserToUserInfo } from '@/utils/mapUser'
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
@@ -76,15 +74,6 @@ export const authApi = {
       data
     )
     return response.data
-  },
-
-  getProfile: async (): Promise<ApiResponse<UserInfo>> => {
-    // BE: GET /auth/profile -> { data: { user: {...} } }
-    const response = await apiClient.get<ApiResponse<{ user: any }>>(API_ENDPOINTS.AUTH.PROFILE)
-    return {
-      ...response.data,
-      data: mapBackendUserToUserInfo(response.data?.data?.user),
-    }
   },
 }
 
