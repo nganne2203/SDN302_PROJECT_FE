@@ -17,11 +17,15 @@ export const loginThunk = createAsyncThunk<AuthSuccessPayload, LoginPayload>(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await authApi.login(credentials)
-      const { accessToken, refreshToken, user } = response.data
+      const { accessToken, refreshToken } = response.data as any
 
       // Store tokens
       setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
       setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+
+      // Fetch user profile (BE login does not return user object)
+      const profileRes = await authApi.getProfile()
+      const user = profileRes.data
       setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
 
       return { accessToken, refreshToken, user }

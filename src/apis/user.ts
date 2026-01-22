@@ -1,6 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
 import type { ApiResponse, UserInfo, ShippingAddress } from '@/types/api'
+import { mapBackendUserToUserInfo } from '@/utils/mapUser'
 
 export interface UpdateProfileRequest {
   fullName?: string
@@ -15,16 +16,30 @@ export interface ChangePasswordRequest {
 
 export const userApi = {
   getProfile: async (): Promise<ApiResponse<UserInfo>> => {
-    const response = await apiClient.get<ApiResponse<UserInfo>>(API_ENDPOINTS.USER.PROFILE)
-    return response.data
+    // BE: GET /auth/profile -> { data: { user: {...} } }
+    const response = await apiClient.get<ApiResponse<{ user: any }>>(API_ENDPOINTS.AUTH.PROFILE)
+    return {
+      ...response.data,
+      data: mapBackendUserToUserInfo(response.data?.data?.user),
+    }
   },
 
   updateProfile: async (data: UpdateProfileRequest): Promise<ApiResponse<UserInfo>> => {
-    const response = await apiClient.put<ApiResponse<UserInfo>>(
+    // BE: PUT /users/me (expects fields like fullname/phone/avatar)
+    const payload: Record<string, unknown> = {}
+    if (data.fullName !== undefined) payload.fullname = data.fullName
+    if (data.phoneNumber !== undefined) payload.phone = data.phoneNumber
+    if (data.avatar !== undefined) payload.avatar = data.avatar
+
+    const response = await apiClient.put<ApiResponse<any>>(
       API_ENDPOINTS.USER.UPDATE_PROFILE,
-      data
+      payload
     )
-    return response.data
+
+    return {
+      ...response.data,
+      data: mapBackendUserToUserInfo(response.data?.data),
+    }
   },
 
   changePassword: async (data: ChangePasswordRequest): Promise<ApiResponse<null>> => {

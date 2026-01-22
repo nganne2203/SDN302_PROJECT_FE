@@ -7,6 +7,7 @@ import { setStorage } from '@/utils/storage'
 import { toast } from '@/utils/toast'
 import { env } from '@/configs/env'
 import type { UserInfo } from '@/types/api'
+import { authApi } from '@/apis/auth'
 
 const AuthCallback = () => {
   const navigate = useNavigate()
@@ -14,8 +15,22 @@ const AuthCallback = () => {
   const dispatch = useAppDispatch()
   const hasProcessed = useRef(false)
 
-  const processTokens = (accessToken: string, refreshToken: string, isNewUser: boolean, hasPassword: boolean) => {
-    const user = decodeJWT(accessToken)
+  const processTokens = async (accessToken: string, refreshToken: string, isNewUser: boolean, hasPassword: boolean) => {
+    // Save tokens first so apiClient can attach Bearer token
+    setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+    setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+    setStorage('hasPassword', String(hasPassword))
+
+    // Prefer calling BE profile to get real user fields (fullname/phone/avatar...)
+    let user: UserInfo | null = null
+    try {
+      const profileRes = await authApi.getProfile()
+      user = profileRes.data
+    } catch (e) {
+      console.log('AuthCallback - Failed to fetch /auth/profile, fallback to decodeJWT:', e)
+      // Fallback to decoding JWT if profile call fails
+      user = decodeJWT(accessToken)
+    }
 
     if (!user) {
       toast.error('Đăng nhập thất bại: Token không hợp lệ')
@@ -23,12 +38,8 @@ const AuthCallback = () => {
       return
     }
 
-    setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
-    setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
-    setStorage('hasPassword', String(hasPassword))
 
-    // Update Redux state
     dispatch(setCredentials({
       user,
       accessToken,
@@ -78,35 +89,11 @@ const AuthCallback = () => {
         }
 
         if (!refreshToken) {
-          console.log('AuthCallback - Trying to get refreshToken via API...')
-          try {
-            const response = await fetch(`${env.BASE_URL}/auth/me`, {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-            })
-            
-            if (response.ok) {
-              const data = await response.json()
-              if (data.data?.refreshToken) {
-                refreshToken = data.data.refreshToken
-                console.log('AuthCallback - Got refreshToken from API')
-              }
-            }
-          } catch (apiError) {
-            console.log('AuthCallback - API method failed:', apiError)
-          }
-        }
-
-        if (!refreshToken) {
           console.log('AuthCallback - Using accessToken as refreshToken fallback')
           refreshToken = accessToken
         }
 
-        processTokens(accessToken, refreshToken, isNewUser, hasPassword)
+        await processTokens(accessToken, refreshToken, isNewUser, hasPassword)
       } catch (error) {
         console.error('OAuth callback error:', error)
         toast.error('Đăng nhập thất bại: Có lỗi xảy ra')
