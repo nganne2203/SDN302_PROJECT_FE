@@ -11,6 +11,8 @@ const Login = lazy(() => import('@/pages/Login'))
 const Register = lazy(() => import('@/pages/Register'))
 const Cart = lazy(() => import('@/pages/Cart'))
 const AuthCallback = lazy(() => import('@/pages/AuthCallback'))
+const Profile = lazy(() => import('@/pages/Profile'))
+const SetPassword = lazy(() => import('@/pages/SetPassword'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -39,6 +41,14 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.REGISTER,
     element: withSuspense(Register),
+  },
+  {
+    path: ROUTES.PROFILE,
+    element: withSuspense(Profile),
+  },
+  {
+    path: ROUTES.SET_PASSWORD,
+    element: withSuspense(SetPassword),
   },
   {
     path: ROUTES.CART,

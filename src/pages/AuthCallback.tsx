@@ -5,44 +5,13 @@ import { setCredentials } from '@/features/auth/authSlices'
 import { STORAGE_KEYS, ROUTES } from '@/constants/constant'
 import { setStorage } from '@/utils/storage'
 import { toast } from '@/utils/toast'
-import { env } from '@/configs/env'
-import type { UserInfo } from '@/types/api'
+import { userApi } from '@/apis/user'
 
 const AuthCallback = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const dispatch = useAppDispatch()
   const hasProcessed = useRef(false)
-
-  const processTokens = (accessToken: string, refreshToken: string, isNewUser: boolean, hasPassword: boolean) => {
-    const user = decodeJWT(accessToken)
-
-    if (!user) {
-      toast.error('Đăng nhập thất bại: Token không hợp lệ')
-      navigate(ROUTES.LOGIN)
-      return
-    }
-
-    setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
-    setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
-    setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
-    setStorage('hasPassword', String(hasPassword))
-
-    // Update Redux state
-    dispatch(setCredentials({
-      user,
-      accessToken,
-      refreshToken,
-    }))
-
-    if (isNewUser) {
-      toast.success('Đăng ký thành công! Chào mừng bạn đến với cửa hàng!')
-    } else {
-      toast.success('Đăng nhập thành công!')
-    }
-
-    navigate(ROUTES.HOME)
-  }
 
   useEffect(() => {
     if (hasProcessed.current) return
@@ -54,59 +23,44 @@ const AuthCallback = () => {
         const isNewUser = searchParams.get('isNewUser') === 'true'
         const hasPassword = searchParams.get('hasPassword') === 'true'
 
-        console.log('AuthCallback - Current URL:', window.location.href)
-        console.log('AuthCallback - Search params:', Object.fromEntries(searchParams.entries()))
-        console.log('AuthCallback - All cookies:', document.cookie)
-
         if (!accessToken) {
           toast.error('Đăng nhập thất bại: Không tìm thấy token')
           navigate(ROUTES.LOGIN)
           return
         }
 
-        let refreshToken: string | null = null
-        refreshToken = searchParams.get('refreshToken')
-        if (refreshToken) {
-          console.log('AuthCallback - Got refreshToken from URL params')
-        }
-
+        // Per requirements: refreshToken must be read from cookie (not from URL params / API fallback)
+        const refreshToken = getCookie('refreshToken')
         if (!refreshToken) {
-          refreshToken = getCookie('refreshToken')
-          if (refreshToken) {
-            console.log('AuthCallback - Got refreshToken from cookie')
-          }
+          toast.error('Đăng nhập thất bại: Không tìm thấy refreshToken trong cookie')
+          navigate(ROUTES.LOGIN)
+          return
         }
 
-        if (!refreshToken) {
-          console.log('AuthCallback - Trying to get refreshToken via API...')
-          try {
-            const response = await fetch(`${env.BASE_URL}/auth/me`, {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-            })
-            
-            if (response.ok) {
-              const data = await response.json()
-              if (data.data?.refreshToken) {
-                refreshToken = data.data.refreshToken
-                console.log('AuthCallback - Got refreshToken from API')
-              }
-            }
-          } catch (apiError) {
-            console.log('AuthCallback - API method failed:', apiError)
-          }
+        // Persist tokens early so apiClient can attach Bearer token
+        setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+        setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+        setStorage('hasPassword', String(hasPassword))
+
+        // If new Google user has no password: require set-password before redirect to dashboard
+        if (isNewUser && !hasPassword) {
+          navigate(ROUTES.SET_PASSWORD, { replace: true, state: { isNewUser, hasPassword } })
+          return
         }
 
-        if (!refreshToken) {
-          console.log('AuthCallback - Using accessToken as refreshToken fallback')
-          refreshToken = accessToken
-        }
+        // Otherwise: fetch profile and finalize login
+        const profileResponse = await userApi.getProfile()
+        const user = profileResponse.data
+        setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
 
-        processTokens(accessToken, refreshToken, isNewUser, hasPassword)
+        dispatch(setCredentials({
+          user,
+          accessToken,
+          refreshToken,
+        }))
+
+        toast.success(isNewUser ? 'Đăng ký thành công! Chào mừng bạn đến với cửa hàng!' : 'Đăng nhập thành công!')
+        navigate(ROUTES.HOME, { replace: true })
       } catch (error) {
         console.error('OAuth callback error:', error)
         toast.error('Đăng nhập thất bại: Có lỗi xảy ra')
@@ -140,33 +94,6 @@ function getCookie(name: string): string | null {
     return parts.pop()?.split(';').shift() || null
   }
   return null
-}
-
-function decodeJWT(token: string): UserInfo | null {
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    )
-
-    const payload = JSON.parse(jsonPayload)
-
-    return {
-      id: payload.id || payload.sub,
-      email: payload.email,
-      fullName: payload.fullname || payload.fullName || payload.name || payload.email.split('@')[0],
-      role: payload.role?.toUpperCase() || 'CUSTOMER',
-      phoneNumber: payload.phone || payload.phoneNumber,
-      avatar: payload.avatar || payload.picture,
-    }
-  } catch (error) {
-    console.error('Failed to decode JWT:', error)
-    return null
-  }
 }
 
 export default AuthCallback
