@@ -40,18 +40,15 @@ const AuthCallback = () => {
           return
         }
 
-        // Persist tokens early so apiClient can attach Bearer token
         setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
         setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
         setStorage('hasPassword', String(hasPassword))
 
-        // If new Google user has no password: require set-password before redirect to dashboard
         if (isNewUser && !hasPassword) {
           navigate(ROUTES.SET_PASSWORD, { replace: true, state: { isNewUser, hasPassword } })
           return
         }
 
-        // Otherwise: fetch profile and finalize login
         const profileResponse = await userApi.getProfile()
         const user = profileResponse.data
         setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
@@ -72,7 +69,6 @@ const AuthCallback = () => {
     }
 
     handleCallback()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, navigate, dispatch])
 
   return (
