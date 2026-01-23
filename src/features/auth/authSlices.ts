@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { AuthState, AuthSuccessPayload } from './authTypes'
-import { loginThunk, registerThunk, logoutThunk } from './authThunks'
+import { loginThunk, registerThunk, logoutThunk, logoutAllThunk } from './authThunks'
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -63,10 +63,14 @@ const authSlice = createSlice({
       })
       .addCase(registerThunk.fulfilled, (state, action) => {
         state.isLoading = false
-        state.isAuthenticated = true
-        state.user = action.payload.user
-        state.accessToken = action.payload.accessToken
-        state.refreshToken = action.payload.refreshToken
+        // Only set authenticated if tokens are present (email verification complete)
+        if (action.payload.accessToken && action.payload.refreshToken) {
+          state.isAuthenticated = true
+          state.user = action.payload.user
+          state.accessToken = action.payload.accessToken
+          state.refreshToken = action.payload.refreshToken
+        }
+        // Otherwise, registration success but waiting for email verification
       })
       .addCase(registerThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -91,7 +95,24 @@ const authSlice = createSlice({
         state.accessToken = null
         state.refreshToken = null
       })
-  },
+      .addCase(logoutAllThunk.pending, (state) => {
+        state.isLoading = true
+      })
+      .addCase(logoutAllThunk.fulfilled, (state) => {
+        state.isLoading = false
+        state.isAuthenticated = false
+        state.user = null
+        state.accessToken = null
+        state.refreshToken = null
+      })
+      .addCase(logoutAllThunk.rejected, (state) => {
+        state.isLoading = false
+        state.isAuthenticated = false
+        state.user = null
+        state.accessToken = null
+        state.refreshToken = null
+      })
+    }
 })
 
 export const { setCredentials, clearCredentials, setError, clearError } = authSlice.actions

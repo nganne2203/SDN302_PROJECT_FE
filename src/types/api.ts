@@ -5,10 +5,16 @@ export interface ApiResponse<T> {
   data: T
 }
 
+// Some endpoints (e.g. /auth/set-password) return a simpler shape
+export interface SimpleResponse {
+  success: boolean
+  message: string
+}
+
 export interface ApiError {
   success: boolean
   message: string
-  errors?: Record<string, string[]>
+  errors?: Record<string, string[]> | string[]
 }
 
 export interface PaginatedResponse<T> {
@@ -33,19 +39,42 @@ export interface PaginationMeta {
 export interface LoginRequest {
   email: string
   password: string
+  captchaToken?: string
 }
 
 export interface RegisterRequest {
+  fullname: string
   email: string
   password: string
-  fullName: string
-  phoneNumber?: string
+  phone?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+  avatar?: string
+  captchaToken?: string
 }
 
 export interface AuthResponse {
   accessToken: string
   refreshToken: string
   user: UserInfo
+}
+
+export interface VerifyOTPRequest {
+  email: string
+  code: string
+  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
+}
+
+export interface ResendOTPRequest {
+  email: string
+  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
 }
 
 export interface UserInfo {
@@ -57,7 +86,28 @@ export interface UserInfo {
   role: UserRole
 }
 
-export type UserRole = 'ADMIN' | 'CUSTOMER' | 'STAFF'
+export type UserRole = 'ADMIN' | 'CUSTOMER' | 'STAFF' | 'MANAGER'
+
+// Backend user shape (MongoDB)
+export interface BackendUser {
+  _id: string
+  email: string
+  fullname: string
+  phone?: string
+  avatar?: string
+  role: UserRole
+}
+
+// /auth/profile returns { user }
+export interface ProfileResponse {
+  user: BackendUser
+}
+
+// /auth/login & /auth/refresh-token return tokens only
+export interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+}
 
 // Product Types
 export interface Product {

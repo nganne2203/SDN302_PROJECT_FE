@@ -1,8 +1,12 @@
+import FooterLayout from "@/components/layout/FooterLayout"
+import HeaderLayout from "@/components/layout/HeaderLayout"
+
 const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
+      <HeaderLayout />
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      <section className="bg-linear-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Phụ Kiện Điện Thoại Chính Hãng
@@ -67,36 +71,8 @@ const Home = () => {
           </div>
         </div>
       </section>
-
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h4 className="font-bold text-lg mb-4">Phone Accessories</h4>
-              <p className="text-gray-400">
-                Cung cấp phụ kiện điện thoại chính hãng với giá tốt nhất thị trường.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold text-lg mb-4">Liên hệ</h4>
-              <p className="text-gray-400">Email: support@phoneaccessories.vn</p>
-              <p className="text-gray-400">Hotline: 1900 xxxx</p>
-            </div>
-            <div>
-              <h4 className="font-bold text-lg mb-4">Theo dõi chúng tôi</h4>
-              <div className="flex space-x-4">
-                <span className="cursor-pointer hover:text-blue-400">Facebook</span>
-                <span className="cursor-pointer hover:text-blue-400">Instagram</span>
-                <span className="cursor-pointer hover:text-blue-400">Youtube</span>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2026 Phone Accessories. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <FooterLayout /> 
     </div>
   )
 }
