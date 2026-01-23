@@ -1,26 +1,36 @@
-/* eslint-disable react-hooks/refs */
+import { useRef, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import ReCAPTCHA from 'react-google-recaptcha'
 import { toast } from '@/utils/toast'
 import { ControlledField, InputField } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
+import OTPVerificationModal from '@/components/auth/OTPVerificationModal'
 import { loginSchema, type LoginFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
-import { Link } from 'react-router-dom'
-import { ROUTES, API_ENDPOINTS } from '@/constants/constant'
-import { useRef, useState } from 'react'
-import ReCAPTCHA from 'react-google-recaptcha'
+import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Login = () => {
-  const { login, isLoading, error } = useAuth()
+  const { 
+    login, 
+    isLoading, 
+    pendingEmail,
+    showOTPModal,
+    hideOTPModal,
+    isOTPModalOpen,
+  } = useAuth()
+  
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
+  const [localPendingEmail, setLocalPendingEmail] = useState<string>('')
 
   const {
     handleSubmit,
     control,
+    getValues,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,49 +39,69 @@ const Login = () => {
     },
   })
 
-  const onRecaptchaChange = (token: string | null) => {
+  const onRecaptchaChange = useCallback((token: string | null) => {
     setRecaptchaToken(token)
-  }
+  }, [])
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = useCallback(() => {
     window.location.href = `${env.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
-  }
+  }, [])
 
-  const onSubmit = async (data: LoginFormData) => {
-    if (isLoading) return
+  const onSubmit = useCallback(
+    async (data: LoginFormData) => {
+      if (isLoading) return
 
-    if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
-      toast.error('Vui lòng xác minh bạn không phải là robot')
-      return
-    }
-    
-    const success = await login({
-      ...data,
-      captchaToken: recaptchaToken || undefined,
-    })
-    
-    if (success) {
-      toast.success('Đăng nhập thành công!')
+      if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
+        toast.error('Vui lòng xác minh bạn không phải là robot')
+        return
+      }
+
+      const result = await login({
+        ...data,
+        captchaToken: recaptchaToken || undefined,
+      })
+
       recaptchaRef.current?.reset()
       setRecaptchaToken(null)
-    } else if (error) {
-      toast.error(error)
-      recaptchaRef.current?.reset()
-      setRecaptchaToken(null)
-    }
-  }
+
+      if (result.success) {
+        toast.success('Đăng nhập thành công!')
+      } else if (result.needsVerification) {
+        // Email not verified - show OTP modal
+        setLocalPendingEmail(data.email)
+        showOTPModal(data.email, OTP_TYPES.VERIFY_EMAIL)
+        toast.warning(result.message || 'Email chưa được xác minh. Vui lòng xác thực.')
+      } else {
+        toast.error(result.message || 'Đăng nhập thất bại')
+      }
+    },
+    [isLoading, recaptchaToken, login, showOTPModal],
+  )
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      void handleSubmit(onSubmit)(e)
+    },
+    [handleSubmit, onSubmit],
+  )
+
+  const handleOTPSuccess = useCallback(() => {
+    toast.success('Xác thực email thành công!')
+    hideOTPModal()
+  }, [hideOTPModal])
+
+  const emailForOTP = pendingEmail || localPendingEmail || getValues('email')
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        {/* Logo/Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Đăng Nhập</h1>
           <p className="text-gray-500">Chào mừng bạn quay trở lại!</p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6">
           <ControlledField
             name="email"
             control={control}
@@ -109,12 +139,14 @@ const Login = () => {
           />
 
           <div className="flex items-center justify-end">
-            <Link to="#" className="text-sm text-blue-600 hover:underline">
+            <Link 
+              to={ROUTES.FORGOT_PASSWORD} 
+              className="text-sm text-blue-600 hover:underline"
+            >
               Quên mật khẩu?
             </Link>
           </div>
 
-          {/* reCAPTCHA */}
           {env.RECAPTCHA_SITE_KEY && (
             <div className="flex justify-center">
               <ReCAPTCHA
@@ -138,7 +170,6 @@ const Login = () => {
           </ButtonCommon>
         </form>
 
-        {/* Divider */}
         <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200"></div>
@@ -148,12 +179,11 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Social Login */}
         <div className="space-y-3">
           <button 
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors hover:shadow-md"
           >
             <img
               src="https://www.google.com/favicon.ico"
@@ -164,7 +194,6 @@ const Login = () => {
           </button>
         </div>
 
-        {/* Register Link */}
         <p className="mt-8 text-center text-gray-600">
           Chưa có tài khoản?{' '}
           <Link to={ROUTES.REGISTER} className="text-blue-600 font-semibold hover:underline">
@@ -172,6 +201,16 @@ const Login = () => {
           </Link>
         </p>
       </div>
+
+      {emailForOTP && (
+        <OTPVerificationModal
+          isOpen={isOTPModalOpen}
+          onClose={hideOTPModal}
+          email={emailForOTP}
+          type={OTP_TYPES.VERIFY_EMAIL}
+          onSuccess={handleOTPSuccess}
+        />
+      )}
     </div>
   )
 }

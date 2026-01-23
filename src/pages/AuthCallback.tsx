@@ -29,10 +29,13 @@ const AuthCallback = () => {
           return
         }
 
-        // Per requirements: refreshToken must be read from cookie (not from URL params / API fallback)
-        const refreshToken = getCookie('refreshToken')
+        let refreshToken = getCookie('refreshToken')
         if (!refreshToken) {
-          toast.error('Đăng nhập thất bại: Không tìm thấy refreshToken trong cookie')
+          refreshToken = searchParams.get('refreshToken')
+        }
+        
+        if (!refreshToken) {
+          toast.error('Đăng nhập thất bại: Không tìm thấy refreshToken')
           navigate(ROUTES.LOGIN)
           return
         }
