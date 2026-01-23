@@ -19,12 +19,21 @@ export const API_ENDPOINTS = {
     REFRESH_TOKEN: '/auth/refresh-token',
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_OTP: '/auth/verify-otp',
+    RESEND_OTP: '/auth/resend-verification-code',
+    PROFILE: '/auth/profile',
+    SET_PASSWORD: '/auth/set-password',
+    GOOGLE_LOGIN: '/auth/google',
+    GOOGLE_CALLBACK: '/auth/google/callback',
   },
   // User
   USER: {
-    PROFILE: '/users/profile',
-    UPDATE_PROFILE: '/users/profile',
-    CHANGE_PASSWORD: '/users/change-password',
+    // Backend exposes current user profile via /auth/profile
+    PROFILE: '/auth/profile',
+    // Backend updates current user via /users/me
+    UPDATE_PROFILE: '/users/me',
+    // Backend changes password via /auth/change-password (requires Bearer)
+    CHANGE_PASSWORD: '/auth/change-password',
     ADDRESSES: '/users/addresses',
   },
   // Products
@@ -78,6 +87,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
+  SET_PASSWORD: '/set-password',
   PRODUCTS: '/products',
   PRODUCT_DETAIL: '/products/:id',
   CART: '/cart',
@@ -93,6 +103,24 @@ export const ROUTES = {
     USERS: '/admin/users',
     CATEGORIES: '/admin/categories',
   },
+} as const
+
+// User Roles
+export const USER_ROLES = {
+  CUSTOMER: 'CUSTOMER',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF',
+} as const
+
+export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+
+// Role Labels
+export const ROLE_LABELS: Record<UserRole, string> = {
+  [USER_ROLES.CUSTOMER]: 'Khách hàng',
+  [USER_ROLES.ADMIN]: 'Quản trị viên',
+  [USER_ROLES.MANAGER]: 'Quản lý',
+  [USER_ROLES.STAFF]: 'Nhân viên',
 } as const
 
 // Order Status Labels

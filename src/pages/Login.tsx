@@ -1,4 +1,5 @@
-import { useForm } from 'react-hook-form'
+/* eslint-disable react-hooks/refs */
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from 'antd'
 import { Mail, Lock } from 'lucide-react'
@@ -7,14 +8,19 @@ import ButtonCommon from '@/components/common/ButtonCommon'
 import { loginSchema, type LoginFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
 import { Link } from 'react-router-dom'
-import { ROUTES } from '@/constants/constant'
+import { ROUTES, API_ENDPOINTS } from '@/constants/constant'
+import { useRef, useState } from 'react'
+import ReCAPTCHA from 'react-google-recaptcha'
+import { env } from '@/configs/env'
 
 const Login = () => {
   const { login, isLoading, error } = useAuth()
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
 
   const {
-    register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -24,17 +30,40 @@ const Login = () => {
     },
   })
 
+  const onRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token)
+  }
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${env.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
+  }
+
   const onSubmit = async (data: LoginFormData) => {
-    const success = await login(data)
+    if (isLoading) return
+
+    if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
+      toast.error('Vui lòng xác minh bạn không phải là robot')
+      return
+    }
+    
+    const success = await login({
+      ...data,
+      captchaToken: recaptchaToken || undefined,
+    })
+    
     if (success) {
       toast.success('Đăng nhập thành công!')
+      recaptchaRef.current?.reset()
+      setRecaptchaToken(null)
     } else if (error) {
       toast.error(error)
+      recaptchaRef.current?.reset()
+      setRecaptchaToken(null)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         {/* Logo/Title */}
         <div className="text-center mb-8">
@@ -48,12 +77,18 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email
             </label>
-            <Input
-              {...register('email')}
-              prefix={<Mail className="w-4 h-4 text-gray-400" />}
-              placeholder="Nhập email của bạn"
-              size="large"
-              status={errors.email ? 'error' : ''}
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  prefix={<Mail className="w-4 h-4 text-gray-400" />}
+                  placeholder="Nhập email của bạn"
+                  size="large"
+                  status={errors.email ? 'error' : ''}
+                />
+              )}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
@@ -64,12 +99,18 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mật khẩu
             </label>
-            <Input.Password
-              {...register('password')}
-              prefix={<Lock className="w-4 h-4 text-gray-400" />}
-              placeholder="Nhập mật khẩu"
-              size="large"
-              status={errors.password ? 'error' : ''}
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  prefix={<Lock className="w-4 h-4 text-gray-400" />}
+                  placeholder="Nhập mật khẩu"
+                  size="large"
+                  status={errors.password ? 'error' : ''}
+                />
+              )}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
@@ -86,11 +127,24 @@ const Login = () => {
             </Link>
           </div>
 
+          {/* reCAPTCHA */}
+          {env.RECAPTCHA_SITE_KEY && (
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={env.RECAPTCHA_SITE_KEY}
+                onChange={onRecaptchaChange}
+                theme="light"
+              />
+            </div>
+          )}
+
           <ButtonCommon
             type="submit"
             variant="primary"
             size="lg"
             isLoading={isLoading}
+            disabled={isLoading}
             block
           >
             Đăng Nhập
@@ -109,7 +163,11 @@ const Login = () => {
 
         {/* Social Login */}
         <div className="space-y-3">
-          <button className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <button 
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <img
               src="https://www.google.com/favicon.ico"
               alt="Google"
