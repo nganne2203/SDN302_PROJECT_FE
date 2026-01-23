@@ -1,25 +1,27 @@
-/* eslint-disable react-hooks/refs */
+import { useRef, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock, User, Phone } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import ReCAPTCHA from 'react-google-recaptcha'
 import { toast } from '@/utils/toast'
 import { ControlledField, InputField } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
+import OTPVerificationModal from '@/components/auth/OTPVerificationModal'
 import { registerSchema, type RegisterFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
-import { Link } from 'react-router-dom'
-import { ROUTES, API_ENDPOINTS } from '@/constants/constant'
-import { useState, useRef } from 'react'
-import OTPVerificationModal from '@/components/auth/OTPVerificationModal'
-import { useNavigate } from 'react-router-dom'
-import ReCAPTCHA from 'react-google-recaptcha'
+import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Register = () => {
-  const { register: registerUser, isLoading, error } = useAuth()
-  const navigate = useNavigate()
-  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false)
-  const [registeredEmail, setRegisteredEmail] = useState('')
+  const { 
+    register: registerUser, 
+    isLoading,
+    pendingEmail,
+    isOTPModalOpen,
+    hideOTPModal,
+  } = useAuth()
+  
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
 
@@ -37,62 +39,64 @@ const Register = () => {
     },
   })
 
-  const onRecaptchaChange = (token: string | null) => {
+  const onRecaptchaChange = useCallback((token: string | null) => {
     setRecaptchaToken(token)
-  }
+  }, [])
 
-  const onSubmit = async (data: RegisterFormData) => {
-    // Prevent multiple submissions
-    if (isLoading) return
-
-    // Validate reCAPTCHA
-    if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
-      toast.error('Vui lòng xác minh bạn không phải là robot')
-      return
-    }
-    
-    const success = await registerUser({
-      ...data,
-      captchaToken: recaptchaToken || undefined,
-    })
-    
-    if (success) {
-      toast.success('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.')
-      setRegisteredEmail(data.email)
-      setIsOTPModalOpen(true)
-      // Reset reCAPTCHA
-      recaptchaRef.current?.reset()
-      setRecaptchaToken(null)
-    } else if (error) {
-      toast.error(error)
-      // Reset reCAPTCHA on error
-      recaptchaRef.current?.reset()
-      setRecaptchaToken(null)
-    }
-  }
-
-  const handleOTPSuccess = () => {
-    // Navigate to login page after successful verification
-    navigate(ROUTES.LOGIN)
-  }
-
-  const handleGoogleLogin = () => {
-    // Redirect to Google OAuth endpoint
+  const handleGoogleLogin = useCallback(() => {
     window.location.href = `${env.BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
-  }
+  }, [])
+
+  const onSubmit = useCallback(
+    async (data: RegisterFormData) => {
+      if (isLoading) return
+
+      if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
+        toast.error('Vui lòng xác minh bạn không phải là robot')
+        return
+      }
+
+      const result = await registerUser({
+        ...data,
+        captchaToken: recaptchaToken || undefined,
+      })
+
+      recaptchaRef.current?.reset()
+      setRecaptchaToken(null)
+
+      if (result.success) {
+        toast.success(
+          result.message ||
+            'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.',
+        )
+      } else {
+        toast.error(result.message || 'Đăng ký thất bại')
+      }
+    },
+    [isLoading, recaptchaToken, registerUser],
+  )
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      void handleSubmit(onSubmit)(e)
+    },
+    [handleSubmit, onSubmit],
+  )
+
+  const handleOTPSuccess = useCallback(() => {
+    toast.success('Xác thực email thành công!')
+  }, [])
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        {/* Logo/Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Đăng Ký</h1>
           <p className="text-gray-500">Tạo tài khoản mới của bạn</p>
         </div>
 
-        {/* Register Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Full Name */}
+        <form onSubmit={handleFormSubmit} className="space-y-5">
           <ControlledField
             name="fullName"
             control={control}
@@ -111,7 +115,6 @@ const Register = () => {
             )}
           />
 
-          {/* Email */}
           <ControlledField
             name="email"
             control={control}
@@ -131,7 +134,6 @@ const Register = () => {
             )}
           />
 
-          {/* Phone Number */}
           <ControlledField
             name="phoneNumber"
             control={control}
@@ -150,7 +152,6 @@ const Register = () => {
             )}
           />
 
-          {/* Password */}
           <ControlledField
             name="password"
             control={control}
@@ -170,7 +171,6 @@ const Register = () => {
             )}
           />
 
-          {/* Confirm Password */}
           <ControlledField
             name="confirmPassword"
             control={control}
@@ -190,7 +190,6 @@ const Register = () => {
             )}
           />
 
-          {/* Terms Agreement */}
           <div className="flex items-start">
             <input
               type="checkbox"
@@ -209,7 +208,6 @@ const Register = () => {
             </label>
           </div>
 
-          {/* reCAPTCHA */}
           {env.RECAPTCHA_SITE_KEY && (
             <div className="flex justify-center">
               <ReCAPTCHA
@@ -233,7 +231,6 @@ const Register = () => {
           </ButtonCommon>
         </form>
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200"></div>
@@ -243,10 +240,9 @@ const Register = () => {
           </div>
         </div>
 
-        {/* Social Register */}
         <div className="space-y-3">
           <ButtonCommon 
-            type='submit'
+            type='button'
             variant="outline"
             size="lg"
             onClick={handleGoogleLogin}
@@ -261,7 +257,6 @@ const Register = () => {
           </ButtonCommon>
         </div>
 
-        {/* Login Link */}
         <p className="mt-6 text-center text-gray-600">
           Đã có tài khoản?{' '}
           <Link to={ROUTES.LOGIN} className="text-blue-600 font-semibold hover:underline">
@@ -270,13 +265,15 @@ const Register = () => {
         </p>
       </div>
 
-      {/* OTP Verification Modal */}
-      <OTPVerificationModal
-        isOpen={isOTPModalOpen}
-        onClose={() => setIsOTPModalOpen(false)}
-        email={registeredEmail}
-        onSuccess={handleOTPSuccess}
-      />
+      {pendingEmail && (
+        <OTPVerificationModal
+          isOpen={isOTPModalOpen}
+          onClose={hideOTPModal}
+          email={pendingEmail}
+          type={OTP_TYPES.VERIFY_EMAIL}
+          onSuccess={handleOTPSuccess}
+        />
+      )}
     </div>
   )
 }
