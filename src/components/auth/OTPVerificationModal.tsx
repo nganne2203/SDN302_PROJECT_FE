@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Modal, Input } from 'antd'
+import { Input } from 'antd'
 import type { InputRef } from 'antd'
 import { Mail, RefreshCw } from 'lucide-react'
+import { ModalCommon } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
 import useAuth from '@/hooks/useAuth'
 import { toast } from '@/utils/toast'
@@ -127,12 +128,10 @@ const OTPVerificationModal = ({
   }
 
   return (
-    <Modal
-      open={isOpen}
-      onCancel={handleClose}
-      footer={null}
-      centered
-      width={480}
+    <ModalCommon
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="sm"
       maskClosable={false}
     >
       <div className="py-4">
@@ -205,7 +204,7 @@ const OTPVerificationModal = ({
           )}
         </div>
       </div>
-    </Modal>
+    </ModalCommon>
   )
 }
 

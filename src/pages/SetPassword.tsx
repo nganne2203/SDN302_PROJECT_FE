@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Input } from 'antd'
 import { Lock } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { InputField } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
 import { ROUTES, STORAGE_KEYS } from '@/constants/constant'
 import { getStorage, setStorage } from '@/utils/storage'
@@ -92,32 +92,26 @@ const SetPassword = () => {
         </div>
 
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mật khẩu mới
-            </label>
-            <Input.Password
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              prefix={<Lock className="w-4 h-4 text-gray-400" />}
-              placeholder="Nhập mật khẩu (tối thiểu 8 ký tự)"
-              size="large"
-            />
-          </div>
+          <InputField
+            label="Mật khẩu mới"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            prefix={<Lock className="w-4 h-4 text-gray-400" />}
+            placeholder="Nhập mật khẩu (tối thiểu 8 ký tự)"
+            size="large"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Xác nhận mật khẩu
-            </label>
-            <Input.Password
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              prefix={<Lock className="w-4 h-4 text-gray-400" />}
-              placeholder="Nhập lại mật khẩu"
-              size="large"
-              onPressEnter={handleSubmit}
-            />
-          </div>
+          <InputField
+            label="Xác nhận mật khẩu"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            prefix={<Lock className="w-4 h-4 text-gray-400" />}
+            placeholder="Nhập lại mật khẩu"
+            size="large"
+            onPressEnter={handleSubmit}
+          />
 
           <ButtonCommon
             type="button"
