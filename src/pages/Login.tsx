@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/refs */
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Input } from 'antd'
 import { Mail, Lock } from 'lucide-react'
 import { toast } from '@/utils/toast'
+import { ControlledField, InputField } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
 import { loginSchema, type LoginFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
@@ -21,7 +21,6 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -73,55 +72,43 @@ const Login = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  prefix={<Mail className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập email của bạn"
-                  size="large"
-                  status={errors.email ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+          <ControlledField
+            name="email"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Email"
+                type="email"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Mail className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập email của bạn"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mật khẩu
-            </label>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  prefix={<Lock className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập mật khẩu"
-                  size="large"
-                  status={errors.password ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+          <ControlledField
+            name="password"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Mật khẩu"
+                type="password"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Lock className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập mật khẩu"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input type="checkbox" className="rounded border-gray-300" />
-              <span className="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
-            </label>
+          <div className="flex items-center justify-end">
             <Link to="#" className="text-sm text-blue-600 hover:underline">
               Quên mật khẩu?
             </Link>

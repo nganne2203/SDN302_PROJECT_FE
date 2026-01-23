@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/refs */
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Input } from 'antd'
 import { Mail, Lock, User, Phone } from 'lucide-react'
 import { toast } from '@/utils/toast'
+import { ControlledField, InputField } from '@/components/common'
 import ButtonCommon from '@/components/common/ButtonCommon'
 import { registerSchema, type RegisterFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
@@ -26,7 +26,6 @@ const Register = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -94,119 +93,102 @@ const Register = () => {
         {/* Register Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Họ và tên <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="fullName"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  prefix={<User className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập họ và tên"
-                  size="large"
-                  status={errors.fullName ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-500">{errors.fullName.message}</p>
+          <ControlledField
+            name="fullName"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Họ và tên"
+                required
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<User className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập họ và tên"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
           {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  prefix={<Mail className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập email của bạn"
-                  size="large"
-                  status={errors.email ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+          <ControlledField
+            name="email"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Email"
+                required
+                type="email"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Mail className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập email của bạn"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
           {/* Phone Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Số điện thoại
-            </label>
-            <Controller
-              name="phoneNumber"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  prefix={<Phone className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập số điện thoại"
-                  size="large"
-                  status={errors.phoneNumber ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.phoneNumber && (
-              <p className="mt-1 text-sm text-red-500">{errors.phoneNumber.message}</p>
+          <ControlledField
+            name="phoneNumber"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Số điện thoại"
+                type="tel"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Phone className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập số điện thoại"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
           {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mật khẩu <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  prefix={<Lock className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập mật khẩu"
-                  size="large"
-                  status={errors.password ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+          <ControlledField
+            name="password"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Mật khẩu"
+                required
+                type="password"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Lock className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập mật khẩu"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
           {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Xác nhận mật khẩu <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="confirmPassword"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  prefix={<Lock className="w-4 h-4 text-gray-400" />}
-                  placeholder="Nhập lại mật khẩu"
-                  size="large"
-                  status={errors.confirmPassword ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>
+          <ControlledField
+            name="confirmPassword"
+            control={control}
+            render={({ value, onChange, onBlur, error }) => (
+              <InputField
+                label="Xác nhận mật khẩu"
+                required
+                type="password"
+                value={value as string}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={onBlur}
+                prefix={<Lock className="w-4 h-4 text-gray-400" />}
+                placeholder="Nhập lại mật khẩu"
+                size="large"
+                error={error}
+              />
             )}
-          </div>
+          />
 
           {/* Terms Agreement */}
           <div className="flex items-start">
@@ -263,10 +245,12 @@ const Register = () => {
 
         {/* Social Register */}
         <div className="space-y-3">
-          <button 
-            type="button"
+          <ButtonCommon 
+            type='submit'
+            variant="outline"
+            size="lg"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            block
           >
             <img
               src="https://www.google.com/favicon.ico"
@@ -274,7 +258,7 @@ const Register = () => {
               className="w-5 h-5"
             />
             <span className="text-gray-700">Đăng ký với Google</span>
-          </button>
+          </ButtonCommon>
         </div>
 
         {/* Login Link */}
