@@ -24,7 +24,6 @@ interface BaseFieldProps {
   className?: string
 }
 
-// Input Field
 interface InputFieldProps extends BaseFieldProps, Omit<InputProps, 'status'> {
   type?: 'text' | 'email' | 'password' | 'tel' | 'url'
 }
