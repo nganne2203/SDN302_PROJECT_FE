@@ -29,7 +29,7 @@ const ManagementDashboard = () => {
               title="Đơn hàng mới"
               value={128}
               prefix={<ShoppingCartOutlined className="text-blue-500" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -41,7 +41,7 @@ const ManagementDashboard = () => {
                 title="Doanh thu hôm nay"
                 value={15800000}
                 prefix={<DollarOutlined className="text-green-500" />}
-                valueStyle={{ color: '#52c41a' }}
+                styles={{ content: { color: '#52c41a' } }}
                 suffix="₫"
               />
             </Card>
@@ -55,7 +55,7 @@ const ManagementDashboard = () => {
                 title="Người dùng mới"
                 value={45}
                 prefix={<UserOutlined className="text-purple-500" />}
-                valueStyle={{ color: '#722ed1' }}
+                styles={{ content: { color: '#722ed1' } }}
               />
             </Card>
           </Col>
@@ -67,7 +67,7 @@ const ManagementDashboard = () => {
               title="Sản phẩm"
               value={1256}
               prefix={<ShoppingOutlined className="text-orange-500" />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' } }}
             />
           </Card>
         </Col>

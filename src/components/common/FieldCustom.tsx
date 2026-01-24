@@ -253,7 +253,6 @@ export const SwitchField = ({
   )
 }
 
-// Checkbox Field
 interface CheckboxFieldProps extends BaseFieldProps {
   checked?: boolean
   onChange?: (checked: boolean) => void

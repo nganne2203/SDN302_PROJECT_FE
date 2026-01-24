@@ -1,47 +1,48 @@
 import { useEffect } from 'react'
-import { Avatar } from 'antd'
+import { Modal, Avatar, Spin } from 'antd'
 import { User, Mail, Phone } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import useUser from '@/hooks/useUser'
-import useAuth from '@/hooks/useAuth'
-import { ROUTES } from '@/constants/constant'
 import ButtonCommon from '@/components/common/ButtonCommon'
 
-const Profile = () => {
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+interface ProfileModalProps {
+  open: boolean
+  onClose: () => void
+}
+
+const ProfileModal = ({ open, onClose }: ProfileModalProps) => {
   const { profile, isLoading, error, fetchProfile } = useUser()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(ROUTES.LOGIN)
-      return
+    if (open) {
+      fetchProfile()
     }
-    fetchProfile()
-  }, [fetchProfile, isAuthenticated, navigate])
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  }, [open, fetchProfile])
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-start gap-4">
+    <Modal
+      title="Hồ sơ cá nhân"
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={600}
+      centered
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <div className="py-4">
+          <div className="flex items-start gap-4 mb-6">
             <Avatar
               size={72}
               src={profile?.avatar || undefined}
               icon={<User className="w-6 h-6" />}
             />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800">
                 {profile?.fullName || 'Tài khoản'}
-              </h1>
+              </h2>
               <p className="text-sm text-gray-500">
                 Vai trò: <span className="font-semibold">{profile?.role || '-'}</span>
               </p>
@@ -57,12 +58,12 @@ const Profile = () => {
           </div>
 
           {error && (
-            <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm">
+            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm">
               {error}
             </div>
           )}
 
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
               <div className="flex items-center gap-2 text-gray-700">
                 <Mail className="w-4 h-4" />
@@ -80,10 +81,9 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Modal>
   )
 }
 
-export default Profile
-
+export default ProfileModal

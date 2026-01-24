@@ -6,13 +6,6 @@ interface ToastProviderProps {
   children: ReactNode
 }
 
-/**
- * ToastProvider wraps the application with react-toastify's ToastContainer
- *
- * Usage:
- * - Import toast from '@/utils/toast'
- * - Use toast.success('message'), toast.error('message'), etc.
- */
 const ToastProvider = ({ children }: ToastProviderProps) => {
   return (
     <>

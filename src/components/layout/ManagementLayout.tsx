@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Layout, Button, Dropdown, Avatar, Badge } from 'antd'
 import type { MenuProps } from 'antd'
 import {
@@ -9,29 +9,26 @@ import {
   LogoutOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 
 import SidebarLayout from './SidebarLayout'
+import ProfileModal from '../auth/ProfileModal'
 import useAuth from '@/hooks/useAuth'
-import { ROUTES, ROLE_LABELS } from '@/constants/constant'
+import { ROLE_LABELS } from '@/constants/constant'
 
 const { Header, Sider, Content } = Layout
 
-interface ManagementLayoutProps {
-  children: ReactNode
-}
-
-const ManagementLayout = ({ children }: ManagementLayoutProps) => {
+const ManagementLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
 
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Hồ sơ cá nhân',
-      onClick: () => navigate(ROUTES.PROFILE),
+      onClick: () => setProfileModalOpen(true),
     },
     {
       key: 'settings',
@@ -62,8 +59,8 @@ const ManagementLayout = ({ children }: ManagementLayoutProps) => {
         <SidebarLayout collapsed={collapsed} userRole={user?.role} />
       </Sider>
 
-      <Layout className={`transition-all duration-200 ${collapsed ? 'ml-20' : 'ml-64'}`}>
-        <Header className="bg-white px-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+      <Layout className='transition-all duration-200'>
+        <Header className="!bg-white px-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -83,7 +80,7 @@ const ManagementLayout = ({ children }: ManagementLayoutProps) => {
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg">
                 <Avatar
-                  src={user?.avatar}
+                  src={user?.avatar || undefined}
                   icon={<UserOutlined />}
                   className="bg-blue-500"
                 />
@@ -101,9 +98,14 @@ const ManagementLayout = ({ children }: ManagementLayoutProps) => {
         </Header>
 
         <Content className="m-4 p-6 bg-white rounded-lg min-h-[calc(100vh-96px)]">
-          {children}
+          <Outlet />
         </Content>
       </Layout>
+
+      <ProfileModal 
+        open={profileModalOpen} 
+        onClose={() => setProfileModalOpen(false)} 
+      />
     </Layout>
   )
 }

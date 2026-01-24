@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { ROUTES } from '@/constants/constant'
 
-// Temporary mock data
 const mockCartItems = [
   {
     id: '1',
@@ -62,7 +61,7 @@ const Cart = () => {
       render: (_: unknown, record: (typeof cartItems)[0]) => (
         <div className="flex items-center gap-4">
           <img
-            src={record.product.images[0]}
+            src={record.product.images[0] || undefined}
             alt={record.product.name}
             className="w-20 h-20 object-cover rounded-lg"
           />

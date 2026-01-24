@@ -96,16 +96,13 @@ const ManagementRoute = ({ children }: { children: ReactNode }) => {
     return <Navigate to={ROUTES.HOME} replace />
   }
   
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <ManagementLayout>{children}</ManagementLayout>
-    </Suspense>
-  )
+  return <>{children}</>
 }
 
 /**
  * Admin Only Route Wrapper
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const AdminRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />
@@ -197,22 +194,34 @@ export const routes: RouteObject[] = [
   // Management Routes (Admin, Manager, Staff)
   // ========================
   {
-    path: ROUTES.MANAGEMENT.DASHBOARD,
+    path: '/management',
     element: (
       <ManagementRoute>
-        {withSuspense(ManagementDashboard)}
+        <Suspense fallback={<LoadingFallback />}>
+          <ManagementLayout />
+        </Suspense>
       </ManagementRoute>
     ),
+    children: [
+      {
+        index: true,
+        element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />,
+      },
+      {
+        path: 'dashboard',
+        element: withSuspense(ManagementDashboard),
+      },
+      // Add more nested management routes here:
+      // {
+      //   path: 'products',
+      //   element: withSuspense(ManagementProducts),
+      // },
+      // {
+      //   path: 'orders',
+      //   element: withSuspense(ManagementOrders),
+      // },
+    ],
   },
-  // Add more management routes as needed:
-  // {
-  //   path: ROUTES.MANAGEMENT.PRODUCTS,
-  //   element: (
-  //     <ManagementRoute>
-  //       {withSuspense(ManagementProducts)}
-  //     </ManagementRoute>
-  //   ),
-  // },
 
   // ========================
   // Admin Only Routes
