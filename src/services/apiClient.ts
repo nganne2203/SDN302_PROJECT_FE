@@ -8,6 +8,7 @@ import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 export const apiClient = axios.create({
   baseURL: env.BASE_URL,
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

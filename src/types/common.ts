@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-// Common UI Types
 export interface BaseProps {
   className?: string
   children?: ReactNode
@@ -15,7 +14,6 @@ export interface AsyncState<T> extends LoadingState {
   data: T | null
 }
 
-// Modal Types
 export interface ModalProps extends BaseProps {
   isOpen: boolean
   onClose: () => void
@@ -23,7 +21,6 @@ export interface ModalProps extends BaseProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
-// Button Types
 export interface ButtonProps extends BaseProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
@@ -37,18 +34,37 @@ export interface ButtonProps extends BaseProps {
 export interface Column<T> {
   key: keyof T | string
   title: string
+  dataIndex?: keyof T | string | string[]
   render?: (value: unknown, record: T, index: number) => ReactNode
   width?: number | string
   sortable?: boolean
+  sorter?: boolean | ((a: T, b: T) => number)
   align?: 'left' | 'center' | 'right'
+  fixed?: 'left' | 'right'
+  ellipsis?: boolean
+  hidden?: boolean
 }
 
 export interface TableProps<T> {
   columns: Column<T>[]
   data: T[]
   loading?: boolean
-  rowKey: keyof T
+  rowKey: keyof T | ((record: T) => string | number)
   onRowClick?: (record: T) => void
+  pagination?: boolean
+  bordered?: boolean
+  size?: 'small' | 'middle' | 'large'
+}
+
+// Card Types
+export interface CardProps extends BaseProps {
+  title?: ReactNode
+  subtitle?: string
+  extra?: ReactNode
+  loading?: boolean
+  bordered?: boolean
+  hoverable?: boolean
+  cover?: ReactNode
 }
 
 // Form Types

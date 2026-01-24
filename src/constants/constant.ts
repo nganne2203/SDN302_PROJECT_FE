@@ -95,7 +95,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   AUTH_CALLBACK: '/auth/callback',
   MANAGEMENT: {
-    DASHBOARD: '/management',
+    DASHBOARD: '/management/dashboard',
     BRANCHES: '/management/branches',
     INVENTORY_TOTAL: '/management/inventory',
     PROMOTIONS: '/management/promotions',

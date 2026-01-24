@@ -7,9 +7,7 @@ import { store, persistor } from '@/apps/store'
 import { router } from '@/routes/route'
 import ToastProvider from '@/components/common/ToastProvider'
 import LoaderCommon from '@/components/common/LoaderCommon'
-import './App.css'
 
-// Ant Design theme customization
 const theme = {
   token: {
     colorPrimary: '#2563eb',
