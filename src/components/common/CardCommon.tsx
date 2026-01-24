@@ -8,13 +8,15 @@ export interface CardCommonProps {
   extra?: ReactNode
   children?: ReactNode
   loading?: boolean
-  bordered?: boolean
+  variant?: 'outlined' | 'borderless'
   hoverable?: boolean
   size?: 'small' | 'default'
   className?: string
   style?: CSSProperties
-  bodyStyle?: CSSProperties
-  headStyle?: CSSProperties
+  styles?: {
+    header?: CSSProperties
+    body?: CSSProperties
+  }
   cover?: ReactNode
   actions?: ReactNode[]
   onClick?: () => void
@@ -27,13 +29,12 @@ const CardCommon = ({
   extra,
   children,
   loading = false,
-  bordered = true,
+  variant = 'outlined',
   hoverable = false,
   size = 'default',
   className = '',
   style,
-  bodyStyle,
-  headStyle,
+  styles,
   cover,
   actions,
   onClick,
@@ -61,7 +62,7 @@ const CardCommon = ({
     title: cardTitle,
     extra,
     loading,
-    bordered,
+    variant,
     hoverable,
     size,
     className: `card-common ${className}`,
@@ -69,8 +70,7 @@ const CardCommon = ({
       ...(onClick && { cursor: 'pointer' }),
       ...style,
     },
-    bodyStyle,
-    headStyle,
+    styles,
     cover,
     actions,
     onClick,

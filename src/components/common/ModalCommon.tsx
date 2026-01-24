@@ -50,7 +50,7 @@ const ModalCommon = ({
       width={getWidth()}
       className={className}
       footer={footer}
-      destroyOnClose
+      destroyOnHidden
       closable={closable}
       maskClosable={maskClosable}
       closeIcon={<X className="w-5 h-5" />}

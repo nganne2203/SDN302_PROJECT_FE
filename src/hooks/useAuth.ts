@@ -214,10 +214,10 @@ export const useAuth = () => {
   )
 
   const isManagementUser = user ? MANAGEMENT_ROLES.includes(user.role) : false
-  const isAdmin = user?.role === 'ADMIN'
-  const isManager = user?.role === 'MANAGER'
-  const isStaff = user?.role === 'STAFF'
-  const isCustomer = user?.role === 'CUSTOMER'
+  const isAdmin = user?.role === 'admin'
+  const isManager = user?.role === 'manager'
+  const isStaff = user?.role === 'staff'
+  const isCustomer = user?.role === 'customer'
 
   return {
     isAuthenticated,
