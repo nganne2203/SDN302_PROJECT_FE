@@ -85,3 +85,18 @@ export const deleteCategoryThunk = createAsyncThunk<string, string>(
     }
   }
 )
+
+export const updateCategoryStatusThunk = createAsyncThunk<Category, { id: string; isActive: boolean }>(
+  'category/updateCategoryStatus',
+  async ({ id, isActive }, { rejectWithValue }) => {
+    try {
+      const response = await categoryApi.updateCategoryStatus(id, isActive)
+      return response.data
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiError>
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Không thể cập nhật trạng thái danh mục'
+      )
+    }
+  }
+)

@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     CREATE: '/api/category',
     UPDATE: (id: string) => `/api/category/${id}`,
     DELETE: (id: string) => `/api/category/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/category/${id}`,
   },
   CART: {
     GET: '/api/cart',

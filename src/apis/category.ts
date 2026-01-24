@@ -44,6 +44,14 @@ export const categoryApi = {
     )
     return response.data
   },
+
+  updateCategoryStatus: async (id: string, isActive: boolean): Promise<ApiResponse<Category>> => {
+    const response = await apiClient.patch<ApiResponse<Category>>(
+      API_ENDPOINTS.CATEGORY.UPDATE_STATUS(id),
+      { isActive }
+    )
+    return response.data
+  },
 }
 
 export default categoryApi
