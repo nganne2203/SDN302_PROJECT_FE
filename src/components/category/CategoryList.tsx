@@ -28,6 +28,7 @@ interface CategoryListProps {
   }
   onEdit: (category: Category) => void
   onDelete: (id: string) => void
+  onUpdateStatus: (id: string, isActive: boolean) => void
   onPageChange: (page: number, pageSize: number) => void
 }
 
@@ -37,6 +38,7 @@ const CategoryListComponent = ({
   pagination,
   onEdit,
   onDelete,
+  onUpdateStatus,
   onPageChange,
 }: CategoryListProps) => {
   const categoryWithKeys: CategoryWithKey[] = categories.map(cat => ({
@@ -103,7 +105,13 @@ const CategoryListComponent = ({
             icon={<Edit className="w-4 h-4" />}
             onClick={() => onEdit(record as unknown as Category)}
           >
-            
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            onClick={() => onUpdateStatus(record._id, !record.isActive)}
+          >
+            {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
           </Button>
           <Popconfirm
             title="Xác nhận xóa"
@@ -114,7 +122,6 @@ const CategoryListComponent = ({
             okButtonProps={{ danger: true }}
           >
             <Button danger size="small" icon={<Trash2 className="w-4 h-4" />}>
-              
             </Button>
           </Popconfirm>
         </Space>

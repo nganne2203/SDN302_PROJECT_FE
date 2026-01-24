@@ -22,6 +22,7 @@ const ManagementCategory = () => {
     createCategory,
     updateCategory,
     deleteCategory,
+    updateCategoryStatus,
     validateCategoryForm,
   } = useCategory()
 
@@ -142,6 +143,14 @@ const ManagementCategory = () => {
     }
   }, [deleteCategory])
 
+  const handleUpdateStatus = useCallback(async (id: string, isActive: boolean) => {
+    const result = await updateCategoryStatus(id, isActive)
+    if (result.type.includes('fulfilled')) {
+      toast.success('Cập nhật trạng thái danh mục thành công')
+    } else if (result.payload) {
+      toast.error(result.payload as string)
+    }
+  }, [updateCategoryStatus])
   return (
     <div className='p-2'>
       <CategoryHeader onAddClick={() => handleOpenModal()} />
@@ -171,6 +180,7 @@ const ManagementCategory = () => {
         }}
         onEdit={handleOpenModal}
         onDelete={handleDelete}
+        onUpdateStatus={handleUpdateStatus}
         onPageChange={(page, pageSize) => handleSetFilter({ page, limit: pageSize })}
       />
 
