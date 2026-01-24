@@ -42,6 +42,13 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/api/products/categories',
     SEARCH: '/api/products/search',
   },
+  CATEGORY: {
+    LIST: '/api/category',
+    DETAIL: (id: string) => `/api/category/${id}`,
+    CREATE: '/api/category',
+    UPDATE: (id: string) => `/api/category/${id}`,
+    DELETE: (id: string) => `/api/category/${id}`,
+  },
   CART: {
     GET: '/api/cart',
     ADD: '/api/cart/add',

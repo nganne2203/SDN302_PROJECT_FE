@@ -10,6 +10,7 @@ export interface AuthState {
   // Additional state for auth flows
   pendingEmail: string | null
   otpType: OTPType | null
+  isOTPModalOpen: boolean
 }
 
 export interface LoginPayload {

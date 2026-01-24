@@ -108,7 +108,7 @@ const HeaderLayout = () => {
                     to={ROUTES.MANAGEMENT.DASHBOARD}
                     className="block text-blue-600 font-semibold hover:text-blue-700"
                   >
-                    🔧 Quản lý hệ thống
+                    Quản lý hệ thống
                   </Link>
                 )}
                 <Link
