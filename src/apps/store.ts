@@ -1,4 +1,4 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 import { 
   persistStore, 
   persistReducer,
@@ -10,10 +10,7 @@ import {
   REGISTER,
 } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
-import authReducer from '@/features/auth/authSlices'
-import productReducer from '@/features/product/productSlices'
-import orderReducer from '@/features/order/orderSlices'
-import userReducer from '@/features/user/userSlices'
+import rootReducer from './rootReducer'
 
 const persistConfig = {
   key: 'root',
@@ -21,13 +18,6 @@ const persistConfig = {
   storage,
   whitelist: ['auth'], // Only persist auth state
 }
-
-const rootReducer = combineReducers({
-  auth: authReducer,
-  product: productReducer,
-  order: orderReducer,
-  user: userReducer,
-})
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 
@@ -44,5 +34,6 @@ export const store = configureStore({
 
 export const persistor = persistStore(store)
 
+// lấy RootState và AppDispatch từ store
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

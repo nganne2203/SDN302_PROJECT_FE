@@ -9,24 +9,28 @@ import type { UserRole } from '@/types/api'
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 
 // Lazy loaded components - Public pages
-const Home = lazy(() => import('@/pages/Home'))
-const Login = lazy(() => import('@/pages/Login'))
-const Register = lazy(() => import('@/pages/Register'))
-const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
-const ResetPassword = lazy(() => import('@/pages/ResetPassword'))
-const SetPassword = lazy(() => import('@/pages/SetPassword'))
-const Cart = lazy(() => import('@/pages/Cart'))
-const AuthCallback = lazy(() => import('@/pages/AuthCallback'))
-const Profile = lazy(() => import('@/pages/Profile'))
+const Home = lazy(() => import('@/pages/customer/Home'))
+const Login = lazy(() => import('@/pages/auth/Login'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
+const Cart = lazy(() => import('@/pages/customer/Cart'))
+const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const Profile = lazy(() => import('@/pages/customer/Profile'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(() => import('@/components/layout/ManagementLayout'))
 const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
+const ManagementProducts = lazy(() => import('@/pages/management/Product'))
+const ManagementOrders = lazy(() => import('@/pages/management/Order'))
+const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
+const BranchesManagement = lazy(() => import('@/pages/management/admin/Branch'))
+const CategoryManagement = lazy(() => import('@/pages/management/admin/Category'))
 
-// Loading fallback component
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    <LoaderCommon />
   </div>
 )
 
@@ -102,7 +106,6 @@ const ManagementRoute = ({ children }: { children: ReactNode }) => {
 /**
  * Admin Only Route Wrapper
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const AdminRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />
@@ -113,6 +116,30 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
     return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
   
+  return <>{children}</>
+}
+
+// eslint-disable-next-line 
+const ManagerRoute = ({ children }: { children: ReactNode }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to={ROUTES.LOGIN} replace />
+  }
+  const user = getCurrentUser()
+  if (!user || user.role !== USER_ROLES.MANAGER) {
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
+  }
+  return <>{children}</>
+}
+
+// eslint-disable-next-line
+const StaffRoute = ({ children }: { children: ReactNode }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to={ROUTES.LOGIN} replace />
+  }
+  const user = getCurrentUser()
+  if (!user || user.role !== USER_ROLES.STAFF) {
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
+  }
   return <>{children}</>
 }
 
@@ -211,32 +238,28 @@ export const routes: RouteObject[] = [
         path: 'dashboard',
         element: withSuspense(ManagementDashboard),
       },
-      // Add more nested management routes here:
-      // {
-      //   path: 'products',
-      //   element: withSuspense(ManagementProducts),
-      // },
-      // {
-      //   path: 'orders',
-      //   element: withSuspense(ManagementOrders),
-      // },
+      {
+        path: 'products',
+        element: withSuspense(ManagementProducts),
+      },
+      {
+        path: 'orders',
+        element: withSuspense(ManagementOrders),
+      },
+      {
+        path: 'categories',
+        element: (
+          <AdminRoute>
+            {withSuspense(CategoryManagement)}
+          </AdminRoute>
+        ),
+      },
+      {
+        path: 'branches',
+        element: withSuspense(BranchesManagement),
+      },
     ],
   },
-
-  // ========================
-  // Admin Only Routes
-  // ========================
-  // {
-  //   path: ROUTES.MANAGEMENT.BRANCHES,
-  //   element: (
-  //     <ManagementRoute>
-  //       <AdminRoute>
-  //         {withSuspense(BranchesManagement)}
-  //       </AdminRoute>
-  //     </ManagementRoute>
-  //   ),
-  // },
-
   // ========================
   // Legacy Routes (redirect to new paths)
   // ========================
