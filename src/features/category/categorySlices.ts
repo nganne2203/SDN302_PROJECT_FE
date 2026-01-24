@@ -6,6 +6,7 @@ import {
   createCategoryThunk,
   updateCategoryThunk,
   deleteCategoryThunk,
+  updateCategoryStatusThunk,
 } from './categoryThunks'
 
 const initialState: CategoryState = {
@@ -132,6 +133,25 @@ const categorySlice = createSlice({
         }
       })
       .addCase(deleteCategoryThunk.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+      })
+    builder
+      .addCase(updateCategoryStatusThunk.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(updateCategoryStatusThunk.fulfilled, (state, action: PayloadAction<Category>) => {
+        state.isLoading = false
+        const index = state.categories.findIndex(c => c._id === action.payload._id)
+        if (index !== -1) {
+          state.categories[index] = action.payload
+        }
+        if (state.selectedCategory?._id === action.payload._id) {
+          state.selectedCategory = action.payload
+        }
+      })
+      .addCase(updateCategoryStatusThunk.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload as string
       })

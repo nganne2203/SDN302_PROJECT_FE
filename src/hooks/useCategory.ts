@@ -6,6 +6,7 @@ import {
   createCategoryThunk,
   updateCategoryThunk,
   deleteCategoryThunk,
+  updateCategoryStatusThunk,
 } from '@/features/category/categoryThunks'
 import {
   setFilter,
@@ -73,6 +74,13 @@ export const useCategory = () => {
     [dispatch]
   )
 
+  const updateCategoryStatus = useCallback(
+    async (id: string, isActive: boolean) => {
+      return dispatch(updateCategoryStatusThunk({ id, isActive }))
+    },
+    [dispatch]
+  )
+
   const handleSetFilter = useCallback(
     (newFilter: Record<string, unknown>) => {
       dispatch(setFilter(newFilter))
@@ -125,6 +133,7 @@ export const useCategory = () => {
     filter,
     isLoading,
     error,
+    updateCategoryStatus,
 
     // Actions
     fetchCategories,
