@@ -5,8 +5,7 @@ import {
   ShoppingCartOutlined, 
   UserOutlined, 
   SearchOutlined,
-  MenuOutlined,
-  SettingOutlined
+  MenuOutlined
 } from '@ant-design/icons'
 import { ROUTES, MANAGEMENT_ROLES } from '@/constants/constant'
 import useAuth from '@/hooks/useAuth'
@@ -15,10 +14,15 @@ const HeaderLayout = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const managementItem = user?.role && MANAGEMENT_ROLES.includes(user.role)
+    ? { key: 'management', label: <Link to={ROUTES.MANAGEMENT.DASHBOARD}>Quản lý hệ thống</Link> }
+    : null
+
   const userMenuItems = isAuthenticated
     ? [
         { key: 'profile', label: <Link to={ROUTES.PROFILE}>Tài khoản</Link> },
         { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
+        ...(managementItem ? [managementItem] : []),
         { type: 'divider' as const },
         { key: 'logout', label: 'Đăng xuất', onClick: logout },
       ]
@@ -53,15 +57,6 @@ const HeaderLayout = () => {
                 <ShoppingCartOutlined className="text-2xl text-gray-600 hover:text-blue-600" />
               </Badge>
             </Link>
-            {isAuthenticated && user?.role && MANAGEMENT_ROLES.includes(user.role) && (
-              <Link 
-                to={ROUTES.MANAGEMENT.DASHBOARD} 
-                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <SettingOutlined />
-                <span>Quản lý</span>
-              </Link>
-            )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600">
                 <UserOutlined className="text-xl" />
