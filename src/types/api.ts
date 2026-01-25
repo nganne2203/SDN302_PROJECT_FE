@@ -297,6 +297,8 @@ export interface UpdateUserRequest {
   fullname?: string
   email?: string
   phone?: string
+  role?: UserRole
+  branch?: string
   avatar?: string
   addresses?: Array<{
     fullname: string
