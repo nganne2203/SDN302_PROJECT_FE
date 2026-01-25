@@ -267,7 +267,6 @@ const UserFormModal = ({
                 onChange={(value) => handleChange('role', value as string)}
                 options={roleOptions}
                 error={errors.role}
-                disabled={isEditMode}
               />
             </div>
 
@@ -412,14 +411,6 @@ const UserFormModal = ({
             </div>
           )}
         </div>
-
-        {isEditMode && (
-          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Lưu ý:</strong> Không thể thay đổi vai trò khi chỉnh sửa người dùng. 
-            </p>
-          </div>
-        )}
       </div>
     </ModalCommon>
   )

@@ -158,6 +158,7 @@ const ManagementUser = () => {
           fullname: formData.fullname,
           email: formData.email,
           phone: formData.phone || undefined,
+          role: formData.role,
           branch: formData.branch || undefined,
           avatar: formData.avatar || undefined,
           addresses: formData.addresses.length > 0 ? formData.addresses : undefined,

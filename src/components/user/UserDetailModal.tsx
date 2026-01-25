@@ -2,7 +2,9 @@ import { ModalCommon, ButtonCommon } from '@/components/common'
 import type { User } from '@/features/user/userTypes'
 import dayjs from 'dayjs'
 import { ROLE_LABELS } from '@/constants/constant'
-import { Mail, Phone, User as UserIcon, Calendar, Shield, CheckCircle, XCircle } from 'lucide-react'
+import { Mail, Phone, User as UserIcon, Calendar, Shield, CheckCircle, XCircle, Building2 } from 'lucide-react'
+import { useBranch } from '@/hooks/useBranch'
+import { useEffect } from 'react'
 
 interface UserDetailModalProps {
   isOpen: boolean
@@ -41,6 +43,17 @@ const UserDetailModal = ({
   onClose,
   onEdit,
 }: UserDetailModalProps) => {
+  const { branches, fetchBranches } = useBranch()
+
+  useEffect(() => {
+    if (isOpen && user?.branch) {
+      // Fetch branches to get branch details
+      fetchBranches({ page: 1, limit: 100, isActive: true })
+    }
+  }, [isOpen, user?.branch, fetchBranches])
+
+  const branchInfo = user?.branch ? branches.find(b => b._id === user.branch) : null
+
   if (!user) {
     return (
       <ModalCommon
@@ -126,7 +139,14 @@ const UserDetailModal = ({
             value={user.phone || 'Chưa cập nhật'}
           />
         </div>
-
+{user.branch && (
+            <DetailRow
+              icon={Building2}
+              label="Chi nhánh"
+              value={branchInfo ? `${branchInfo.name} - ${branchInfo.address}` : user.branch}
+            />
+          )}
+          
         {/* Account Information */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
