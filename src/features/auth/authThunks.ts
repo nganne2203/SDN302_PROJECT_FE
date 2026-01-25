@@ -2,12 +2,11 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { authApi } from '@/apis/auth'
 import { userApi } from '@/apis/user'
 import { STORAGE_KEYS, OTP_TYPES } from '@/constants/constant'
-import { setStorage, removeStorage } from '@/utils/storage'
+import { setStorage, removeStorage, getStorage } from '@/utils/storage'
 import type { 
   LoginPayload, 
   RegisterPayload,
   RegisterSuccessPayload,
-  AuthSuccessPayload,
   VerifyOTPPayload,
   VerifyOTPSuccessPayload,
   ResendOTPPayload,
@@ -16,6 +15,7 @@ import type {
   ConfirmResetPasswordPayload,
   SetPasswordPayload,
   ChangePasswordPayload,
+  AuthSuccessPayload,
 } from './authTypes'
 import type { AxiosError } from 'axios'
 import type { ApiError } from '@/types/api'
@@ -262,6 +262,36 @@ export const logoutAllThunk = createAsyncThunk<void, void>(
       removeStorage(STORAGE_KEYS.USER_INFO)
       removeStorage(STORAGE_KEYS.HAS_PASSWORD)
       removeStorage(STORAGE_KEYS.PENDING_EMAIL)
+    }
+  }
+)
+
+export const refreshTokenThunk = createAsyncThunk<
+  AuthSuccessPayload,
+  { refreshToken?: string } | void,
+  { rejectValue: string }
+>(
+  'auth/refreshToken',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const storedRefresh = payload?.refreshToken || getStorage(STORAGE_KEYS.REFRESH_TOKEN)
+      if (!storedRefresh) {
+        return rejectWithValue('Không tìm thấy refresh token')
+      }
+
+      const response = await authApi.refreshToken({ refreshToken: storedRefresh })
+      const { accessToken, refreshToken } = response.data
+
+      setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+      setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+
+      const profileResponse = await userApi.getProfile()
+      const user = profileResponse.data
+      setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
+
+      return { accessToken, refreshToken, user }
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error, 'Làm mới phiên đăng nhập thất bại'))
     }
   }
 )
