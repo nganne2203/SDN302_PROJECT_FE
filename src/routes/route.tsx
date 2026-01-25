@@ -27,6 +27,7 @@ const ManagementOrders = lazy(() => import('@/pages/management/Order'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(() => import('@/pages/management/admin/Branch'))
 const CategoryManagement = lazy(() => import('@/pages/management/admin/Category'))
+const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -251,6 +252,14 @@ export const routes: RouteObject[] = [
         element: (
           <AdminRoute>
             {withSuspense(CategoryManagement)}
+          </AdminRoute>
+        ),
+      },
+      {
+        path: 'users',
+        element: (
+          <AdminRoute>
+            {withSuspense(UsersManagement)}
           </AdminRoute>
         ),
       },

@@ -12,6 +12,7 @@ import {
   confirmResetPasswordThunk,
   setPasswordThunk,
   changePasswordThunk,
+  refreshTokenThunk,
 } from './authThunks'
 import { OTP_TYPES } from '@/constants/constant'
 
@@ -201,6 +202,24 @@ const authSlice = createSlice({
       })
       .addCase(changePasswordThunk.rejected, (state, action) => {
         state.isLoading = false
+        state.error = action.payload as string
+      })
+
+    builder
+      .addCase(refreshTokenThunk.pending, (state) => {
+        state.error = null
+      })
+      .addCase(refreshTokenThunk.fulfilled, (state, action) => {
+        state.isAuthenticated = true
+        state.accessToken = action.payload.accessToken
+        state.refreshToken = action.payload.refreshToken
+        state.user = action.payload.user
+      })
+      .addCase(refreshTokenThunk.rejected, (state, action) => {
+        state.isAuthenticated = false
+        state.accessToken = null
+        state.refreshToken = null
+        state.user = null
         state.error = action.payload as string
       })
 

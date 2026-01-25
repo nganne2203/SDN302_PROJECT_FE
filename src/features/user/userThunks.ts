@@ -1,9 +1,27 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { userApi } from '@/apis/user'
 import type { UserInfo, ShippingAddress } from '@/types/api'
-import type { UpdateProfilePayload, ChangePasswordPayload } from './userTypes'
+import type { UpdateProfilePayload, ChangePasswordPayload, User, UserFilter, FetchUsersPayload } from './userTypes'
 import type { AxiosError } from 'axios'
 import type { ApiError } from '@/types/api'
+
+export const fetchUsersThunk = createAsyncThunk<FetchUsersPayload, UserFilter | undefined>(
+  'user/fetchUsers',
+  async (filter, { rejectWithValue }) => {
+    try {
+      const response = await userApi.getUsers(filter)
+      return {
+        items: response.data,
+        pagination: response.pagination,
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiError>
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Không thể tải danh sách người dùng'
+      )
+    }
+  }
+)
 
 export const fetchProfileThunk = createAsyncThunk<UserInfo, void>(
   'user/fetchProfile',
@@ -74,6 +92,21 @@ export const addAddressThunk = createAsyncThunk<ShippingAddress, ShippingAddress
       const axiosError = error as AxiosError<ApiError>
       return rejectWithValue(
         axiosError.response?.data?.message || 'Không thể thêm địa chỉ'
+      )
+    }
+  }
+)
+
+export const updateUserStatusThunk = createAsyncThunk<User, { id: string; isActive: boolean }>(
+  'user/updateUserStatus',
+  async ({ id, isActive }, { rejectWithValue }) => {
+    try {
+      const response = await userApi.updateUserStatus(id, isActive)
+      return response.data
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiError>
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Không thể cập nhật trạng thái người dùng'
       )
     }
   }

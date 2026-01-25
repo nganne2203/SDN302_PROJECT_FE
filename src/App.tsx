@@ -7,6 +7,7 @@ import { store, persistor } from '@/apps/store'
 import { router } from '@/routes/route'
 import ToastProvider from '@/components/common/ToastProvider'
 import LoaderCommon from '@/components/common/LoaderCommon'
+import useTokenAutoRefresh from '@/hooks/useTokenAutoRefresh'
 
 const theme = {
   token: {
@@ -16,12 +17,18 @@ const theme = {
   },
 }
 
+const TokenRefreshProvider = () => {
+  useTokenAutoRefresh()
+  return null
+}
+
 function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<LoaderCommon fullScreen />} persistor={persistor}>
         <ConfigProvider locale={viVN} theme={theme}>
           <ToastProvider>
+            <TokenRefreshProvider />
             <RouterProvider router={router} />
           </ToastProvider>
         </ConfigProvider>
