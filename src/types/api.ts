@@ -197,6 +197,24 @@ export interface ProductFilter {
   pageSize?: number
 }
 
+export interface Branch {
+  _id: string
+  name: string
+  address: string
+  manager: string
+  isActive: boolean
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BranchFilter {
+  page?: number
+  limit?: number
+  search?: string
+  isActive?: boolean
+}
+
 export interface CartItem {
   id: string
   productId: string
@@ -253,4 +271,54 @@ export interface CreateOrderRequest {
   shippingAddress: ShippingAddress
   paymentMethod: PaymentMethod
   note?: string
+}
+
+// User Management Types
+export interface CreateUserRequest {
+  fullname: string
+  email: string
+  password: string
+  phone?: string
+  role?: UserRole
+  branch?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+  avatar?: string
+}
+
+export interface UpdateUserRequest {
+  fullname?: string
+  email?: string
+  phone?: string
+  avatar?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+}
+
+export interface UpdateUserStatusRequest {
+  isActive: boolean
+}
+
+export interface UserManageFilter {
+  page?: number
+  limit?: number
+  search?: string
+  isActive?: boolean
+  role?: UserRole
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
