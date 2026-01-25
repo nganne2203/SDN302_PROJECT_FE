@@ -4,6 +4,7 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { User } from '@/features/user/userTypes'
 import dayjs from 'dayjs'
 import { ROLE_LABELS } from '@/constants/constant'
+import { Eye, Pencil } from 'lucide-react'
 
 interface UserWithKey extends Record<string, unknown> {
   key: string
@@ -20,6 +21,8 @@ interface UserListProps {
   }
   onUpdateStatus: (id: string, isActive: boolean) => void
   onPageChange: (page: number, pageSize: number) => void
+  onViewUser?: (user: User) => void
+  onEditUser?: (user: User) => void
 }
 
 const UserListComponent = ({
@@ -28,6 +31,8 @@ const UserListComponent = ({
   pagination,
   onUpdateStatus,
   onPageChange,
+  onViewUser,
+  onEditUser,
 }: UserListProps) => {
   const usersWithKeys: UserWithKey[] = users.map(user => ({
     ...user,
@@ -89,14 +94,35 @@ const UserListComponent = ({
     {
       key: 'actions',
       title: 'Hành động',
-      width: 140,
+      width: 200,
       fixed: 'right',
       render: (_: unknown, record: UserWithKey) => (
         <Space>
+          {onViewUser && (
+            <Button
+              type="default"
+              size="small"
+              icon={<Eye className="w-4 h-4" />}
+              onClick={() => onViewUser(record as unknown as User)}
+            >
+              Xem
+            </Button>
+          )}
+          {onEditUser && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<Pencil className="w-4 h-4" />}
+              onClick={() => onEditUser(record as unknown as User)}
+            >
+              Sửa
+            </Button>
+          )}
           <Button
             type={record.isActive ? 'default' : 'primary'}
             size="small"
             onClick={() => onUpdateStatus(record._id, !record.isActive)}
+            danger={record.isActive as boolean}
           >
             {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
           </Button>

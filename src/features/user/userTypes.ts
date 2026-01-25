@@ -1,4 +1,4 @@
-import type { UserInfo, ShippingAddress, PaginationMeta, UserRole } from '@/types/api'
+import type { UserInfo, ShippingAddress, UserRole } from '@/types/api'
 
 export interface UpdateProfilePayload {
   fullName?: string
@@ -41,29 +41,9 @@ export interface User {
   updatedBy?: string | null
 }
 
-export interface UserFilter {
-  page?: number
-  limit?: number
-  search?: string
-  isActive?: boolean
-  role?: UserRole
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-}
-
-export interface FetchUsersPayload {
-  items: User[]
-  pagination: PaginationMeta
-}
-
 export interface UserState {
   profile: UserInfo | null
   addresses: ShippingAddress[]
-  users: User[]
-  selectedUser: User | null
-  pagination: PaginationMeta | null
-  filter: UserFilter
   isLoading: boolean
-  listLoading: boolean
   error: string | null
 }
