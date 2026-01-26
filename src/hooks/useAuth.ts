@@ -182,7 +182,7 @@ export const useAuth = () => {
   const logout = useCallback(async () => {
     await dispatch(logoutThunk())
     dispatch(clearCredentials())
-    navigate(ROUTES.LOGIN)
+    navigate(ROUTES.HOME)
   }, [dispatch, navigate])
 
   const logoutAll = useCallback(async () => {

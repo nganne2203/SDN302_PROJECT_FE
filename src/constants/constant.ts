@@ -56,6 +56,15 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/api/category/${id}`,
     UPDATE_STATUS: (id: string) => `/api/category/${id}/status`,
   },
+  BRANCH: {
+    LIST: '/api/branch',
+    DETAIL: (id: string) => `/api/branch/${id}`,
+    CREATE: '/api/branch',
+    UPDATE: (id: string) => `/api/branch/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/branch/${id}/status`,
+    ASSIGN_MANAGER: (id: string) => `/api/branch/${id}/manager`,
+    REMOVE_MANAGER: (id: string) => `/api/branch/${id}/manager/remove`,
+  },
   CART: {
     GET: "/api/cart",
     ADD: "/api/cart/add",
@@ -69,6 +78,7 @@ export const API_ENDPOINTS = {
     CREATE: "/api/orders",
     CANCEL: (id: string) => `/api/orders/${id}/cancel`,
   },
+
   BRANCH: {
     LIST: "/api/branch",
     DETAIL: (id: string) => `/api/branch/${id}`,
@@ -76,7 +86,8 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/branch/${id}`,
     DELETE: (id: string) => `/api/branch/${id}`,
   },
-} as const;
+} as const
+
 
 export const HTTP_STATUS = {
   OK: 200,

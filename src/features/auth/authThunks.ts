@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { authApi } from '@/apis/auth'
 import { userApi } from '@/apis/user'
 import { STORAGE_KEYS, OTP_TYPES } from '@/constants/constant'
-import { setStorage, removeStorage, getStorage } from '@/utils/storage'
+import { setStorage, removeStorage, getStorage, clearStorage } from '@/utils/storage'
 import type { 
   LoginPayload, 
   RegisterPayload,
@@ -240,11 +240,8 @@ export const logoutThunk = createAsyncThunk<void, void>(
     } catch {
       // Continue with logout even if API fails
     } finally {
-      removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-      removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-      removeStorage(STORAGE_KEYS.USER_INFO)
-      removeStorage(STORAGE_KEYS.HAS_PASSWORD)
-      removeStorage(STORAGE_KEYS.PENDING_EMAIL)
+      clearStorage('local')
+      clearStorage('session')
     }
   }
 )
@@ -257,11 +254,9 @@ export const logoutAllThunk = createAsyncThunk<void, void>(
     } catch {
       // Continue with logout even if API fails
     } finally {
-      removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-      removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-      removeStorage(STORAGE_KEYS.USER_INFO)
-      removeStorage(STORAGE_KEYS.HAS_PASSWORD)
-      removeStorage(STORAGE_KEYS.PENDING_EMAIL)
+      // Clear all localStorage data including recaptcha tokens and other fields
+      clearStorage('local')
+      clearStorage('session')
     }
   }
 )
