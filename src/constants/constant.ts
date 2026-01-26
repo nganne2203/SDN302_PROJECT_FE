@@ -43,6 +43,15 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/products/categories',
     SEARCH: '/products/search',
   },
+  BRANCH: {
+    LIST: '/branch',
+    DETAIL: (id: string) => `/branch/${id}`,
+    CREATE: '/branch',
+    UPDATE: (id: string) => `/branch/${id}`,
+    UPDATE_STATUS: (id: string) => `/branch/${id}/status`,
+    ASSIGN_MANAGER: (id: string) => `/branch/${id}/manager`,
+    REMOVE_MANAGER: (id: string) => `/branch/${id}/manager/remove`,
+  },
   // Cart
   CART: {
     GET: '/cart',
