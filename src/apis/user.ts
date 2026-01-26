@@ -1,8 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse, PaginatedResponse } from '@/types/api'
+import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
-import type { User, UserFilter } from '@/features/user/userTypes'
 
 export interface UpdateProfileRequest {
   fullName?: string
@@ -16,14 +15,6 @@ export interface ChangePasswordRequest {
 }
 
 export const userApi = {
-  getUsers: async (filter?: UserFilter): Promise<PaginatedResponse<User>> => {
-    const response = await apiClient.get<PaginatedResponse<User>>(
-      API_ENDPOINTS.USER.ALL_USERS,
-      { params: filter }
-    )
-    return response.data
-  },
-
   getProfile: async (): Promise<ApiResponse<UserInfo>> => {
     const response = await apiClient.get<ApiResponse<ProfileResponse>>(API_ENDPOINTS.USER.PROFILE)
     return {
@@ -59,14 +50,6 @@ export const userApi = {
     const response = await apiClient.post<ApiResponse<ShippingAddress>>(
       API_ENDPOINTS.USER.ADDRESSES,
       address
-    )
-    return response.data
-  },
-
-  updateUserStatus: async (id: string, isActive: boolean): Promise<ApiResponse<User>> => {
-    const response = await apiClient.patch<ApiResponse<User>>(
-      API_ENDPOINTS.USER.UPDATE_STATUS(id),
-      { isActive }
     )
     return response.data
   },

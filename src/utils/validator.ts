@@ -8,8 +8,12 @@ export const emailSchema = z
 export const passwordSchema = z
   .string()
   .min(1, 'Mật khẩu là bắt buộc')
-  .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
-  .max(50, 'Mật khẩu không được quá 50 ký tự')
+  .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+  .max(20, 'Mật khẩu không được quá 20 ký tự')
+  .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất một chữ hoa')
+  .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
+  .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số')
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Mật khẩu phải có ít nhất một ký tự đặc biệt')
 
 export const phoneSchema = z
   .string()
@@ -87,6 +91,16 @@ export const shippingAddressSchema = z.object({
   district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
   ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
   address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc'),
+})
+
+export const userAddressSchema = z.object({
+  fullname: z.string().min(1, 'Vui lòng nhập họ và tên người nhận').trim(),
+  phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
+  addressLine: z.string().min(1, 'Vui lòng nhập địa chỉ chi tiết').trim(),
+  city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
+  district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
+  ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
+  isDefault: z.boolean().optional(),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
