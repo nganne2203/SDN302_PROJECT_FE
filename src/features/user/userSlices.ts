@@ -5,7 +5,7 @@ import {
   fetchProfileThunk, 
   updateProfileThunk, 
   fetchAddressesThunk,
-  addAddressThunk 
+  addAddressThunk,
 } from './userThunks'
 
 const initialState: UserState = {
@@ -31,7 +31,6 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Fetch Profile
     builder
       .addCase(fetchProfileThunk.pending, (state) => {
         state.isLoading = true
@@ -45,7 +44,6 @@ const userSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-    // Update Profile
     builder
       .addCase(updateProfileThunk.pending, (state) => {
         state.isLoading = true
@@ -59,7 +57,6 @@ const userSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-    // Fetch Addresses
     builder
       .addCase(fetchAddressesThunk.pending, (state) => {
         state.isLoading = true
@@ -72,7 +69,6 @@ const userSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-    // Add Address
     builder
       .addCase(addAddressThunk.pending, (state) => {
         state.isLoading = true

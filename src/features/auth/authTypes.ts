@@ -1,6 +1,5 @@
-import type { UserInfo, UserRole } from '@/types/api'
+import type { UserInfo, UserRole, OTPType } from '@/types/api'
 
-// Auth State
 export interface AuthState {
   isAuthenticated: boolean
   user: UserInfo | null
@@ -8,9 +7,12 @@ export interface AuthState {
   refreshToken: string | null
   isLoading: boolean
   error: string | null
+  // Additional state for auth flows
+  pendingEmail: string | null
+  otpType: OTPType | null
+  isOTPModalOpen: boolean
 }
 
-// Auth Actions Payload Types
 export interface LoginPayload {
   email: string
   password: string
@@ -40,6 +42,7 @@ export interface RegisterApiPayload {
     isDefault: boolean
   }>
   avatar?: string
+  captchaToken?: string
 }
 
 export interface AuthSuccessPayload {
@@ -49,21 +52,63 @@ export interface AuthSuccessPayload {
 }
 
 export interface TokenPayload {
-  sub: string
+  id: string
   email: string
   role: UserRole
+  branch?: string | null
   exp: number
   iat: number
 }
 
-// OTP Verification Types
 export interface VerifyOTPPayload {
   email: string
   code: string
-  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
+  type: OTPType
 }
 
 export interface ResendOTPPayload {
   email: string
-  type: 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
+  type: OTPType
+}
+
+export interface ResetPasswordPayload {
+  email: string
+}
+
+export interface ConfirmResetPasswordPayload {
+  email: string
+  newPassword: string
+}
+
+export interface SetPasswordPayload {
+  password: string
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string
+  newPassword: string
+}
+
+export interface RegisterSuccessPayload {
+  email: string
+  message: string
+}
+
+export interface VerifyOTPSuccessPayload {
+  message: string
+  accessToken?: string
+  refreshToken?: string
+  user?: UserInfo
+}
+
+export interface ResetPasswordSuccessPayload {
+  email: string
+  message: string
+}
+
+export interface OTPModalState {
+  isOpen: boolean
+  email: string
+  type: OTPType
+  onSuccess?: () => void
 }

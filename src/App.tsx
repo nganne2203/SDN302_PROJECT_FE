@@ -7,9 +7,8 @@ import { store, persistor } from '@/apps/store'
 import { router } from '@/routes/route'
 import ToastProvider from '@/components/common/ToastProvider'
 import LoaderCommon from '@/components/common/LoaderCommon'
-import './App.css'
+import useTokenAutoRefresh from '@/hooks/useTokenAutoRefresh'
 
-// Ant Design theme customization
 const theme = {
   token: {
     colorPrimary: '#2563eb',
@@ -18,12 +17,18 @@ const theme = {
   },
 }
 
+const TokenRefreshProvider = () => {
+  useTokenAutoRefresh()
+  return null
+}
+
 function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<LoaderCommon fullScreen />} persistor={persistor}>
         <ConfigProvider locale={viVN} theme={theme}>
           <ToastProvider>
+            <TokenRefreshProvider />
             <RouterProvider router={router} />
           </ToastProvider>
         </ConfigProvider>

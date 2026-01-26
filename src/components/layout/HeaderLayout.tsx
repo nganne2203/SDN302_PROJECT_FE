@@ -5,19 +5,24 @@ import {
   ShoppingCartOutlined, 
   UserOutlined, 
   SearchOutlined,
-  MenuOutlined 
+  MenuOutlined
 } from '@ant-design/icons'
-import { ROUTES } from '@/constants/constant'
+import { ROUTES, MANAGEMENT_ROLES } from '@/constants/constant'
 import useAuth from '@/hooks/useAuth'
 
 const HeaderLayout = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const managementItem = user?.role && MANAGEMENT_ROLES.includes(user.role)
+    ? { key: 'management', label: <Link to={ROUTES.MANAGEMENT.DASHBOARD}>Quản lý hệ thống</Link> }
+    : null
+
   const userMenuItems = isAuthenticated
     ? [
         { key: 'profile', label: <Link to={ROUTES.PROFILE}>Tài khoản</Link> },
         { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
+        ...(managementItem ? [managementItem] : []),
         { type: 'divider' as const },
         { key: 'logout', label: 'Đăng xuất', onClick: logout },
       ]
@@ -30,12 +35,10 @@ const HeaderLayout = () => {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link to={ROUTES.HOME} className="flex items-center">
             <span className="text-2xl font-bold text-blue-600">PhoneAcc</span>
           </Link>
 
-          {/* Search Bar - Hidden on mobile */}
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
             <Input
               placeholder="Tìm kiếm sản phẩm..."
@@ -45,7 +48,6 @@ const HeaderLayout = () => {
             />
           </div>
 
-          {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link to={ROUTES.PRODUCTS} className="text-gray-600 hover:text-blue-600">
               Sản phẩm
@@ -63,7 +65,6 @@ const HeaderLayout = () => {
             </Dropdown>
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -72,7 +73,6 @@ const HeaderLayout = () => {
           </button>
         </div>
 
-        {/* Mobile Search */}
         <div className="md:hidden pb-4">
           <Input
             placeholder="Tìm kiếm sản phẩm..."
@@ -82,7 +82,6 @@ const HeaderLayout = () => {
           />
         </div>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4 space-y-4">
             <Link
@@ -95,10 +94,18 @@ const HeaderLayout = () => {
               to={ROUTES.CART}
               className="block text-gray-600 hover:text-blue-600"
             >
-              Giỏ hàng (3)
+              Giỏ hàng
             </Link>
             {isAuthenticated ? (
               <>
+                {user?.role && MANAGEMENT_ROLES.includes(user.role) && (
+                  <Link
+                    to={ROUTES.MANAGEMENT.DASHBOARD}
+                    className="block text-blue-600 font-semibold hover:text-blue-700"
+                  >
+                    Quản lý hệ thống
+                  </Link>
+                )}
                 <Link
                   to={ROUTES.PROFILE}
                   className="block text-gray-600 hover:text-blue-600"

@@ -24,7 +24,6 @@ interface BaseFieldProps {
   className?: string
 }
 
-// Input Field
 interface InputFieldProps extends BaseFieldProps, Omit<InputProps, 'status'> {
   type?: 'text' | 'email' | 'password' | 'tel' | 'url'
 }
@@ -254,7 +253,6 @@ export const SwitchField = ({
   )
 }
 
-// Checkbox Field
 interface CheckboxFieldProps extends BaseFieldProps {
   checked?: boolean
   onChange?: (checked: boolean) => void
