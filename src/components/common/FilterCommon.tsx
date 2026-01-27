@@ -8,6 +8,7 @@ import PaginationCommon from './PaginationCommon'
 
 const { Option } = Select
 
+/* eslint-disable no-unused-vars */
 export interface FilterField {
   key: string
   label: string
@@ -44,7 +45,7 @@ export interface FilterCommonProps {
 
   onReset?: () => void
   showReset?: boolean
-  
+
   className?: string
   extra?: ReactNode
   compact?: boolean
@@ -78,7 +79,7 @@ const FilterCommon = ({
 
   className = '',
   extra,
-  compact = false,
+  compact = false
 }: FilterCommonProps) => {
   const handleSortToggle = () => {
     if (!sortBy) return
@@ -96,50 +97,50 @@ const FilterCommon = ({
     const value = filterValues[field.key]
 
     switch (field.type) {
-      case 'select':
-        return (
-          <Select
-            key={field.key}
-            placeholder={field.placeholder || `Select ${field.label}`}
-            value={value as SelectProps['value']}
-            onChange={(val) => onFilterChange?.(field.key, val)}
-            allowClear={field.allowClear ?? true}
-            mode={field.mode}
-            style={{ width: '100%', minWidth: 150 }}
-          >
-            {field.options?.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-        )
+    case 'select':
+      return (
+        <Select
+          key={field.key}
+          placeholder={field.placeholder || `Select ${field.label}`}
+          value={value as SelectProps['value']}
+          onChange={(val) => onFilterChange?.(field.key, val)}
+          allowClear={field.allowClear ?? true}
+          mode={field.mode}
+          style={{ width: '100%', minWidth: 150 }}
+        >
+          {field.options?.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
+          ))}
+        </Select>
+      )
 
-      case 'switch':
-        return (
-          <Switch
-            key={field.key}
-            checked={value as boolean}
-            onChange={(checked) => onFilterChange?.(field.key, checked)}
-            defaultChecked={field.defaultChecked}
-          />
-        )
+    case 'switch':
+      return (
+        <Switch
+          key={field.key}
+          checked={value as boolean}
+          onChange={(checked) => onFilterChange?.(field.key, checked)}
+          defaultChecked={field.defaultChecked}
+        />
+      )
 
-      case 'checkbox':
-      case 'boolean':
-        return (
-          <Checkbox
-            key={field.key}
-            checked={value as boolean}
-            onChange={(e) => onFilterChange?.(field.key, e.target.checked)}
-            defaultChecked={field.defaultChecked}
-          >
-            {field.placeholder || field.label}
-          </Checkbox>
-        )
+    case 'checkbox':
+    case 'boolean':
+      return (
+        <Checkbox
+          key={field.key}
+          checked={value as boolean}
+          onChange={(e) => onFilterChange?.(field.key, e.target.checked)}
+          defaultChecked={field.defaultChecked}
+        >
+          {field.placeholder || field.label}
+        </Checkbox>
+      )
 
-      default:
-        return null
+    default:
+      return null
     }
   }
 

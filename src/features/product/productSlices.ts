@@ -10,7 +10,7 @@ const initialState: ProductState = {
   pagination: null,
   categories: [],
   isLoading: false,
-  error: null,
+  error: null
 }
 
 const productSlice = createSlice({
@@ -28,7 +28,7 @@ const productSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null
-    },
+    }
   },
   extraReducers: (builder) => {
     // Fetch Products
@@ -73,7 +73,7 @@ const productSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const { setFilter, clearFilter, setSelectedProduct, clearError } = productSlice.actions

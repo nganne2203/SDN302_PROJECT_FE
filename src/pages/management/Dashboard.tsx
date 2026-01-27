@@ -3,7 +3,7 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
   DollarOutlined,
-  ShoppingOutlined,
+  ShoppingOutlined
 } from '@ant-design/icons'
 import useAuth from '@/hooks/useAuth'
 import { ROLE_LABELS } from '@/constants/constant'
@@ -33,7 +33,7 @@ const ManagementDashboard = () => {
             />
           </Card>
         </Col>
-        
+
         {(isAdmin || isManager) && (
           <Col xs={24} sm={12} lg={6}>
             <Card>
@@ -77,7 +77,7 @@ const ManagementDashboard = () => {
         {isAdmin && (
           <Card title="Quản trị hệ thống">
             <p className="text-gray-600">
-              Bạn có quyền quản lý toàn bộ hệ thống, bao gồm tất cả chi nhánh, kho tổng, 
+              Bạn có quyền quản lý toàn bộ hệ thống, bao gồm tất cả chi nhánh, kho tổng,
               người dùng, và cấu hình hệ thống.
             </p>
           </Card>
@@ -86,7 +86,7 @@ const ManagementDashboard = () => {
         {isManager && (
           <Card title="Quản lý chi nhánh">
             <p className="text-gray-600">
-              Bạn có quyền quản lý chi nhánh được phân công, bao gồm kho hàng, đơn hàng, 
+              Bạn có quyền quản lý chi nhánh được phân công, bao gồm kho hàng, đơn hàng,
               và nhân viên tại chi nhánh.
             </p>
           </Card>

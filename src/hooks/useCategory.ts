@@ -6,13 +6,13 @@ import {
   createCategoryThunk,
   updateCategoryThunk,
   deleteCategoryThunk,
-  updateCategoryStatusThunk,
+  updateCategoryStatusThunk
 } from '@/features/category/categoryThunks'
 import {
   setFilter,
   clearFilter,
   setSelectedCategory,
-  clearError,
+  clearError
 } from '@/features/category/categorySlices'
 import type { Category, CategoryFilter, CreateCategoryPayload } from '@/features/category/categoryTypes'
 import { z } from 'zod'
@@ -20,7 +20,7 @@ import { z } from 'zod'
 // Validation schema
 const categoryValidationSchema = z.object({
   name: z.string().min(1, 'Tên danh mục không được để trống').max(100, 'Tên danh mục không được vượt quá 100 ký tự'),
-  description: z.string().max(500, 'Mô tả không được vượt quá 500 ký tự').optional().or(z.literal('')),
+  description: z.string().max(500, 'Mô tả không được vượt quá 500 ký tự').optional().or(z.literal(''))
 })
 
 export type CategoryFormData = z.infer<typeof categoryValidationSchema>
@@ -36,7 +36,7 @@ export const useCategory = () => {
     pagination,
     filter = {},
     isLoading = false,
-    error,
+    error
   } = categoryState || {}
 
   const fetchCategories = useCallback(
@@ -122,7 +122,7 @@ export const useCategory = () => {
 
   const categoriesWithDefaults = useMemo(() => categories.map((cat: Category) => ({
     key: cat._id,
-    ...cat,
+    ...cat
   })), [categories])
 
   return {
@@ -147,7 +147,7 @@ export const useCategory = () => {
     handleClearError,
 
     // Validation
-    validateCategoryForm,
+    validateCategoryForm
   }
 }
 

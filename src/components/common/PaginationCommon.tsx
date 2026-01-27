@@ -2,6 +2,7 @@ import { Pagination as AntPagination } from 'antd'
 import type { PaginationProps as AntPaginationProps } from 'antd'
 import type { ReactNode } from 'react'
 
+/* eslint-disable no-unused-vars */
 export interface PaginationCommonProps {
   current?: number
   pageSize?: number
@@ -39,9 +40,9 @@ const PaginationCommon = ({
   showLessItems = false,
   className = '',
   hideOnSinglePage = false,
-  align = 'end',
+  align = 'end'
 }: PaginationCommonProps) => {
-  const defaultShowTotal = (total: number, range: [number, number]) => 
+  const defaultShowTotal = (total: number, range: [number, number]) =>
     `${range[0]}-${range[1]} of ${total} items`
 
   const showTotalConfig = typeof showTotal === 'boolean'
@@ -66,8 +67,8 @@ const PaginationCommon = ({
     className: `pagination-common ${className}`,
     hideOnSinglePage,
     style: {
-      textAlign: align,
-    },
+      textAlign: align
+    }
   }
 
   return <AntPagination {...paginationProps} />

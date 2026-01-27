@@ -10,8 +10,8 @@ export const apiClient = axios.create({
   timeout: 30000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 })
 
 // Configure axios retry
@@ -20,7 +20,7 @@ axiosRetry(apiClient, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
-  },
+  }
 })
 
 // Request interceptor
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(
         const refreshToken = getStorage(STORAGE_KEYS.REFRESH_TOKEN)
         if (refreshToken) {
           const response = await axios.post(`${env.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`, {
-            refreshToken,
+            refreshToken
           })
 
           const { accessToken, refreshToken: newRefreshToken } = response.data.data

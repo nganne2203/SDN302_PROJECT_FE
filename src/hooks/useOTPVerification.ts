@@ -18,7 +18,7 @@ export const useOTPVerification = ({
   email,
   type,
   onSuccess,
-  onClose,
+  onClose
 }: UseOTPVerificationProps) => {
   const { verifyOTP, resendOTP, isLoading } = useAuth()
   const [otp, setOtp] = useState([...INITIAL_OTP])
@@ -51,7 +51,7 @@ export const useOTPVerification = ({
         inputRefs.current[index + 1]?.focus()
       }
     },
-    [otp],
+    [otp]
   )
 
   const handleKeyDown = useCallback(
@@ -60,7 +60,7 @@ export const useOTPVerification = ({
         inputRefs.current[index - 1]?.focus()
       }
     },
-    [otp],
+    [otp]
   )
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -93,7 +93,7 @@ export const useOTPVerification = ({
     const result = await verifyOTP({
       email,
       code,
-      type,
+      type
     })
     setIsVerifying(false)
 
@@ -112,13 +112,13 @@ export const useOTPVerification = ({
     setIsResending(true)
     const result = await resendOTP({
       email,
-      type,
+      type
     })
     setIsResending(false)
 
     if (result.success) {
       toast.success(
-        result.message || 'Đã gửi lại mã OTP. Vui lòng kiểm tra email!',
+        result.message || 'Đã gửi lại mã OTP. Vui lòng kiểm tra email!'
       )
       setCountdown(APP_CONFIG.OTP_RESEND_COOLDOWN)
       setOtp([...INITIAL_OTP])
@@ -140,6 +140,6 @@ export const useOTPVerification = ({
     handleKeyDown,
     handlePaste,
     handleVerify,
-    handleResend,
+    handleResend
   }
 }

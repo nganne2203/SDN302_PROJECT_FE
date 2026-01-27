@@ -24,7 +24,7 @@ export const ERROR_CODES = {
   EMAIL_ALREADY_EXISTS: 'EMAIL_ALREADY_EXISTS',
   INVALID_OTP: 'INVALID_OTP',
   OTP_EXPIRED: 'OTP_EXPIRED',
-  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR'
 } as const
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES]
@@ -197,6 +197,28 @@ export interface ProductFilter {
   pageSize?: number
 }
 
+export interface Branch {
+  _id: string
+  name: string
+  address: string
+  manager?: string | null
+  isActive: boolean
+  createdBy?: string | null
+  updatedBy?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BranchFilter {
+  page?: number
+  limit?: number
+  search?: string
+  isActive?: boolean
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// Cart Types
 export interface CartItem {
   id: string
   productId: string
@@ -253,4 +275,56 @@ export interface CreateOrderRequest {
   shippingAddress: ShippingAddress
   paymentMethod: PaymentMethod
   note?: string
+}
+
+// User Management Types
+export interface CreateUserRequest {
+  fullname: string
+  email: string
+  password: string
+  phone?: string
+  role?: UserRole
+  branch?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+  avatar?: string
+}
+
+export interface UpdateUserRequest {
+  fullname?: string
+  email?: string
+  phone?: string
+  role?: UserRole
+  branch?: string
+  avatar?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
+}
+
+export interface UpdateUserStatusRequest {
+  isActive: boolean
+}
+
+export interface UserManageFilter {
+  page?: number
+  limit?: number
+  search?: string
+  isActive?: boolean
+  role?: UserRole
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }

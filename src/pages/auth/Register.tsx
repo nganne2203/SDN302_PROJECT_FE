@@ -14,20 +14,20 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Register = () => {
-  const { 
-    register: registerUser, 
+  const {
+    register: registerUser,
     isLoading,
     pendingEmail,
     isOTPModalOpen,
-    hideOTPModal,
+    hideOTPModal
   } = useAuth()
-  
+
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
 
   const {
     handleSubmit,
-    control,
+    control
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -35,8 +35,8 @@ const Register = () => {
       password: '',
       confirmPassword: '',
       fullName: '',
-      phoneNumber: '',
-    },
+      phoneNumber: ''
+    }
   })
 
   const onRecaptchaChange = useCallback((token: string | null) => {
@@ -58,7 +58,7 @@ const Register = () => {
 
       const result = await registerUser({
         ...data,
-        captchaToken: recaptchaToken || undefined,
+        captchaToken: recaptchaToken || undefined
       })
 
       recaptchaRef.current?.reset()
@@ -67,13 +67,13 @@ const Register = () => {
       if (result.success) {
         toast.success(
           result.message ||
-            'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.',
+            'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
         )
       } else {
         toast.error(result.message || 'Đăng ký thất bại')
       }
     },
-    [isLoading, recaptchaToken, registerUser],
+    [isLoading, recaptchaToken, registerUser]
   )
 
   const handleFormSubmit = useCallback(
@@ -81,7 +81,7 @@ const Register = () => {
       e.preventDefault()
       void handleSubmit(onSubmit)(e)
     },
-    [handleSubmit, onSubmit],
+    [handleSubmit, onSubmit]
   )
 
   const handleOTPSuccess = useCallback(() => {
@@ -241,7 +241,7 @@ const Register = () => {
         </div>
 
         <div className="space-y-3">
-          <ButtonCommon 
+          <ButtonCommon
             type='button'
             variant="outline"
             size="lg"

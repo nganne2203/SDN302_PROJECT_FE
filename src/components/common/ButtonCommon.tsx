@@ -29,35 +29,35 @@ const ButtonCommon = ({
   children,
   className = '',
   icon,
-  block = false,
+  block = false
 }: ButtonCommonProps) => {
   const getAntType = (): AntButtonProps['type'] => {
     switch (variant) {
-      case 'primary':
-        return 'primary'
-      case 'secondary':
-        return 'default'
-      case 'danger':
-        return 'primary'
-      case 'outline':
-        return 'default'
-      case 'ghost':
-        return 'text'
-      default:
-        return 'primary'
+    case 'primary':
+      return 'primary'
+    case 'secondary':
+      return 'default'
+    case 'danger':
+      return 'primary'
+    case 'outline':
+      return 'default'
+    case 'ghost':
+      return 'text'
+    default:
+      return 'primary'
     }
   }
 
   const getSize = (): AntButtonProps['size'] => {
     switch (size) {
-      case 'sm':
-        return 'small'
-      case 'md':
-        return 'middle'
-      case 'lg':
-        return 'large'
-      default:
-        return 'middle'
+    case 'sm':
+      return 'small'
+    case 'md':
+      return 'middle'
+    case 'lg':
+      return 'large'
+    default:
+      return 'middle'
     }
   }
 

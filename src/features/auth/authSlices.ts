@@ -1,10 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { AuthState, AuthSuccessPayload, RegisterSuccessPayload, VerifyOTPSuccessPayload, ResetPasswordSuccessPayload } from './authTypes'
 import type { OTPType } from '@/types/api'
-import { 
-  loginThunk, 
-  registerThunk, 
-  logoutThunk, 
+import {
+  loginThunk,
+  registerThunk,
+  logoutThunk,
   logoutAllThunk,
   verifyOTPThunk,
   resendOTPThunk,
@@ -12,6 +12,7 @@ import {
   confirmResetPasswordThunk,
   setPasswordThunk,
   changePasswordThunk,
+  refreshTokenThunk
 } from './authThunks'
 import { OTP_TYPES } from '@/constants/constant'
 
@@ -24,7 +25,7 @@ const initialState: AuthState = {
   error: null,
   pendingEmail: null,
   isOTPModalOpen: false,
-  otpType: null,
+  otpType: null
 }
 
 const authSlice = createSlice({
@@ -72,7 +73,7 @@ const authSlice = createSlice({
     },
     setPendingEmail: (state, action: PayloadAction<string | null>) => {
       state.pendingEmail = action.payload
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -205,6 +206,24 @@ const authSlice = createSlice({
       })
 
     builder
+      .addCase(refreshTokenThunk.pending, (state) => {
+        state.error = null
+      })
+      .addCase(refreshTokenThunk.fulfilled, (state, action) => {
+        state.isAuthenticated = true
+        state.accessToken = action.payload.accessToken
+        state.refreshToken = action.payload.refreshToken
+        state.user = action.payload.user
+      })
+      .addCase(refreshTokenThunk.rejected, (state, action) => {
+        state.isAuthenticated = false
+        state.accessToken = null
+        state.refreshToken = null
+        state.user = null
+        state.error = action.payload as string
+      })
+
+    builder
       .addCase(logoutThunk.pending, (state) => {
         state.isLoading = true
       })
@@ -256,15 +275,15 @@ const authSlice = createSlice({
   }
 })
 
-export const { 
-  setCredentials, 
-  clearCredentials, 
-  setError, 
+export const {
+  setCredentials,
+  clearCredentials,
+  setError,
   clearError,
   setLoading,
   openOTPModal,
   closeOTPModal,
-  setPendingEmail,
+  setPendingEmail
 } = authSlice.actions
 
 export default authSlice.reducer

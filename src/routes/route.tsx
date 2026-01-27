@@ -1,5 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  Navigate,
+  type RouteObject
+} from 'react-router-dom'
 import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant'
 import { getStorage } from '@/utils/storage'
 import { STORAGE_KEYS } from '@/constants/constant'
@@ -18,21 +22,31 @@ const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const Profile = lazy(() => import('@/pages/customer/Profile'))
+const EditProfile = lazy(() => import('@/pages/customer/EditProfile'))
 
 // Lazy loaded components - Management pages
-const ManagementLayout = lazy(() => import('@/components/layout/ManagementLayout'))
+const ManagementLayout = lazy(
+  () => import('@/components/layout/ManagementLayout')
+)
 const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
 const ManagementProducts = lazy(() => import('@/pages/management/Product'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
-const BranchesManagement = lazy(() => import('@/pages/management/admin/Branch'))
-const CategoryManagement = lazy(() => import('@/pages/management/admin/Category'))
+const BranchesManagement = lazy(
+  () => import('@/pages/management/admin/Branch')
+)
+const CategoryManagement = lazy(
+  () => import('@/pages/management/admin/Category')
+)
+const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 
+/* eslint-disable no-console */
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <LoaderCommon />
   </div>
 )
+/* eslint-disable no-unused-vars */
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (
@@ -68,6 +82,8 @@ const isAuthenticated = (): boolean => {
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
+    console.log(isAuthenticated)
+
     return <Navigate to={ROUTES.LOGIN} replace />
   }
   return <>{children}</>
@@ -94,12 +110,12 @@ const ManagementRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
-  
+
   const user = getCurrentUser()
   if (!user || !MANAGEMENT_ROLES.includes(user.role)) {
     return <Navigate to={ROUTES.HOME} replace />
   }
-  
+
   return <>{children}</>
 }
 
@@ -110,16 +126,16 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
-  
+
   const user = getCurrentUser()
   if (!user || user.role !== USER_ROLES.ADMIN) {
     return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
-  
+
   return <>{children}</>
 }
 
-// eslint-disable-next-line 
+// eslint-disable-next-line
 const ManagerRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to={ROUTES.LOGIN} replace />
@@ -150,11 +166,11 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.HOME,
-    element: withSuspense(Home),
+    element: withSuspense(Home)
   },
   {
     path: ROUTES.CART,
-    element: withSuspense(Cart),
+    element: withSuspense(Cart)
   },
 
   // ========================
@@ -162,35 +178,19 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.LOGIN,
-    element: (
-      <GuestRoute>
-        {withSuspense(Login)}
-      </GuestRoute>
-    ),
+    element: <GuestRoute>{withSuspense(Login)}</GuestRoute>
   },
   {
     path: ROUTES.REGISTER,
-    element: (
-      <GuestRoute>
-        {withSuspense(Register)}
-      </GuestRoute>
-    ),
+    element: <GuestRoute>{withSuspense(Register)}</GuestRoute>
   },
   {
     path: ROUTES.FORGOT_PASSWORD,
-    element: (
-      <GuestRoute>
-        {withSuspense(ForgotPassword)}
-      </GuestRoute>
-    ),
+    element: <GuestRoute>{withSuspense(ForgotPassword)}</GuestRoute>
   },
   {
     path: ROUTES.RESET_PASSWORD,
-    element: (
-      <GuestRoute>
-        {withSuspense(ResetPassword)}
-      </GuestRoute>
-    ),
+    element: <GuestRoute>{withSuspense(ResetPassword)}</GuestRoute>
   },
 
   // ========================
@@ -198,11 +198,11 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.AUTH_CALLBACK,
-    element: withSuspense(AuthCallback),
+    element: withSuspense(AuthCallback)
   },
   {
     path: ROUTES.SET_PASSWORD,
-    element: withSuspense(SetPassword),
+    element: withSuspense(SetPassword)
   },
 
   // ========================
@@ -210,11 +210,11 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.PROFILE,
-    element: (
-      <ProtectedRoute>
-        {withSuspense(Profile)}
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>
+  },
+  {
+    path: ROUTES.EDIT_PROFILE,
+    element: <ProtectedRoute>{withSuspense(EditProfile)}</ProtectedRoute>
   },
 
   // ========================
@@ -232,40 +232,40 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />,
+        element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
       },
       {
         path: 'dashboard',
-        element: withSuspense(ManagementDashboard),
+        element: withSuspense(ManagementDashboard)
       },
       {
         path: 'products',
-        element: withSuspense(ManagementProducts),
+        element: withSuspense(ManagementProducts)
       },
       {
         path: 'orders',
-        element: withSuspense(ManagementOrders),
+        element: withSuspense(ManagementOrders)
       },
       {
         path: 'categories',
-        element: (
-          <AdminRoute>
-            {withSuspense(CategoryManagement)}
-          </AdminRoute>
-        ),
+        element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>
+      },
+      {
+        path: 'users',
+        element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>
       },
       {
         path: 'branches',
-        element: withSuspense(BranchesManagement),
-      },
-    ],
+        element: withSuspense(BranchesManagement)
+      }
+    ]
   },
   // ========================
   // Legacy Routes (redirect to new paths)
   // ========================
   {
     path: '/auth/callback',
-    element: <Navigate to={ROUTES.AUTH_CALLBACK} replace />,
+    element: <Navigate to={ROUTES.AUTH_CALLBACK} replace />
   },
 
   // ========================
@@ -280,8 +280,8 @@ export const routes: RouteObject[] = [
           <p className="text-gray-600">Trang không tồn tại</p>
         </div>
       </div>
-    ),
-  },
+    )
+  }
 ]
 
 // Create browser router

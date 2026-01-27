@@ -34,7 +34,7 @@ export const cartApi = {
   clearCart: async (): Promise<ApiResponse<null>> => {
     const response = await apiClient.delete<ApiResponse<null>>(API_ENDPOINTS.CART.CLEAR)
     return response.data
-  },
+  }
 }
 
 export default cartApi

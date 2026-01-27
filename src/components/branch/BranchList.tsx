@@ -1,0 +1,138 @@
+import { Button, Space, Tag } from 'antd'
+import dayjs from 'dayjs'
+import { LoaderCommon, TableCommon } from '@/components/common'
+import type { TableColumn } from '@/components/common/TableCommon'
+import type { Branch } from '@/features/branch/branchTypes'
+import type { User } from '@/features/user/userTypes'
+
+/* eslint-disable no-unused-vars */
+interface BranchWithKey extends Record<string, unknown> {
+  key: string
+  _id: string
+}
+
+interface BranchListProps {
+  branches: Branch[]
+  managers: User[]
+  isLoading: boolean
+  canManage?: boolean
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+  }
+  onEdit: (branch: Branch) => void
+  onUpdateStatus: (id: string, isActive: boolean) => void
+  onPageChange: (page: number, pageSize: number) => void
+}
+
+const BranchListComponent = ({
+  branches,
+  managers,
+  isLoading,
+  canManage = false,
+  pagination,
+  onEdit,
+  onUpdateStatus,
+  onPageChange
+}: BranchListProps) => {
+  const managerMap = new Map(managers.map(m => [m._id, m]))
+
+  const rows: BranchWithKey[] = branches.map(b => ({
+    ...b,
+    key: b._id
+  }))
+
+  const columns: TableColumn<BranchWithKey>[] = [
+    {
+      key: 'name',
+      title: 'Tên chi nhánh',
+      dataIndex: 'name',
+      width: 220,
+      sortable: true,
+      ellipsis: true
+    },
+    {
+      key: 'address',
+      title: 'Địa chỉ',
+      dataIndex: 'address',
+      width: 320,
+      ellipsis: true
+    },
+    {
+      key: 'manager',
+      title: 'Quản lý',
+      dataIndex: 'manager',
+      width: 220,
+      render: (value: unknown) => {
+        const id = value as string | null | undefined
+        if (!id) return '-'
+        const m = managerMap.get(id)
+        return m ? `${m.fullname} (${m.email})` : id
+      }
+    },
+    {
+      key: 'isActive',
+      title: 'Trạng thái',
+      dataIndex: 'isActive',
+      width: 120,
+      render: (value: unknown) => {
+        const active = Boolean(value)
+        return active ? <Tag color="green">Hoạt động</Tag> : <Tag color="red">Vô hiệu</Tag>
+      }
+    },
+    {
+      key: 'createdAt',
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      width: 160,
+      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm')
+    },
+    {
+      key: 'actions',
+      title: 'Hành động',
+      width: 180,
+      fixed: 'right',
+      render: (_: unknown, record: BranchWithKey) => (
+        <Space>
+          <Button size="small" onClick={() => onEdit(record as unknown as Branch)}>
+            Sửa
+          </Button>
+          <Button
+            size="small"
+            type={record.isActive ? 'default' : 'primary'}
+            disabled={!canManage}
+            onClick={() => onUpdateStatus(record._id, !record.isActive)}
+          >
+            {record.isActive ? 'Vô hiệu' : 'Kích hoạt'}
+          </Button>
+        </Space>
+      )
+    }
+  ]
+
+  if (isLoading) {
+    return <LoaderCommon size="lg" tip="Đang tải danh sách chi nhánh..." />
+  }
+
+  return (
+    <TableCommon<BranchWithKey>
+      columns={columns}
+      data={rows}
+      loading={isLoading}
+      rowKey="key"
+      pagination={{
+        current: pagination?.page || 1,
+        pageSize: pagination?.limit || 10,
+        total: pagination?.total || 0,
+        onChange: (page, pageSize) => onPageChange(page, pageSize)
+      }}
+      scroll={{ x: 'max-content' }}
+      bordered
+      size="small"
+    />
+  )
+}
+
+export default BranchListComponent
+

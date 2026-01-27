@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Avatar } from 'antd'
 import { User, Mail, Phone } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import useUser from '@/hooks/useUser'
 import useAuth from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/constant'
@@ -43,10 +43,20 @@ const Profile = () => {
                 {profile?.fullName || 'Tài khoản'}
               </h1>
               <p className="text-sm text-gray-500">
-                Vai trò: <span className="font-semibold">{profile?.role || '-'}</span>
+                Vai trò:{' '}
+                <span className="font-semibold">{profile?.role || '-'}</span>
               </p>
             </div>
 
+            <Link to={ROUTES.EDIT_PROFILE}>
+              <ButtonCommon
+                type="button"
+                variant="secondary"
+                onClick={() => fetchProfile()}
+              >
+                Cập nhật
+              </ButtonCommon>
+            </Link>
             <ButtonCommon
               type="button"
               variant="secondary"
@@ -76,7 +86,9 @@ const Profile = () => {
                 <Phone className="w-4 h-4" />
                 <span className="font-semibold">Số điện thoại</span>
               </div>
-              <p className="mt-1 text-gray-800">{profile?.phoneNumber || '-'}</p>
+              <p className="mt-1 text-gray-800">
+                {profile?.phoneNumber || '-'}
+              </p>
             </div>
           </div>
         </div>
@@ -86,4 +98,3 @@ const Profile = () => {
 }
 
 export default Profile
-

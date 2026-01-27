@@ -19,7 +19,7 @@ export const userApi = {
     const response = await apiClient.get<ApiResponse<ProfileResponse>>(API_ENDPOINTS.USER.PROFILE)
     return {
       ...response.data,
-      data: mapBackendUserToUserInfo(response.data.data.user),
+      data: mapBackendUserToUserInfo(response.data.data.user)
     }
   },
 
@@ -52,7 +52,7 @@ export const userApi = {
       address
     )
     return response.data
-  },
+  }
 }
 
 export default userApi

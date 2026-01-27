@@ -8,8 +8,15 @@ export const emailSchema = z
 export const passwordSchema = z
   .string()
   .min(1, 'Mật khẩu là bắt buộc')
-  .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
-  .max(50, 'Mật khẩu không được quá 50 ký tự')
+  .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+  .max(20, 'Mật khẩu không được quá 20 ký tự')
+  .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất một chữ hoa')
+  .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
+  .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số')
+  .regex(
+    /[!@#$%^&*(),.?":{}|<>]/,
+    'Mật khẩu phải có ít nhất một ký tự đặc biệt'
+  )
 
 export const phoneSchema = z
   .string()
@@ -30,70 +37,100 @@ export const otpCodeSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: passwordSchema,
+  password: passwordSchema
 })
 
-export const registerSchema = z.object({
-  email: emailSchema,
-  password: passwordSchema,
-  confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
-  fullName: fullNameSchema,
-  phoneNumber: phoneSchema,
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-})
+export const registerSchema = z
+  .object({
+    email: emailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
+    fullName: fullNameSchema,
+    phoneNumber: phoneSchema
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword']
+  })
 
 export const otpVerificationSchema = z.object({
-  code: otpCodeSchema,
+  code: otpCodeSchema
 })
 
 export const forgotPasswordSchema = z.object({
-  email: emailSchema,
+  email: emailSchema
 })
 
-export const resetPasswordSchema = z.object({
-  newPassword: passwordSchema,
-  confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-})
+export const resetPasswordSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc')
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword']
+  })
 
-export const setPasswordSchema = z.object({
-  password: passwordSchema,
-  confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-})
+export const setPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc')
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword']
+  })
 
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Mật khẩu hiện tại là bắt buộc'),
-  newPassword: passwordSchema,
-  confirmNewPassword: z.string().min(1, 'Xác nhận mật khẩu mới là bắt buộc'),
-}).refine((data) => data.newPassword === data.confirmNewPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmNewPassword'],
-}).refine((data) => data.currentPassword !== data.newPassword, {
-  message: 'Mật khẩu mới phải khác mật khẩu hiện tại',
-  path: ['newPassword'],
-})
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Mật khẩu hiện tại là bắt buộc'),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string().min(1, 'Xác nhận mật khẩu mới là bắt buộc')
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmNewPassword']
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: 'Mật khẩu mới phải khác mật khẩu hiện tại',
+    path: ['newPassword']
+  })
 
 export const shippingAddressSchema = z.object({
   fullName: fullNameSchema,
-  phoneNumber: z.string().regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ'),
+  phoneNumber: z
+    .string()
+    .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ'),
   province: z.string().min(1, 'Tỉnh/Thành phố là bắt buộc'),
   district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
   ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
-  address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc'),
+  address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc')
 })
 
-export type LoginFormData = z.infer<typeof loginSchema>
-export type RegisterFormData = z.infer<typeof registerSchema>
-export type OTPVerificationFormData = z.infer<typeof otpVerificationSchema>
-export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
-export type SetPasswordFormData = z.infer<typeof setPasswordSchema>
-export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
-export type ShippingAddressFormData = z.infer<typeof shippingAddressSchema>
+export const userAddressSchema = z.object({
+  fullname: z.string().min(1, 'Vui lòng nhập họ và tên người nhận').trim(),
+  phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
+  addressLine: z.string().min(1, 'Vui lòng nhập địa chỉ chi tiết').trim(),
+  city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
+  district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
+  ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
+  isDefault: z.boolean().optional()
+})
+
+export const userProfileSchema = z.object({
+  fullname: fullNameSchema,
+  email: emailSchema,
+  phone: phoneSchema,
+  addresses: z.array(userAddressSchema),
+  avatar: z.string().optional()
+})
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+export type RegisterFormData = z.infer<typeof registerSchema>;
+export type OTPVerificationFormData = z.infer<typeof otpVerificationSchema>;
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+export type ShippingAddressFormData = z.infer<typeof shippingAddressSchema>;
+export type ProfileFormData = z.infer<typeof userProfileSchema>;

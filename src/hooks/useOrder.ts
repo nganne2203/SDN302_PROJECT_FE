@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { 
-  fetchOrdersThunk, 
-  fetchOrderByIdThunk, 
-  createOrderThunk, 
-  cancelOrderThunk 
+import {
+  fetchOrdersThunk,
+  fetchOrderByIdThunk,
+  createOrderThunk,
+  cancelOrderThunk
 } from '@/features/order/orderThunks'
 import { setSelectedOrder, clearError, clearOrders } from '@/features/order/orderSlices'
 import type { CreateOrderRequest, Order } from '@/types/api'
@@ -12,7 +12,7 @@ import type { PaginationParams } from '@/types/pagination'
 
 export const useOrder = () => {
   const dispatch = useAppDispatch()
-  const { orders, selectedOrder, pagination, isLoading, error } = 
+  const { orders, selectedOrder, pagination, isLoading, error } =
     useAppSelector((state) => state.order)
 
   const fetchOrders = useCallback(
@@ -72,7 +72,7 @@ export const useOrder = () => {
     cancelOrder,
     selectOrder,
     clearOrderError,
-    resetOrders,
+    resetOrders
   }
 }
 
