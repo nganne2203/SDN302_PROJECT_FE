@@ -1,5 +1,7 @@
 import type { Branch, BranchFilter, PaginationMeta } from '@/types/api'
 
+export type { Branch, BranchFilter }
+
 export interface BranchState {
   branches: Branch[]
   selectedBranch: Branch | null

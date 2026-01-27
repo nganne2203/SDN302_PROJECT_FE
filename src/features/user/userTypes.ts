@@ -47,3 +47,10 @@ export interface UserState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface UserFilter {
+  role?: UserRole | ''
+  isActive?: boolean | ''
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc' | ''
+}

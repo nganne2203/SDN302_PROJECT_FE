@@ -1,5 +1,6 @@
 import { ModalCommon, ButtonCommon } from "@/components/common";
 import type { User } from "@/features/user/userTypes";
+import type { Branch } from "@/features/branch/branchTypes";
 import dayjs from "dayjs";
 import { ROLE_LABELS } from "@/constants/constant";
 import {
@@ -64,7 +65,7 @@ const UserDetailModal = ({
   }, [isOpen, user?.branch, fetchBranches]);
 
   const branchInfo = user?.branch
-    ? branches.find((b) => b._id === user.branch)
+    ? branches.find((b: Branch) => b._id === user.branch)
     : null;
 
   if (!user) {

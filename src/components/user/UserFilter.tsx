@@ -23,8 +23,6 @@ const UserFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
   onReset,
 }: UserFilterProps) => {
   const filterFields: FilterField[] = [

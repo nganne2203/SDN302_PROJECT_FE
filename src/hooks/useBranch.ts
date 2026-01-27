@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { z } from 'zod'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import type { RootState } from '@/apps/rootReducer'
-import type { Branch, BranchFilter, CreateBranchPayload, UpdateBranchPayload } from '@/features/branch/branchTypes'
+import type { Branch, BranchFilter } from '@/types/api'
+import type { CreateBranchPayload, UpdateBranchPayload } from '@/features/branch/branchTypes'
 import {
   fetchBranchesThunk,
   fetchBranchByIdThunk,
@@ -24,7 +24,8 @@ export type BranchFormData = z.infer<typeof branchValidationSchema>
 
 export const useBranch = () => {
   const dispatch = useAppDispatch()
-  const branchState = useAppSelector((state: RootState) => (state as any).branch)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const branchState = useAppSelector((state: any) => state.branch)
 
   const {
     branches = [],
