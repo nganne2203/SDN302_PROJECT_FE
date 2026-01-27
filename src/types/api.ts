@@ -1,4 +1,4 @@
-import type { Address } from '@/features/user/userTypes';
+import type { Address } from '@/features/user/userTypes'
 
 export interface ApiResponse<T> {
   success: boolean;

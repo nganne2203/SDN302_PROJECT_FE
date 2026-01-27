@@ -13,15 +13,15 @@ import type { UserRole } from '@/types/api'
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 
 // Lazy loaded components - Public pages
-const Home = lazy(() => import('@/pages/customer/Home'));
-const Login = lazy(() => import('@/pages/auth/Login'));
-const Register = lazy(() => import('@/pages/auth/Register'));
-const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
-const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
-const SetPassword = lazy(() => import('@/pages/auth/SetPassword'));
-const Cart = lazy(() => import('@/pages/customer/Cart'));
-const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
-const Profile = lazy(() => import('@/pages/customer/Profile'));
+const Home = lazy(() => import('@/pages/customer/Home'))
+const Login = lazy(() => import('@/pages/auth/Login'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
+const Cart = lazy(() => import('@/pages/customer/Cart'))
+const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const Profile = lazy(() => import('@/pages/customer/Profile'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
