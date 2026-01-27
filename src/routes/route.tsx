@@ -13,16 +13,15 @@ import type { UserRole } from '@/types/api'
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 
 // Lazy loaded components - Public pages
-const Home = lazy(() => import('@/pages/customer/Home'))
-const Login = lazy(() => import('@/pages/auth/Login'))
-const Register = lazy(() => import('@/pages/auth/Register'))
-const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
-const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
-const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
-const Cart = lazy(() => import('@/pages/customer/Cart'))
-const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
-const Profile = lazy(() => import('@/pages/customer/Profile'))
-const EditProfile = lazy(() => import('@/pages/customer/EditProfile'))
+const Home = lazy(() => import('@/pages/customer/Home'));
+const Login = lazy(() => import('@/pages/auth/Login'));
+const Register = lazy(() => import('@/pages/auth/Register'));
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword'));
+const Cart = lazy(() => import('@/pages/customer/Cart'));
+const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
+const Profile = lazy(() => import('@/pages/customer/Profile'));
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -42,7 +41,7 @@ const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
+  <div className='flex items-center justify-center min-h-screen'>
     <LoaderCommon />
   </div>
 )
@@ -212,10 +211,6 @@ export const routes: RouteObject[] = [
     path: ROUTES.PROFILE,
     element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>
   },
-  {
-    path: ROUTES.EDIT_PROFILE,
-    element: <ProtectedRoute>{withSuspense(EditProfile)}</ProtectedRoute>
-  },
 
   // ========================
   // Management Routes (Admin, Manager, Staff)
@@ -274,10 +269,10 @@ export const routes: RouteObject[] = [
   {
     path: '*',
     element: (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
-          <p className="text-gray-600">Trang không tồn tại</p>
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-center'>
+          <h1 className='text-4xl font-bold text-gray-800 mb-4'>404</h1>
+          <p className='text-gray-600'>Trang không tồn tại</p>
         </div>
       </div>
     )
