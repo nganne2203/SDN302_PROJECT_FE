@@ -189,18 +189,18 @@ const UserFormModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditMode ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}
-      size="xl"
+      size='xl'
       footer={
-        <div className="flex justify-end gap-2">
+        <div className='flex justify-end gap-2'>
           <ButtonCommon
-            variant="outline"
+            variant='outline'
             onClick={onClose}
             disabled={isSubmitting}
           >
             Hủy
           </ButtonCommon>
           <ButtonCommon
-            variant="primary"
+            variant='primary'
             onClick={handleSubmit}
             isLoading={isSubmitting}
           >
@@ -209,15 +209,15 @@ const UserFormModal = ({
         </div>
       }
     >
-      <div className="space-y-6 max-h-[70vh] overflow-y-auto px-1">
+      <div className='space-y-6 max-h-[70vh] overflow-y-auto px-1'>
         {/* Basic Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin cơ bản</h3>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className='text-lg font-semibold text-gray-900 mb-4'>Thông tin cơ bản</h3>
+          <div className='space-y-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <InputField
-                label="Họ và tên"
-                placeholder="Nhập họ và tên..."
+                label='Họ và tên'
+                placeholder='Nhập họ và tên...'
                 required
                 value={formData.fullname}
                 onChange={(e) => handleChange('fullname', e.target.value)}
@@ -225,9 +225,9 @@ const UserFormModal = ({
               />
 
               <InputField
-                label="Email"
-                type="email"
-                placeholder="Nhập email..."
+                label='Email'
+                type='email'
+                placeholder='Nhập email...'
                 required
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
@@ -237,31 +237,31 @@ const UserFormModal = ({
 
             {!isEditMode && (
               <InputField
-                label="Mật khẩu"
-                type="password"
-                placeholder="Nhập mật khẩu..."
+                label='Mật khẩu'
+                type='password'
+                placeholder='Nhập mật khẩu...'
                 required
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
                 error={errors.password}
-                helpText="Mật khẩu: 8-20 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
+                helpText='Mật khẩu: 8-20 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
               />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <InputField
-                label="Số điện thoại"
-                type="tel"
-                placeholder="Nhập số điện thoại..."
+                label='Số điện thoại'
+                type='tel'
+                placeholder='Nhập số điện thoại...'
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 error={errors.phone}
-                helpText="10-11 số"
+                helpText='10-11 số'
               />
 
               <SelectField
-                label="Vai trò"
-                placeholder="Chọn vai trò..."
+                label='Vai trò'
+                placeholder='Chọn vai trò...'
                 required
                 value={formData.role}
                 onChange={(value) => handleChange('role', value as string)}
@@ -271,8 +271,8 @@ const UserFormModal = ({
             </div>
 
             <SelectField
-              label="Chi nhánh"
-              placeholder="Chọn chi nhánh..."
+              label='Chi nhánh'
+              placeholder='Chọn chi nhánh...'
               required={formData.role === USER_ROLES.STAFF || formData.role === USER_ROLES.MANAGER}
               value={formData.branch}
               onChange={(value) => handleChange('branch', value as string)}
@@ -289,119 +289,119 @@ const UserFormModal = ({
             />
 
             <InputField
-              label="URL Avatar"
-              type="url"
-              placeholder="https://example.com/avatar.jpg"
+              label='URL Avatar'
+              type='url'
+              placeholder='https://example.com/avatar.jpg'
               value={formData.avatar}
               onChange={(e) => handleChange('avatar', e.target.value)}
               error={errors.avatar}
-              helpText="Nhập đường dẫn hình ảnh đại diện (tùy chọn)"
+              helpText='Nhập đường dẫn hình ảnh đại diện (tùy chọn)'
             />
           </div>
         </div>
 
-        <Divider className="my-6" />
+        <Divider className='my-6' />
 
         {/* Addresses Section */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-600" />
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className='text-lg font-semibold text-gray-900 flex items-center gap-2'>
+              <MapPin className='w-5 h-5 text-blue-600' />
               Địa chỉ giao hàng
             </h3>
             <Button
-              type="dashed"
-              icon={<Plus className="w-4 h-4" />}
+              type='dashed'
+              icon={<Plus className='w-4 h-4' />}
               onClick={handleAddAddress}
-              className="flex items-center gap-1"
+              className='flex items-center gap-1'
             >
               Thêm địa chỉ
             </Button>
           </div>
 
           {formData.addresses.length === 0 ? (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">Chưa có địa chỉ nào</p>
-              <p className="text-sm text-gray-400 mt-1">Nhấn "Thêm địa chỉ" để bắt đầu</p>
+            <div className='text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300'>
+              <MapPin className='w-12 h-12 text-gray-400 mx-auto mb-2' />
+              <p className='text-gray-500'>Chưa có địa chỉ nào</p>
+              <p className='text-sm text-gray-400 mt-1'>Nhấn 'Thêm địa chỉ' để bắt đầu</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {formData.addresses.map((address, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-gray-50 rounded-lg border border-gray-200 relative"
+                  className='p-4 bg-gray-50 rounded-lg border border-gray-200 relative'
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-medium text-gray-900">Địa chỉ {index + 1}</h4>
+                  <div className='flex items-start justify-between mb-3'>
+                    <h4 className='font-medium text-gray-900'>Địa chỉ {index + 1}</h4>
                     <Button
-                      type="text"
+                      type='text'
                       danger
-                      size="small"
-                      icon={<Trash2 className="w-4 h-4" />}
+                      size='small'
+                      icon={<Trash2 className='w-4 h-4' />}
                       onClick={() => handleRemoveAddress(index)}
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className='space-y-3'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                       <InputField
-                        label="Họ và tên người nhận"
-                        placeholder="Nhập họ và tên..."
+                        label='Họ và tên người nhận'
+                        placeholder='Nhập họ và tên...'
                         value={address.fullname}
                         onChange={(e) => handleAddressChange(index, 'fullname', e.target.value)}
-                        className="mb-0"
+                        className='mb-0'
                       />
                       <InputField
-                        label="Số điện thoại"
-                        placeholder="Nhập số điện thoại..."
+                        label='Số điện thoại'
+                        placeholder='Nhập số điện thoại...'
                         value={address.phone}
                         onChange={(e) => handleAddressChange(index, 'phone', e.target.value)}
-                        className="mb-0"
+                        className='mb-0'
                       />
                     </div>
 
                     <InputField
-                      label="Địa chỉ chi tiết"
-                      placeholder="Số nhà, tên đường..."
+                      label='Địa chỉ chi tiết'
+                      placeholder='Số nhà, tên đường...'
                       value={address.addressLine}
                       onChange={(e) => handleAddressChange(index, 'addressLine', e.target.value)}
-                      className="mb-0"
+                      className='mb-0'
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
                       <InputField
-                        label="Thành phố"
-                        placeholder="Thành phố..."
+                        label='Thành phố'
+                        placeholder='Thành phố...'
                         value={address.city}
                         onChange={(e) => handleAddressChange(index, 'city', e.target.value)}
-                        className="mb-0"
+                        className='mb-0'
                       />
                       <InputField
-                        label="Quận/Huyện"
-                        placeholder="Quận/Huyện..."
+                        label='Quận/Huyện'
+                        placeholder='Quận/Huyện...'
                         value={address.district}
                         onChange={(e) => handleAddressChange(index, 'district', e.target.value)}
-                        className="mb-0"
+                        className='mb-0'
                       />
                       <InputField
-                        label="Phường/Xã"
-                        placeholder="Phường/Xã..."
+                        label='Phường/Xã'
+                        placeholder='Phường/Xã...'
                         value={address.ward}
                         onChange={(e) => handleAddressChange(index, 'ward', e.target.value)}
-                        className="mb-0"
+                        className='mb-0'
                       />
                     </div>
 
                     <CheckboxField
-                      label="Đặt làm địa chỉ mặc định"
+                      label='Đặt làm địa chỉ mặc định'
                       checked={address.isDefault}
                       onChange={(checked) => handleAddressChange(index, 'isDefault', checked)}
-                      className="mb-0"
+                      className='mb-0'
                     />
 
                     {errors[`address_${index}`] && (
-                      <p className="text-sm text-red-500 mt-2">
+                      <p className='text-sm text-red-500 mt-2'>
                         {errors[`address_${index}`]}
                       </p>
                     )}

@@ -22,7 +22,6 @@ const SetPassword = lazy(() => import('@/pages/auth/SetPassword'));
 const Cart = lazy(() => import('@/pages/customer/Cart'));
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
 const Profile = lazy(() => import('@/pages/customer/Profile'));
-const EditProfile = lazy(() => import('@/pages/customer/EditProfile'));
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -209,10 +208,6 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.PROFILE,
     element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>,
-  },
-  {
-    path: ROUTES.EDIT_PROFILE,
-    element: <ProtectedRoute>{withSuspense(EditProfile)}</ProtectedRoute>,
   },
 
   // ========================

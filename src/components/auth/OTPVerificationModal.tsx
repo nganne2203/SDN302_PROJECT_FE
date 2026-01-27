@@ -61,18 +61,18 @@ const OTPInputContent = ({
   const { title, description } = getModalContent()
 
   return (
-    <div className="py-4">
-      <div className="text-center mb-6">
-        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-          <Mail className="w-8 h-8 text-blue-600" />
+    <div className='py-4'>
+      <div className='text-center mb-6'>
+        <div className='mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
+          <Mail className='w-8 h-8 text-blue-600' />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>
-        <p className="text-gray-600">{description}</p>
-        <p className="text-blue-600 font-semibold">{email}</p>
+        <h2 className='text-2xl font-bold text-gray-800 mb-2'>{title}</h2>
+        <p className='text-gray-600'>{description}</p>
+        <p className='text-blue-600 font-semibold'>{email}</p>
       </div>
 
-      <div className="mb-6">
-        <div className="flex justify-center gap-2" onPaste={handlePaste}>
+      <div className='mb-6'>
+        <div className='flex justify-center gap-2' onPaste={handlePaste}>
           {otp.map((digit, index) => (
             <Input
               key={index}
@@ -83,7 +83,7 @@ const OTPInputContent = ({
               onChange={(e) => handleOtpChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               maxLength={1}
-              className="w-12 h-12 text-center text-xl font-semibold"
+              className='w-12 h-12 text-center text-xl font-semibold'
               style={{ fontSize: '20px' }}
               disabled={isSubmitting}
             />
@@ -92,28 +92,28 @@ const OTPInputContent = ({
       </div>
 
       <ButtonCommon
-        type="button"
-        variant="primary"
-        size="lg"
+        type='button'
+        variant='primary'
+        size='lg'
         onClick={handleVerify}
         isLoading={isSubmitting}
         disabled={isSubmitting}
         block
-        className="mb-4"
+        className='mb-4'
       >
         Xác Thực
       </ButtonCommon>
 
-      <div className="text-center">
-        <p className="text-sm text-gray-600 mb-2">Không nhận được mã?</p>
+      <div className='text-center'>
+        <p className='text-sm text-gray-600 mb-2'>Không nhận được mã?</p>
         {countdown > 0 ? (
-          <p className="text-sm text-gray-500">Gửi lại sau {countdown}s</p>
+          <p className='text-sm text-gray-500'>Gửi lại sau {countdown}s</p>
         ) : (
           <button
-            type="button"
+            type='button'
             onClick={handleResend}
             disabled={isResending || isSubmitting}
-            className="text-blue-600 font-semibold hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+            className='text-blue-600 font-semibold hover:underline inline-flex items-center gap-1 disabled:opacity-50'
           >
             <RefreshCw
               className={`w-4 h-4 ${isResending ? 'animate-spin' : ''}`}
@@ -134,7 +134,7 @@ const OTPVerificationModal = ({
   onSuccess,
 }: OTPVerificationModalProps) => {
   return (
-    <ModalCommon isOpen={isOpen} onClose={onClose} size="sm" maskClosable={false}>
+    <ModalCommon isOpen={isOpen} onClose={onClose} size='sm' maskClosable={false}>
       {isOpen && (
         <OTPInputContent
           email={email}

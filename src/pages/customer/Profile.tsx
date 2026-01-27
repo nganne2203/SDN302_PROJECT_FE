@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar } from 'antd';
 import { User, Mail, Phone } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useUser from '@/hooks/useUser';
 import useAuth from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/constant';
 import ButtonCommon from '@/components/common/ButtonCommon';
+import ProfileModalComponent from '@/components/auth/ProfileModal';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { profile, isLoading, error, fetchProfile } = useUser();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,7 +42,7 @@ const Profile = () => {
             />
             <div className='flex-1'>
               <h1 className='text-2xl font-bold text-gray-800'>
-                {profile?.fullName || 'Tài khoản'}
+                {profile?.fullname || 'Tài khoản'}
               </h1>
               <p className='text-sm text-gray-500'>
                 Vai trò:{' '}
@@ -48,15 +50,14 @@ const Profile = () => {
               </p>
             </div>
 
-            <Link to={ROUTES.EDIT_PROFILE}>
-              <ButtonCommon
-                type='button'
-                variant='secondary'
-                onClick={() => fetchProfile()}
-              >
-                Cập nhật
-              </ButtonCommon>
-            </Link>
+            <ButtonCommon
+              type='button'
+              variant='secondary'
+              onClick={() => setIsModalOpen(true)}
+            >
+              Cập nhật
+            </ButtonCommon>
+
             <ButtonCommon
               type='button'
               variant='secondary'
@@ -86,12 +87,14 @@ const Profile = () => {
                 <Phone className='w-4 h-4' />
                 <span className='font-semibold'>Số điện thoại</span>
               </div>
-              <p className='mt-1 text-gray-800'>
-                {profile?.phoneNumber || '-'}
-              </p>
+              <p className='mt-1 text-gray-800'>{profile?.phone || '-'}</p>
             </div>
           </div>
         </div>
+        <ProfileModalComponent
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       </div>
     </div>
   );

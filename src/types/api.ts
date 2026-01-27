@@ -1,20 +1,22 @@
+import type { Address } from '@/features/user/userTypes';
+
 export interface ApiResponse<T> {
-  success: boolean
-  message: string
-  data: T
-  pagination?: PaginationMeta | null
+  success: boolean;
+  message: string;
+  data: T;
+  pagination?: PaginationMeta | null;
 }
 
 export interface SimpleResponse {
-  success: boolean
-  message: string
+  success: boolean;
+  message: string;
 }
 
 export interface ApiError {
-  success: false
-  code: string
-  message: string
-  errors: string[]
+  success: false;
+  code: string;
+  message: string;
+  errors: string[];
 }
 
 export const ERROR_CODES = {
@@ -25,306 +27,322 @@ export const ERROR_CODES = {
   INVALID_OTP: 'INVALID_OTP',
   OTP_EXPIRED: 'OTP_EXPIRED',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
-} as const
+} as const;
 
-export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES]
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 export interface PaginatedResponse<T> {
-  success: boolean
-  message: string
-  data: T[]
-  pagination: PaginationMeta
+  success: boolean;
+  message: string;
+  data: T[];
+  pagination: PaginationMeta;
 }
 
 export interface PaginationMeta {
-  currentPage: number
-  totalPages: number
-  pageSize: number
-  totalItems: number
-  hasNextPage: boolean
-  hasPreviousPage: boolean
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalItems: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface LoginRequest {
-  email: string
-  password: string
-  captchaToken?: string
+  email: string;
+  password: string;
+  captchaToken?: string;
 }
 
 export interface RegisterRequest {
-  fullname: string
-  email: string
-  password: string
-  phone?: string
+  fullname: string;
+  email: string;
+  password: string;
+  phone?: string;
   addresses?: Array<{
-    fullname: string
-    phone: string
-    addressLine: string
-    city: string
-    district: string
-    ward: string
-    isDefault: boolean
-  }>
-  avatar?: string
-  captchaToken?: string
+    fullname: string;
+    phone: string;
+    addressLine: string;
+    city: string;
+    district: string;
+    ward: string;
+    isDefault: boolean;
+  }>;
+  avatar?: string;
+  captchaToken?: string;
 }
 
-export type OTPType = 'verify_email' | 'reset_password' | 'change_password' | 'change_email' | 'change_info'
+export type OTPType =
+  | 'verify_email'
+  | 'reset_password'
+  | 'change_password'
+  | 'change_email'
+  | 'change_info';
 
 export interface VerifyOTPRequest {
-  email: string
-  code: string
-  type: OTPType
+  email: string;
+  code: string;
+  type: OTPType;
 }
 
 export interface ResendOTPRequest {
-  email: string
-  type: OTPType
+  email: string;
+  type: OTPType;
 }
 
 export interface ResetPasswordRequest {
-  email: string
+  email: string;
 }
 
 export interface ConfirmResetPasswordRequest {
-  email: string
-  newPassword: string
+  email: string;
+  newPassword: string;
 }
 
 export interface SetPasswordRequest {
-  password: string
+  password: string;
 }
 
 export interface ChangePasswordRequest {
-  currentPassword: string
-  newPassword: string
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface RefreshTokenRequest {
-  refreshToken: string
+  refreshToken: string;
 }
 
 export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface VerifyOTPResponse {
-  accessToken?: string
-  refreshToken?: string
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface RegisterResponse {
-  _id: string
-  email: string
-  fullname: string
-  phone?: string
-  avatar?: string
-  role: UserRole
-  isEmailVerified: boolean
+  _id: string;
+  email: string;
+  fullname: string;
+  phone?: string;
+  avatar?: string;
+  role: UserRole;
+  isEmailVerified: boolean;
 }
 
-export type UserRole = 'admin' | 'customer' | 'staff' | 'manager'
+export type UserRole = 'admin' | 'customer' | 'staff' | 'manager';
 
 export interface UserInfo {
-  id: string
-  email: string
-  fullName: string
-  phoneNumber?: string
-  avatar?: string
-  role: UserRole
-  branch?: string | null
-  isEmailVerified?: boolean
+  id: string;
+  email: string;
+  fullname: string;
+  phone?: string;
+  avatar?: string;
+  role: UserRole;
+  branch?: string | null;
+  isEmailVerified?: boolean;
+  addresses?: Address[];
 }
 
 export interface BackendUser {
-  _id: string
-  email: string
-  fullname: string
-  phone?: string
-  avatar?: string
-  role: UserRole
-  branch?: string | null
-  isEmailVerified?: boolean
+  _id: string;
+  email: string;
+  fullname: string;
+  phone?: string;
+  avatar?: string;
+  role: UserRole;
+  branch?: string | null;
+  isEmailVerified?: boolean;
+  addresses?: Address[];
 }
 
 export interface ProfileResponse {
-  user: BackendUser
+  user: BackendUser;
 }
 
 export interface TokenPayload {
-  id: string
-  email: string
-  role: UserRole
-  branch?: string | null
-  exp: number
-  iat: number
+  id: string;
+  email: string;
+  role: UserRole;
+  branch?: string | null;
+  exp: number;
+  iat: number;
 }
 
 export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  user: UserInfo
+  accessToken: string;
+  refreshToken: string;
+  user: UserInfo;
 }
 
 export interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  originalPrice?: number
-  images: string[]
-  categoryId: string
-  categoryName: string
-  brand: string
-  stock: number
-  rating: number
-  reviewCount: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  images: string[];
+  categoryId: string;
+  categoryName: string;
+  brand: string;
+  stock: number;
+  rating: number;
+  reviewCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductFilter {
-  categoryId?: string
-  brand?: string
-  minPrice?: number
-  maxPrice?: number
-  search?: string
-  sortBy?: 'price' | 'name' | 'createdAt' | 'rating'
-  sortOrder?: 'asc' | 'desc'
-  page?: number
-  pageSize?: number
+  categoryId?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  sortBy?: 'price' | 'name' | 'createdAt' | 'rating';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
 }
 
 export interface Branch {
-  _id: string
-  name: string
-  address: string
-  manager?: string | null
-  isActive: boolean
-  createdBy?: string | null
-  updatedBy?: string | null
-  createdAt: string
-  updatedAt: string
+  _id: string;
+  name: string;
+  address: string;
+  manager?: string | null;
+  isActive: boolean;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BranchFilter {
-  page?: number
-  limit?: number
-  search?: string
-  isActive?: boolean
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 // Cart Types
 export interface CartItem {
-  id: string
-  productId: string
-  product: Product
-  quantity: number
-  price: number
+  id: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  price: number;
 }
 
 export interface Cart {
-  id: string
-  userId: string
-  items: CartItem[]
-  totalAmount: number
-  totalItems: number
+  id: string;
+  userId: string;
+  items: CartItem[];
+  totalAmount: number;
+  totalItems: number;
 }
 
 export interface Order {
-  id: string
-  userId: string
-  items: OrderItem[]
-  totalAmount: number
-  status: OrderStatus
-  shippingAddress: ShippingAddress
-  paymentMethod: PaymentMethod
-  paymentStatus: PaymentStatus
-  createdAt: string
-  updatedAt: string
+  id: string;
+  userId: string;
+  items: OrderItem[];
+  totalAmount: number;
+  status: OrderStatus;
+  shippingAddress: ShippingAddress;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface OrderItem {
-  id: string
-  productId: string
-  productName: string
-  productImage: string
-  quantity: number
-  price: number
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  quantity: number;
+  price: number;
 }
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED'
-export type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'E_WALLET'
-export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CANCELLED';
+export type PaymentMethod =
+  | 'COD'
+  | 'BANK_TRANSFER'
+  | 'CREDIT_CARD'
+  | 'E_WALLET';
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 
 export interface ShippingAddress {
-  fullName: string
-  phoneNumber: string
-  province: string
-  district: string
-  ward: string
-  address: string
+  fullName: string;
+  phoneNumber: string;
+  province: string;
+  district: string;
+  ward: string;
+  address: string;
 }
 
 export interface CreateOrderRequest {
-  items: { productId: string; quantity: number }[]
-  shippingAddress: ShippingAddress
-  paymentMethod: PaymentMethod
-  note?: string
+  items: { productId: string; quantity: number }[];
+  shippingAddress: ShippingAddress;
+  paymentMethod: PaymentMethod;
+  note?: string;
 }
 
 // User Management Types
 export interface CreateUserRequest {
-  fullname: string
-  email: string
-  password: string
-  phone?: string
-  role?: UserRole
-  branch?: string
+  fullname: string;
+  email: string;
+  password: string;
+  phone?: string;
+  role?: UserRole;
+  branch?: string;
   addresses?: Array<{
-    fullname: string
-    phone: string
-    addressLine: string
-    city: string
-    district: string
-    ward: string
-    isDefault: boolean
-  }>
-  avatar?: string
+    fullname: string;
+    phone: string;
+    addressLine: string;
+    city: string;
+    district: string;
+    ward: string;
+    isDefault: boolean;
+  }>;
+  avatar?: string;
 }
 
 export interface UpdateUserRequest {
-  fullname?: string
-  email?: string
-  phone?: string
-  role?: UserRole
-  branch?: string
-  avatar?: string
+  fullname?: string;
+  email?: string;
+  phone?: string;
+  role?: UserRole;
+  branch?: string;
+  avatar?: string;
   addresses?: Array<{
-    fullname: string
-    phone: string
-    addressLine: string
-    city: string
-    district: string
-    ward: string
-    isDefault: boolean
-  }>
+    fullname: string;
+    phone: string;
+    addressLine: string;
+    city: string;
+    district: string;
+    ward: string;
+    isDefault: boolean;
+  }>;
 }
 
 export interface UpdateUserStatusRequest {
-  isActive: boolean
+  isActive: boolean;
 }
 
 export interface UserManageFilter {
-  page?: number
-  limit?: number
-  search?: string
-  isActive?: boolean
-  role?: UserRole
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  role?: UserRole;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
