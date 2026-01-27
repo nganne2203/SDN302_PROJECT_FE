@@ -19,6 +19,7 @@
     "axios": "^1.13.2",
     "axios-retry": "^4.5.0",
     "dayjs": "^1.11.19",
+    "dependency": "^0.0.1",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",

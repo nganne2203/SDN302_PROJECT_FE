@@ -201,9 +201,10 @@ export interface Branch {
   _id: string
   name: string
   address: string
-  manager: string
+  manager?: string | null
   isActive: boolean
-  createdBy: string
+  createdBy?: string | null
+  updatedBy?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -213,8 +214,11 @@ export interface BranchFilter {
   limit?: number
   search?: string
   isActive?: boolean
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
+// Cart Types
 export interface CartItem {
   id: string
   productId: string
