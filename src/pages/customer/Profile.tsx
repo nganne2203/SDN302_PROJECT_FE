@@ -1,31 +1,31 @@
-import { useEffect } from "react";
-import { Avatar } from "antd";
-import { User, Mail, Phone } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import useUser from "@/hooks/useUser";
-import useAuth from "@/hooks/useAuth";
-import { ROUTES } from "@/constants/constant";
-import ButtonCommon from "@/components/common/ButtonCommon";
+import { useEffect } from 'react'
+import { Avatar } from 'antd'
+import { User, Mail, Phone } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import useUser from '@/hooks/useUser'
+import useAuth from '@/hooks/useAuth'
+import { ROUTES } from '@/constants/constant'
+import ButtonCommon from '@/components/common/ButtonCommon'
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const { profile, isLoading, error, fetchProfile } = useUser();
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+  const { profile, isLoading, error, fetchProfile } = useUser()
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(ROUTES.LOGIN);
-      return;
+      navigate(ROUTES.LOGIN)
+      return
     }
-    fetchProfile();
-  }, [fetchProfile, isAuthenticated, navigate]);
+    fetchProfile()
+  }, [fetchProfile, isAuthenticated, navigate])
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -40,11 +40,11 @@ const Profile = () => {
             />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-800">
-                {profile?.fullName || "Tài khoản"}
+                {profile?.fullName || 'Tài khoản'}
               </h1>
               <p className="text-sm text-gray-500">
-                Vai trò:{" "}
-                <span className="font-semibold">{profile?.role || "-"}</span>
+                Vai trò:{' '}
+                <span className="font-semibold">{profile?.role || '-'}</span>
               </p>
             </div>
 
@@ -78,7 +78,7 @@ const Profile = () => {
                 <Mail className="w-4 h-4" />
                 <span className="font-semibold">Email</span>
               </div>
-              <p className="mt-1 text-gray-800">{profile?.email || "-"}</p>
+              <p className="mt-1 text-gray-800">{profile?.email || '-'}</p>
             </div>
 
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
@@ -87,14 +87,14 @@ const Profile = () => {
                 <span className="font-semibold">Số điện thoại</span>
               </div>
               <p className="mt-1 text-gray-800">
-                {profile?.phoneNumber || "-"}
+                {profile?.phoneNumber || '-'}
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

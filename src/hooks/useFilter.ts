@@ -4,7 +4,7 @@ import type {
   FilterParams,
   UseFilterOptions,
   UseFilterReturn,
-  SortOrder,
+  SortOrder
 } from '../types/filter'
 import { DEFAULT_FILTER_CONFIG } from '../types/filter'
 
@@ -27,7 +27,7 @@ export const useFilter = (options: UseFilterOptions = {}): UseFilterReturn => {
       ...(debouncedSearch && { search: debouncedSearch }),
       ...(sortBy && { sortBy }),
       ...(sortOrder && { sortOrder }),
-      ...customFilters,
+      ...customFilters
     }
     return baseFilters
   }, [debouncedSearch, page, limit, sortBy, sortOrder, customFilters])
@@ -77,7 +77,7 @@ export const useFilter = (options: UseFilterOptions = {}): UseFilterReturn => {
   const setFilter = useCallback((key: string, value: string | number | boolean) => {
     setCustomFilters(prev => ({
       ...prev,
-      [key]: value,
+      [key]: value
     }))
     setPageState(DEFAULT_FILTER_CONFIG.defaultPage)
   }, [])
@@ -90,7 +90,7 @@ export const useFilter = (options: UseFilterOptions = {}): UseFilterReturn => {
     if (newLimit !== undefined) setLimitState(newLimit)
     if (newSortBy !== undefined) setSortByState(newSortBy)
     if (newSortOrder !== undefined) setSortOrderState(newSortOrder)
-    
+
     if (Object.keys(rest).length > 0) {
       setCustomFilters(prev => {
         const filtered: Record<string, string | number | boolean> = {}
@@ -144,7 +144,7 @@ export const useFilter = (options: UseFilterOptions = {}): UseFilterReturn => {
     resetPagination,
     nextPage,
     prevPage,
-    debouncedSearch,
+    debouncedSearch
   }
 }
 

@@ -1,13 +1,13 @@
 import type { ReactElement } from 'react'
-import { 
-  Input, 
-  Select, 
-  DatePicker, 
-  InputNumber, 
-  Switch, 
-  Checkbox, 
+import {
+  Input,
+  Select,
+  DatePicker,
+  InputNumber,
+  Switch,
+  Checkbox,
   Radio,
-  Upload,
+  Upload
 } from 'antd'
 import type { InputProps, SelectProps, DatePickerProps, InputNumberProps, UploadProps } from 'antd'
 import type { TextAreaProps } from 'antd/es/input'
@@ -232,7 +232,7 @@ export const SwitchField = ({
   className = '',
   checked,
   onChange,
-  disabled,
+  disabled
 }: SwitchFieldProps) => {
   return (
     <div className={`mb-4 ${className}`}>
@@ -266,7 +266,7 @@ export const CheckboxField = ({
   className = '',
   checked,
   onChange,
-  disabled,
+  disabled
 }: CheckboxFieldProps) => {
   return (
     <div className={`mb-4 ${className}`}>
@@ -307,7 +307,7 @@ export const RadioField = ({
   options,
   value,
   onChange,
-  direction = 'horizontal',
+  direction = 'horizontal'
 }: RadioFieldProps) => {
   return (
     <div className={`mb-4 ${className}`}>
@@ -400,7 +400,7 @@ interface ControlledFieldProps<TFieldValues extends FieldValues> {
 export const ControlledField = <TFieldValues extends FieldValues>({
   name,
   control,
-  render,
+  render
 }: ControlledFieldProps<TFieldValues>) => {
   return (
     <FormController
@@ -411,7 +411,7 @@ export const ControlledField = <TFieldValues extends FieldValues>({
           value: field.value,
           onChange: field.onChange,
           onBlur: field.onBlur,
-          error: fieldState.error?.message,
+          error: fieldState.error?.message
         })
       }
     />
@@ -429,5 +429,5 @@ export default {
   Checkbox: CheckboxField,
   Radio: RadioField,
   Upload: UploadField,
-  Controlled: ControlledField,
+  Controlled: ControlledField
 }

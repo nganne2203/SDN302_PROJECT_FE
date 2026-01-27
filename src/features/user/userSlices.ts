@@ -1,18 +1,18 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { UserState } from './userTypes'
 import type { UserInfo, ShippingAddress } from '@/types/api'
-import { 
-  fetchProfileThunk, 
-  updateProfileThunk, 
+import {
+  fetchProfileThunk,
+  updateProfileThunk,
   fetchAddressesThunk,
-  addAddressThunk,
+  addAddressThunk
 } from './userThunks'
 
 const initialState: UserState = {
   profile: null,
   addresses: [],
   isLoading: false,
-  error: null,
+  error: null
 }
 
 const userSlice = createSlice({
@@ -28,7 +28,7 @@ const userSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -81,7 +81,7 @@ const userSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const { setProfile, clearProfile, clearError } = userSlice.actions

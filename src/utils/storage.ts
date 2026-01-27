@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie'
 
+/* eslint-disable no-console */
 type StorageType = 'local' | 'session' | 'cookie'
 
 interface CookieOptions {
@@ -14,7 +15,7 @@ const DEFAULT_COOKIE_OPTIONS: CookieOptions = {
   expires: 7,
   path: '/',
   secure: true,
-  sameSite: 'strict',
+  sameSite: 'strict'
 }
 
 export const setStorage = (
@@ -25,15 +26,15 @@ export const setStorage = (
 ): void => {
   try {
     switch (type) {
-      case 'local':
-        localStorage.setItem(key, value)
-        break
-      case 'session':
-        sessionStorage.setItem(key, value)
-        break
-      case 'cookie':
-        Cookies.set(key, value, { ...DEFAULT_COOKIE_OPTIONS, ...options })
-        break
+    case 'local':
+      localStorage.setItem(key, value)
+      break
+    case 'session':
+      sessionStorage.setItem(key, value)
+      break
+    case 'cookie':
+      Cookies.set(key, value, { ...DEFAULT_COOKIE_OPTIONS, ...options })
+      break
     }
   } catch (error) {
     console.error(`Error setting ${type} storage:`, error)
@@ -43,14 +44,14 @@ export const setStorage = (
 export const getStorage = (key: string, type: StorageType = 'local'): string | null => {
   try {
     switch (type) {
-      case 'local':
-        return localStorage.getItem(key)
-      case 'session':
-        return sessionStorage.getItem(key)
-      case 'cookie':
-        return Cookies.get(key) || null
-      default:
-        return null
+    case 'local':
+      return localStorage.getItem(key)
+    case 'session':
+      return sessionStorage.getItem(key)
+    case 'cookie':
+      return Cookies.get(key) || null
+    default:
+      return null
     }
   } catch (error) {
     console.error(`Error getting ${type} storage:`, error)
@@ -61,15 +62,15 @@ export const getStorage = (key: string, type: StorageType = 'local'): string | n
 export const removeStorage = (key: string, type: StorageType = 'local'): void => {
   try {
     switch (type) {
-      case 'local':
-        localStorage.removeItem(key)
-        break
-      case 'session':
-        sessionStorage.removeItem(key)
-        break
-      case 'cookie':
-        Cookies.remove(key)
-        break
+    case 'local':
+      localStorage.removeItem(key)
+      break
+    case 'session':
+      sessionStorage.removeItem(key)
+      break
+    case 'cookie':
+      Cookies.remove(key)
+      break
     }
   } catch (error) {
     console.error(`Error removing ${type} storage:`, error)
@@ -79,18 +80,18 @@ export const removeStorage = (key: string, type: StorageType = 'local'): void =>
 export const clearStorage = (type: StorageType = 'local'): void => {
   try {
     switch (type) {
-      case 'local':
-        localStorage.clear()
-        break
-      case 'session':
-        sessionStorage.clear()
-        break
-      case 'cookie':
-        // Clear all cookies
-        Object.keys(Cookies.get()).forEach((cookieName) => {
-          Cookies.remove(cookieName)
-        })
-        break
+    case 'local':
+      localStorage.clear()
+      break
+    case 'session':
+      sessionStorage.clear()
+      break
+    case 'cookie':
+      // Clear all cookies
+      Object.keys(Cookies.get()).forEach((cookieName) => {
+        Cookies.remove(cookieName)
+      })
+      break
     }
   } catch (error) {
     console.error(`Error clearing ${type} storage:`, error)

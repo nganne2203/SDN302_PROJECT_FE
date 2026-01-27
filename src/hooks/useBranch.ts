@@ -10,14 +10,14 @@ import {
   updateBranchThunk,
   updateBranchStatusThunk,
   assignBranchManagerThunk,
-  removeBranchManagerThunk,
+  removeBranchManagerThunk
 } from '@/features/branch/branchThunks'
 import { setFilter, clearFilter, setSelectedBranch, clearError } from '@/features/branch/branchSlices'
 
 const branchValidationSchema = z.object({
   name: z.string().min(1, 'Tên chi nhánh không được để trống').max(100, 'Tên chi nhánh không vượt quá 100 ký tự'),
   address: z.string().min(1, 'Địa chỉ không được để trống').max(255, 'Địa chỉ không vượt quá 255 ký tự'),
-  manager: z.string().optional().nullable(),
+  manager: z.string().optional().nullable()
 })
 
 export type BranchFormData = z.infer<typeof branchValidationSchema>
@@ -33,7 +33,7 @@ export const useBranch = () => {
     pagination,
     filter = {},
     isLoading = false,
-    error,
+    error
   } = branchState || {}
 
   const fetchBranches = useCallback(
@@ -133,7 +133,7 @@ export const useBranch = () => {
     handleClearFilter,
     handleSetSelectedBranch,
     handleClearError,
-    validateBranchForm,
+    validateBranchForm
   }
 }
 

@@ -14,7 +14,7 @@ import {
   BarChartOutlined,
   TeamOutlined,
   CustomerServiceOutlined,
-  FileTextOutlined,
+  FileTextOutlined
 } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ROUTES, USER_ROLES } from '@/constants/constant'
@@ -32,59 +32,59 @@ const getItem = (
     key,
     icon,
     children,
-    label,
+    label
   } as MenuItem
 }
 
 const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
   const commonItems: MenuItem[] = [
-    getItem('Dashboard', ROUTES.MANAGEMENT.DASHBOARD, <DashboardOutlined />),
+    getItem('Dashboard', ROUTES.MANAGEMENT.DASHBOARD, <DashboardOutlined />)
   ]
 
   switch (role) {
-    case USER_ROLES.ADMIN:
-      return [
-        ...commonItems,
-        getItem('Chi nhánh', ROUTES.MANAGEMENT.BRANCHES, <BankOutlined />),
-        getItem('Kho tổng', ROUTES.MANAGEMENT.INVENTORY_TOTAL, <InboxOutlined />),
-        getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
-        getItem('Danh mục', ROUTES.MANAGEMENT.CATEGORIES, <TagOutlined />),
-        getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-        getItem('Quản lý người dùng', 'users-group', <UserOutlined />, [
-          getItem('Tất cả người dùng', ROUTES.MANAGEMENT.USERS),
-          getItem('Quản lý nhân viên', ROUTES.MANAGEMENT.STAFF),
-        ]),
-        getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
-        getItem('Khuyến mãi', ROUTES.MANAGEMENT.PROMOTIONS, <GiftOutlined />),
-        getItem('Báo cáo', ROUTES.MANAGEMENT.ALL_REPORTS, <BarChartOutlined />),
-        getItem('Cài đặt', 'settings', <SettingOutlined />, [
-          getItem('Thanh toán', ROUTES.MANAGEMENT.PAYMENT_SETTINGS),
-          getItem('Vận chuyển', ROUTES.MANAGEMENT.DELIVERY_SETTINGS),
-        ]),
-      ]
+  case USER_ROLES.ADMIN:
+    return [
+      ...commonItems,
+      getItem('Chi nhánh', ROUTES.MANAGEMENT.BRANCHES, <BankOutlined />),
+      getItem('Kho tổng', ROUTES.MANAGEMENT.INVENTORY_TOTAL, <InboxOutlined />),
+      getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
+      getItem('Danh mục', ROUTES.MANAGEMENT.CATEGORIES, <TagOutlined />),
+      getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Quản lý người dùng', 'users-group', <UserOutlined />, [
+        getItem('Tất cả người dùng', ROUTES.MANAGEMENT.USERS),
+        getItem('Quản lý nhân viên', ROUTES.MANAGEMENT.STAFF)
+      ]),
+      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
+      getItem('Khuyến mãi', ROUTES.MANAGEMENT.PROMOTIONS, <GiftOutlined />),
+      getItem('Báo cáo', ROUTES.MANAGEMENT.ALL_REPORTS, <BarChartOutlined />),
+      getItem('Cài đặt', 'settings', <SettingOutlined />, [
+        getItem('Thanh toán', ROUTES.MANAGEMENT.PAYMENT_SETTINGS),
+        getItem('Vận chuyển', ROUTES.MANAGEMENT.DELIVERY_SETTINGS)
+      ])
+    ]
 
-    case USER_ROLES.MANAGER:
-      return [
-        ...commonItems,
-        getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
-        getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
-        getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-        getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
-        getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
-        getItem('Khuyến mãi chi nhánh', ROUTES.MANAGEMENT.BRANCH_PROMOTIONS, <GiftOutlined />),
-        getItem('Báo cáo chi nhánh', ROUTES.MANAGEMENT.BRANCH_REPORTS, <BarChartOutlined />),
-      ]
+  case USER_ROLES.MANAGER:
+    return [
+      ...commonItems,
+      getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
+      getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
+      getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
+      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
+      getItem('Khuyến mãi chi nhánh', ROUTES.MANAGEMENT.BRANCH_PROMOTIONS, <GiftOutlined />),
+      getItem('Báo cáo chi nhánh', ROUTES.MANAGEMENT.BRANCH_REPORTS, <BarChartOutlined />)
+    ]
 
-    case USER_ROLES.STAFF:
-      return [
-        ...commonItems,
-        getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-        getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
-        getItem('Hỗ trợ khách hàng', ROUTES.MANAGEMENT.CUSTOMER_SUPPORT, <CustomerServiceOutlined />),
-      ]
+  case USER_ROLES.STAFF:
+    return [
+      ...commonItems,
+      getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
+      getItem('Hỗ trợ khách hàng', ROUTES.MANAGEMENT.CUSTOMER_SUPPORT, <CustomerServiceOutlined />)
+    ]
 
-    default:
-      return commonItems
+  default:
+    return commonItems
   }
 }
 
@@ -105,14 +105,14 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
 
   const getRoleName = (role: UserRole): string => {
     switch (role) {
-      case USER_ROLES.ADMIN:
-        return 'Admin'
-      case USER_ROLES.MANAGER:
-        return 'Manager'
-      case USER_ROLES.STAFF:
-        return 'Staff'
-      default:
-        return ''
+    case USER_ROLES.ADMIN:
+      return 'Admin'
+    case USER_ROLES.MANAGER:
+      return 'Manager'
+    case USER_ROLES.STAFF:
+      return 'Staff'
+    default:
+      return ''
     }
   }
 

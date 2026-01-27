@@ -23,7 +23,7 @@ const CategoryFilterComponent = ({
   onFilterChange,
   pagination,
   onPageChange,
-  onReset,
+  onReset
 }: CategoryFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -33,9 +33,9 @@ const CategoryFilterComponent = ({
       options: [
         { label: 'Tên', value: 'name' },
         { label: 'Ngày tạo', value: 'createdAt' },
-        { label: 'Ngày cập nhật', value: 'updatedAt' },
-      ],
-    },
+        { label: 'Ngày cập nhật', value: 'updatedAt' }
+      ]
+    }
   ]
 
   return (

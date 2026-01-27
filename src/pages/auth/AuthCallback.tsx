@@ -33,7 +33,7 @@ const AuthCallback = () => {
         if (!refreshToken) {
           refreshToken = searchParams.get('refreshToken')
         }
-        
+
         if (!refreshToken) {
           toast.error('Đăng nhập thất bại: Không tìm thấy refreshToken')
           navigate(ROUTES.LOGIN)
@@ -56,7 +56,7 @@ const AuthCallback = () => {
         dispatch(setCredentials({
           user,
           accessToken,
-          refreshToken,
+          refreshToken
         }))
 
         toast.success(isNewUser ? 'Đăng ký thành công! Chào mừng bạn đến với cửa hàng!' : 'Đăng nhập thành công!')

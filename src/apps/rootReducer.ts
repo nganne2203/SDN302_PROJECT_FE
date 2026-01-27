@@ -14,7 +14,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   category: categoryReducer,
   userManage: userManageReducer,
-  branch: branchReducer,
+  branch: branchReducer
 })
 
 export type RootState = ReturnType<typeof rootReducer>

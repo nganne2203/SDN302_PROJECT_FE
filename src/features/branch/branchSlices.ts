@@ -7,7 +7,7 @@ import {
   updateBranchThunk,
   updateBranchStatusThunk,
   assignBranchManagerThunk,
-  removeBranchManagerThunk,
+  removeBranchManagerThunk
 } from './branchThunks'
 
 const initialState: BranchState = {
@@ -16,7 +16,7 @@ const initialState: BranchState = {
   pagination: null,
   filter: {},
   isLoading: false,
-  error: null,
+  error: null
 }
 
 const branchSlice = createSlice({
@@ -41,7 +41,7 @@ const branchSlice = createSlice({
       state.pagination = null
       state.filter = {}
       state.error = null
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -131,7 +131,7 @@ const branchSlice = createSlice({
       .addCase(removeBranchManagerThunk.rejected, (state, action) => {
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const { setFilter, clearFilter, setSelectedBranch, clearError, resetBranches } = branchSlice.actions

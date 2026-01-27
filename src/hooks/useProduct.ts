@@ -1,16 +1,16 @@
 import { useCallback, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { 
-  fetchProductsThunk, 
-  fetchProductByIdThunk, 
-  fetchCategoriesThunk 
+import {
+  fetchProductsThunk,
+  fetchProductByIdThunk,
+  fetchCategoriesThunk
 } from '@/features/product/productThunks'
 import { setFilter, clearFilter, setSelectedProduct } from '@/features/product/productSlices'
 import type { ProductFilter, Product } from '@/types/api'
 
 export const useProduct = () => {
   const dispatch = useAppDispatch()
-  const { products, selectedProduct, filter, pagination, categories, isLoading, error } = 
+  const { products, selectedProduct, filter, pagination, categories, isLoading, error } =
     useAppSelector((state) => state.product)
 
   const fetchProducts = useCallback(
@@ -67,7 +67,7 @@ export const useProduct = () => {
     fetchCategories,
     updateFilter,
     resetFilter,
-    selectProduct,
+    selectProduct
   }
 }
 

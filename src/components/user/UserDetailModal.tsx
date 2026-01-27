@@ -1,8 +1,8 @@
-import { ModalCommon, ButtonCommon } from "@/components/common";
-import type { User } from "@/features/user/userTypes";
-import type { Branch } from "@/features/branch/branchTypes";
-import dayjs from "dayjs";
-import { ROLE_LABELS } from "@/constants/constant";
+import { ModalCommon, ButtonCommon } from '@/components/common'
+import type { User } from '@/features/user/userTypes'
+import type { Branch } from '@/features/branch/branchTypes'
+import dayjs from 'dayjs'
+import { ROLE_LABELS } from '@/constants/constant'
 import {
   Mail,
   Phone,
@@ -11,10 +11,10 @@ import {
   Shield,
   CheckCircle,
   XCircle,
-  Building2,
-} from "lucide-react";
-import { useBranch } from "@/hooks/useBranch";
-import { useEffect } from "react";
+  Building2
+} from 'lucide-react'
+import { useBranch } from '@/hooks/useBranch'
+import { useEffect, useState } from 'react'
 
 interface UserDetailModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ const DetailRow = ({
   icon: Icon,
   label,
   value,
-  valueClassName = "",
+  valueClassName = ''
 }: {
   icon: React.ElementType;
   label: string;
@@ -43,30 +43,32 @@ const DetailRow = ({
       <p
         className={`text-base font-medium text-gray-900 wrap-break-word ${valueClassName}`}
       >
-        {value || "-"}
+        {value || '-'}
       </p>
     </div>
   </div>
-);
+)
 
 const UserDetailModal = ({
   isOpen,
   user,
   onClose,
-  onEdit,
+  onEdit
 }: UserDetailModalProps) => {
-  const { branches, fetchBranches } = useBranch();
+  const { fetchBranchById } = useBranch()
+  const [branchInfo, setBranchInfo] = useState<Branch | null>(null)
 
   useEffect(() => {
     if (isOpen && user?.branch) {
-      // Fetch branches to get branch details
-      fetchBranches({ page: 1, limit: 100, isActive: true });
+      // Fetch specific branch by ID
+      fetchBranchById(user.branch).then((result) => {
+        if (result.type && result.type.includes('fulfilled')) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setBranchInfo((result as any).payload as Branch)
+        }
+      })
     }
-  }, [isOpen, user?.branch, fetchBranches]);
-
-  const branchInfo = user?.branch
-    ? branches.find((b: Branch) => b._id === user.branch)
-    : null;
+  }, [isOpen, user?.branch, fetchBranchById])
 
   if (!user) {
     return (
@@ -80,7 +82,7 @@ const UserDetailModal = ({
           Không có dữ liệu người dùng
         </div>
       </ModalCommon>
-    );
+    )
   }
 
   return (
@@ -148,7 +150,7 @@ const UserDetailModal = ({
           <DetailRow
             icon={Phone}
             label="Số điện thoại"
-            value={user.phone || "Chưa cập nhật"}
+            value={user.phone || 'Chưa cập nhật'}
           />
         </div>
         {user.branch && (
@@ -177,7 +179,7 @@ const UserDetailModal = ({
             icon={UserIcon}
             label="Phương thức đăng ký"
             value={
-              user.provider === "google" ? (
+              user.provider === 'google' ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="flex items-center justify-center w-5 h-5 bg-white rounded-full">
                     <svg viewBox="0 0 24 24" className="w-4 h-4">
@@ -233,18 +235,18 @@ const UserDetailModal = ({
           <DetailRow
             icon={Calendar}
             label="Ngày tạo"
-            value={dayjs(user.createdAt).format("DD/MM/YYYY HH:mm:ss")}
+            value={dayjs(user.createdAt).format('DD/MM/YYYY HH:mm:ss')}
           />
           <DetailRow
             icon={Calendar}
             label="Cập nhật gần nhất"
-            value={dayjs(user.updatedAt).format("DD/MM/YYYY HH:mm:ss")}
+            value={dayjs(user.updatedAt).format('DD/MM/YYYY HH:mm:ss')}
           />
           {user.emailVerifiedAt && (
             <DetailRow
               icon={Calendar}
               label="Ngày xác thực email"
-              value={dayjs(user.emailVerifiedAt).format("DD/MM/YYYY HH:mm:ss")}
+              value={dayjs(user.emailVerifiedAt).format('DD/MM/YYYY HH:mm:ss')}
             />
           )}
         </div>
@@ -273,7 +275,7 @@ const UserDetailModal = ({
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{address.phone}</p>
                   <p className="text-sm text-gray-600">
-                    {address.addressLine}, {address.ward}, {address.district},{" "}
+                    {address.addressLine}, {address.ward}, {address.district},{' '}
                     {address.city}
                   </p>
                 </div>
@@ -283,7 +285,7 @@ const UserDetailModal = ({
         )}
       </div>
     </ModalCommon>
-  );
-};
+  )
+}
 
-export default UserDetailModal;
+export default UserDetailModal

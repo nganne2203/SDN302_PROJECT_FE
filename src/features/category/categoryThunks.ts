@@ -11,7 +11,7 @@ export const fetchCategoriesThunk = createAsyncThunk<FetchCategoriesPayload, Cat
       const response = await categoryApi.getCategories(filter)
       const payload = {
         items: response.data,
-        pagination: response.pagination,
+        pagination: response.pagination
       }
       return payload
     } catch (error) {

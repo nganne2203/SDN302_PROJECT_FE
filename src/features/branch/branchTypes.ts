@@ -35,9 +35,9 @@ export const initialBranchState: BranchState = {
     page: 1,
     limit: 10,
     search: '',
-    isActive: undefined,
+    isActive: undefined
   },
   pagination: null,
   isLoading: false,
-  error: null,
+  error: null
 }

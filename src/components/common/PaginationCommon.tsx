@@ -39,9 +39,9 @@ const PaginationCommon = ({
   showLessItems = false,
   className = '',
   hideOnSinglePage = false,
-  align = 'end',
+  align = 'end'
 }: PaginationCommonProps) => {
-  const defaultShowTotal = (total: number, range: [number, number]) => 
+  const defaultShowTotal = (total: number, range: [number, number]) =>
     `${range[0]}-${range[1]} of ${total} items`
 
   const showTotalConfig = typeof showTotal === 'boolean'
@@ -66,8 +66,8 @@ const PaginationCommon = ({
     className: `pagination-common ${className}`,
     hideOnSinglePage,
     style: {
-      textAlign: align,
-    },
+      textAlign: align
+    }
   }
 
   return <AntPagination {...paginationProps} />

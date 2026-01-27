@@ -1,7 +1,7 @@
-import { useEffect, useCallback } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Avatar, Card, Divider, Upload } from "antd";
+import { useEffect, useCallback } from 'react'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Avatar, Card, Divider, Upload } from 'antd'
 import {
   User,
   MapPin,
@@ -11,61 +11,61 @@ import {
   ArrowLeft,
   Camera,
   Phone,
-  Mail,
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import FieldCustom from "@/components/common/FieldCustom";
-import ButtonCommon from "@/components/common/ButtonCommon";
-import { ROUTES } from "@/constants/constant";
-import useUser from "@/hooks/useUser";
-import useAuth from "@/hooks/useAuth";
-import { userProfileSchema, type ProfileFormData } from "@/utils/validator";
-import toast from "@/utils/toast";
+  Mail
+} from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import FieldCustom from '@/components/common/FieldCustom'
+import ButtonCommon from '@/components/common/ButtonCommon'
+import { ROUTES } from '@/constants/constant'
+import useUser from '@/hooks/useUser'
+import useAuth from '@/hooks/useAuth'
+import { userProfileSchema, type ProfileFormData } from '@/utils/validator'
+import toast from '@/utils/toast'
 
 const EditProfile = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   //   const [avatarUrl, setAvatarUrl] = useState<string>(MOCK_DATA.avatar);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth()
 
   const { control, handleSubmit, setValue, reset } = useForm<ProfileFormData>({
-    resolver: zodResolver(userProfileSchema),
-  });
+    resolver: zodResolver(userProfileSchema)
+  })
 
-  const { profile, addresses, updateProfile, isLoading, error } = useUser();
+  const { profile, addresses, updateProfile, isLoading, error } = useUser()
 
-  console.log(profile, addresses);
+  console.log(profile, addresses)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(ROUTES.LOGIN);
-      return;
+      navigate(ROUTES.LOGIN)
+      return
     }
 
     if (profile) {
-      reset({ ...profile, addresses });
+      reset({ ...profile, addresses })
     }
-  }, [isAuthenticated, navigate, profile, addresses, reset]);
+  }, [isAuthenticated, navigate, profile, addresses, reset])
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "addresses",
-  });
+    name: 'addresses'
+  })
 
   const onSubmit = useCallback(
     async (data: ProfileFormData) => {
-      const result = await updateProfile(data);
+      const result = await updateProfile(data)
 
       if (result) {
-        navigate(ROUTES.PROFILE);
-        toast.success("Cập nhật thông tin thành công");
+        navigate(ROUTES.PROFILE)
+        toast.success('Cập nhật thông tin thành công')
       } else {
-        toast.error("Cập nhật thông tin thất bại");
+        toast.error('Cập nhật thông tin thất bại')
       }
-      console.log(result);
-      console.log(data);
+      console.log(result)
+      console.log(data)
     },
-    [updateProfile, navigate],
-  );
+    [updateProfile, navigate]
+  )
 
   //   const handleAvatarChange = (info: any) => {
   //     // Ant Design Upload triggers change on every status update
@@ -224,13 +224,13 @@ const EditProfile = () => {
                   icon={<Plus className="w-4 h-4" />}
                   onClick={() =>
                     append({
-                      fullname: "",
-                      phone: "",
-                      addressLine: "",
-                      city: "",
-                      district: "",
-                      ward: "",
-                      isDefault: false,
+                      fullname: '',
+                      phone: '',
+                      addressLine: '',
+                      city: '',
+                      district: '',
+                      ward: '',
+                      isDefault: false
                     })
                   }
                 >
@@ -370,12 +370,12 @@ const EditProfile = () => {
                                     if (idx !== index) {
                                       setValue(
                                         `addresses.${idx}.isDefault`,
-                                        false,
-                                      );
+                                        false
+                                      )
                                     }
-                                  });
+                                  })
                                 }
-                                onChange(checked);
+                                onChange(checked)
                               }}
                               label="Đặt làm địa chỉ mặc định"
                               className="mb-0"
@@ -395,13 +395,13 @@ const EditProfile = () => {
                     icon={<Plus className="w-4 h-4" />}
                     onClick={() =>
                       append({
-                        fullname: "",
-                        phone: "",
-                        addressLine: "",
-                        city: "",
-                        district: "",
-                        ward: "",
-                        isDefault: false,
+                        fullname: '',
+                        phone: '',
+                        addressLine: '',
+                        city: '',
+                        district: '',
+                        ward: '',
+                        isDefault: false
                       })
                     }
                   >
@@ -418,13 +418,13 @@ const EditProfile = () => {
                       className="mt-2"
                       onClick={() =>
                         append({
-                          fullname: "",
-                          phone: "",
-                          addressLine: "",
-                          city: "",
-                          district: "",
-                          ward: "",
-                          isDefault: true,
+                          fullname: '',
+                          phone: '',
+                          addressLine: '',
+                          city: '',
+                          district: '',
+                          ward: '',
+                          isDefault: true
                         })
                       }
                     >
@@ -438,7 +438,7 @@ const EditProfile = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EditProfile;
+export default EditProfile

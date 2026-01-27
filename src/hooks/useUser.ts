@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { 
-  fetchProfileThunk, 
-  updateProfileThunk, 
+import {
+  fetchProfileThunk,
+  updateProfileThunk,
   changePasswordThunk,
   fetchAddressesThunk,
-  addAddressThunk 
+  addAddressThunk
 } from '@/features/user/userThunks'
 import { clearProfile, clearError } from '@/features/user/userSlices'
 import type { UpdateProfilePayload, ChangePasswordPayload } from '@/features/user/userTypes'
@@ -66,7 +66,7 @@ export const useUser = () => {
     fetchAddresses,
     addAddress,
     resetProfile,
-    clearUserError,
+    clearUserError
   }
 }
 

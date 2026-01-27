@@ -23,7 +23,7 @@ const UserFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  onReset,
+  onReset
 }: UserFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -35,8 +35,8 @@ const UserFilterComponent = ({
         { label: ROLE_LABELS[USER_ROLES.ADMIN], value: USER_ROLES.ADMIN },
         { label: ROLE_LABELS[USER_ROLES.MANAGER], value: USER_ROLES.MANAGER },
         { label: ROLE_LABELS[USER_ROLES.STAFF], value: USER_ROLES.STAFF },
-        { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER },
-      ],
+        { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER }
+      ]
     },
     {
       key: 'isActive',
@@ -45,19 +45,19 @@ const UserFilterComponent = ({
       options: [
         { label: 'Tất cả', value: '' },
         { label: 'Hoạt động', value: 'true' },
-        { label: 'Vô hiệu hóa', value: 'false' },
-      ],
-    },
+        { label: 'Vô hiệu hóa', value: 'false' }
+      ]
+    }
   ]
 
   const sortOptions: FilterOption[] = [
     { label: 'Ngày tạo', value: 'createdAt' },
-    { label: 'Tên', value: 'fullname' },
+    { label: 'Tên', value: 'fullname' }
   ]
 
   const filterValues = {
     ...filter,
-    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive,
+    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive
   }
 
   return (

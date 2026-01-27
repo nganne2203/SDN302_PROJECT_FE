@@ -14,15 +14,15 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Login = () => {
-  const { 
-    login, 
-    isLoading, 
+  const {
+    login,
+    isLoading,
     pendingEmail,
     showOTPModal,
     hideOTPModal,
-    isOTPModalOpen,
+    isOTPModalOpen
   } = useAuth()
-  
+
   const recaptchaRef = useRef<ReCAPTCHA>(null)
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
   const [localPendingEmail, setLocalPendingEmail] = useState<string>('')
@@ -30,13 +30,13 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    getValues,
+    getValues
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
-      password: '',
-    },
+      password: ''
+    }
   })
 
   const onRecaptchaChange = useCallback((token: string | null) => {
@@ -58,7 +58,7 @@ const Login = () => {
 
       const result = await login({
         ...data,
-        captchaToken: recaptchaToken || undefined,
+        captchaToken: recaptchaToken || undefined
       })
 
       recaptchaRef.current?.reset()
@@ -75,7 +75,7 @@ const Login = () => {
         toast.error(result.message || 'Đăng nhập thất bại')
       }
     },
-    [isLoading, recaptchaToken, login, showOTPModal],
+    [isLoading, recaptchaToken, login, showOTPModal]
   )
 
   const handleFormSubmit = useCallback(
@@ -83,7 +83,7 @@ const Login = () => {
       e.preventDefault()
       void handleSubmit(onSubmit)(e)
     },
-    [handleSubmit, onSubmit],
+    [handleSubmit, onSubmit]
   )
 
   const handleOTPSuccess = useCallback(() => {
@@ -139,8 +139,8 @@ const Login = () => {
           />
 
           <div className="flex items-center justify-end">
-            <Link 
-              to={ROUTES.FORGOT_PASSWORD} 
+            <Link
+              to={ROUTES.FORGOT_PASSWORD}
               className="text-sm text-blue-600 hover:underline"
             >
               Quên mật khẩu?
@@ -180,7 +180,7 @@ const Login = () => {
         </div>
 
         <div className="space-y-3">
-          <button 
+          <button
             type="button"
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors hover:shadow-md"

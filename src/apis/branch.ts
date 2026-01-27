@@ -5,7 +5,7 @@ import type {
   Branch,
   BranchFilter,
   CreateBranchPayload,
-  UpdateBranchPayload,
+  UpdateBranchPayload
 } from '@/features/branch/branchTypes'
 
 export const branchApi = {
@@ -51,7 +51,7 @@ export const branchApi = {
   removeManager: async (id: string): Promise<ApiResponse<Branch>> => {
     const response = await apiClient.patch<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.REMOVE_MANAGER(id))
     return response.data
-  },
+  }
 }
 
 export const getBranches = async (filter?: BranchFilter): Promise<PaginatedResponse<Branch>> => {

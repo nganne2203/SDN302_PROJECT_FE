@@ -26,7 +26,7 @@ const BranchesManagement = () => {
     handleClearFilter,
     handleSetSelectedBranch,
     handleClearError,
-    validateBranchForm,
+    validateBranchForm
   } = useBranch()
 
   const [managers, setManagers] = useState<User[]>([])
@@ -36,7 +36,7 @@ const BranchesManagement = () => {
   const [formData, setFormData] = useState<BranchFormData>({
     name: '',
     address: '',
-    manager: null,
+    manager: null
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -69,7 +69,7 @@ const BranchesManagement = () => {
       search: (filter.search as string) || undefined,
       isActive: typeof filter.isActive === 'boolean' ? filter.isActive : undefined,
       sortBy: (filter.sortBy as string) || 'createdAt',
-      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc',
+      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc'
     }
 
     const paramsKey = JSON.stringify(filterParams)
@@ -92,7 +92,7 @@ const BranchesManagement = () => {
         setFormData({
           name: branch.name,
           address: branch.address,
-          manager: branch.manager || null,
+          manager: branch.manager || null
         })
         setSelectedBranchId(branch._id)
         handleSetSelectedBranch(branch)
@@ -155,13 +155,13 @@ const BranchesManagement = () => {
         result = await updateBranch(selectedBranchId, {
           name: formData.name,
           address: formData.address,
-          manager: formData.manager || null,
+          manager: formData.manager || null
         })
       } else {
         result = await createBranch({
           name: formData.name,
           address: formData.address,
-          manager: formData.manager || null,
+          manager: formData.manager || null
         })
       }
 
@@ -182,7 +182,7 @@ const BranchesManagement = () => {
     isEditMode,
     selectedBranchId,
     updateBranch,
-    validateBranchForm,
+    validateBranchForm
   ])
 
   const handleUpdateStatus = useCallback(
@@ -219,7 +219,7 @@ const BranchesManagement = () => {
         handleSetFilter({
           sortBy: sortData.field || 'createdAt',
           sortOrder: (sortData.order as 'asc' | 'desc') || 'desc',
-          page: 1,
+          page: 1
         })
         return
       }
@@ -261,7 +261,7 @@ const BranchesManagement = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onPageChange={handlePageChange}
         onReset={handleClearFilter}
@@ -275,7 +275,7 @@ const BranchesManagement = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onEdit={handleOpenModal}
         onUpdateStatus={handleUpdateStatus}

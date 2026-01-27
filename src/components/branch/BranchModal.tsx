@@ -29,13 +29,13 @@ const BranchModalComponent = ({
   onClose,
   onFormChange,
   onManagerChange,
-  onSubmit,
+  onSubmit
 }: BranchModalProps) => {
   const managerOptions = useMemo(
     () =>
       managers.map((m) => ({
         value: m._id,
-        label: `${m.fullname} (${m.email})`,
+        label: `${m.fullname} (${m.email})`
       })),
     [managers]
   )

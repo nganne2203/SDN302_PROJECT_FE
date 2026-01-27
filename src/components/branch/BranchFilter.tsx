@@ -24,7 +24,7 @@ const BranchFilterComponent = ({
   onFilterChange,
   pagination,
   onPageChange,
-  onReset,
+  onReset
 }: BranchFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -34,19 +34,19 @@ const BranchFilterComponent = ({
       options: [
         { label: 'Tất cả', value: '' },
         { label: 'Hoạt động', value: 'true' },
-        { label: 'Vô hiệu hóa', value: 'false' },
-      ],
-    },
+        { label: 'Vô hiệu hóa', value: 'false' }
+      ]
+    }
   ]
 
   const sortOptions: FilterOption[] = [
     { label: 'Ngày tạo', value: 'createdAt' },
-    { label: 'Tên chi nhánh', value: 'name' },
+    { label: 'Tên chi nhánh', value: 'name' }
   ]
 
   const filterValues = {
     ...filter,
-    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive,
+    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive
   }
 
   return (

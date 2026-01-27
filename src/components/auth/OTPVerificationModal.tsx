@@ -18,7 +18,7 @@ const OTPInputContent = ({
   email,
   type,
   onSuccess,
-  onClose,
+  onClose
 }: Omit<OTPVerificationModalProps, 'isOpen'>) => {
   const {
     otp,
@@ -30,31 +30,31 @@ const OTPInputContent = ({
     handleKeyDown,
     handlePaste,
     handleVerify,
-    handleResend,
+    handleResend
   } = useOTPVerification({
     email,
     type,
     onSuccess,
-    onClose,
+    onClose
   })
 
   const getModalContent = () => {
     switch (type) {
-      case OTP_TYPES.VERIFY_EMAIL:
-        return {
-          title: 'Xác Thực Email',
-          description: 'Nhập mã 6 số đã được gửi đến',
-        }
-      case OTP_TYPES.RESET_PASSWORD:
-        return {
-          title: 'Xác Thực Đặt Lại Mật Khẩu',
-          description: 'Nhập mã 6 số đã được gửi đến',
-        }
-      default:
-        return {
-          title: 'Xác Thực OTP',
-          description: 'Nhập mã 6 số đã được gửi đến',
-        }
+    case OTP_TYPES.VERIFY_EMAIL:
+      return {
+        title: 'Xác Thực Email',
+        description: 'Nhập mã 6 số đã được gửi đến'
+      }
+    case OTP_TYPES.RESET_PASSWORD:
+      return {
+        title: 'Xác Thực Đặt Lại Mật Khẩu',
+        description: 'Nhập mã 6 số đã được gửi đến'
+      }
+    default:
+      return {
+        title: 'Xác Thực OTP',
+        description: 'Nhập mã 6 số đã được gửi đến'
+      }
     }
   }
 
@@ -131,7 +131,7 @@ const OTPVerificationModal = ({
   onClose,
   email,
   type,
-  onSuccess,
+  onSuccess
 }: OTPVerificationModalProps) => {
   return (
     <ModalCommon isOpen={isOpen} onClose={onClose} size="sm" maskClosable={false}>

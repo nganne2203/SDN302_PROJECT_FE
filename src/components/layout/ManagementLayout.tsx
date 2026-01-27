@@ -7,7 +7,7 @@ import {
   BellOutlined,
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined,
+  SettingOutlined
 } from '@ant-design/icons'
 import { Outlet } from 'react-router-dom'
 
@@ -28,22 +28,22 @@ const ManagementLayout = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Hồ sơ cá nhân',
-      onClick: () => setProfileModalOpen(true),
+      onClick: () => setProfileModalOpen(true)
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
-      label: 'Cài đặt',
+      label: 'Cài đặt'
     },
     {
-      type: 'divider',
+      type: 'divider'
     },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: 'Đăng xuất',
-      onClick: logout,
-    },
+      onClick: logout
+    }
   ]
 
   return (
@@ -102,9 +102,9 @@ const ManagementLayout = () => {
         </Content>
       </Layout>
 
-      <ProfileModal 
-        open={profileModalOpen} 
-        onClose={() => setProfileModalOpen(false)} 
+      <ProfileModal
+        open={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
       />
     </Layout>
   )

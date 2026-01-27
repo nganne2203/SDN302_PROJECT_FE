@@ -20,7 +20,7 @@ const CategoryModalComponent = ({
   isSubmitting,
   onClose,
   onFormChange,
-  onSubmit,
+  onSubmit
 }: CategoryModalProps) => {
   return (
     <ModalCommon
