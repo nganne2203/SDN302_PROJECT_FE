@@ -1,5 +1,5 @@
-import FooterLayout from "@/components/layout/FooterLayout"
-import HeaderLayout from "@/components/layout/HeaderLayout"
+import FooterLayout from '@/components/layout/FooterLayout'
+import HeaderLayout from '@/components/layout/HeaderLayout'
 
 const Home = () => {
   return (
@@ -72,7 +72,7 @@ const Home = () => {
         </div>
       </section>
       {/* Footer */}
-      <FooterLayout /> 
+      <FooterLayout />
     </div>
   )
 }
