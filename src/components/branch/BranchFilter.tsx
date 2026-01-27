@@ -3,6 +3,7 @@ import type { FilterField } from '@/components/common/FilterCommon'
 import type { FilterOption } from '@/types/filter'
 import type { BranchFilter } from '@/types/api'
 
+/* eslint-disable no-unused-vars */
 interface BranchFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void

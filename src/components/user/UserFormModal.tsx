@@ -3,11 +3,10 @@ import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField } fro
 import { Button, Divider } from 'antd'
 import { Plus, Trash2, MapPin } from 'lucide-react'
 import type { User, Address } from '@/features/user/userTypes'
-import type { UserRole } from '@/types/api'
+import type { Branch, UserRole } from '@/types/api'
 import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import { emailSchema, passwordSchema, fullNameSchema, userAddressSchema } from '@/utils/validator'
 import { useBranch } from '@/hooks/useBranch'
-
 interface UserFormData {
   fullname: string
   email: string
@@ -19,6 +18,7 @@ interface UserFormData {
   addresses: Address[]
 }
 
+/* eslint-disable no-unused-vars */
 interface UserFormModalProps {
   isOpen: boolean
   isEditMode: boolean
@@ -276,7 +276,7 @@ const UserFormModal = ({
               required={formData.role === USER_ROLES.STAFF || formData.role === USER_ROLES.MANAGER}
               value={formData.branch}
               onChange={(value) => handleChange('branch', value as string)}
-              options={branches.map(branch => ({
+              options={branches.map((branch : Branch) => ({
                 value: branch._id,
                 label: `${branch.name} - ${branch.address}`
               }))}

@@ -7,6 +7,7 @@ import { setStorage } from '@/utils/storage'
 import { toast } from '@/utils/toast'
 import { userApi } from '@/apis/user'
 
+/* eslint-disable no-console */
 const AuthCallback = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

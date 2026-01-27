@@ -11,6 +11,7 @@ interface UserWithKey extends Record<string, unknown> {
   _id: string
 }
 
+/* eslint-disable no-unused-vars */
 interface UserListProps {
   users: User[]
   isLoading: boolean

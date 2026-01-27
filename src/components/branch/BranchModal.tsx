@@ -4,6 +4,7 @@ import { ModalCommon, ButtonCommon } from '@/components/common'
 import type { BranchFormData } from '@/hooks/useBranch'
 import type { User } from '@/features/user/userTypes'
 
+/* eslint-disable no-unused-vars */
 interface BranchModalProps {
   isOpen: boolean
   isEditMode: boolean

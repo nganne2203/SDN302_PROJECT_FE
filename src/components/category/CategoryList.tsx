@@ -5,6 +5,7 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { Category } from '@/features/category/categoryTypes'
 import dayjs from 'dayjs'
 
+/* eslint-disable no-unused-vars */
 interface CategoryWithKey extends Record<string, unknown> {
   key: string
   _id: string

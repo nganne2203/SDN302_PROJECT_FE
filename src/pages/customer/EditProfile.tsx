@@ -22,6 +22,7 @@ import useAuth from '@/hooks/useAuth'
 import { userProfileSchema, type ProfileFormData } from '@/utils/validator'
 import toast from '@/utils/toast'
 
+/* eslint-disable no-console */
 const EditProfile = () => {
   const navigate = useNavigate()
   //   const [avatarUrl, setAvatarUrl] = useState<string>(MOCK_DATA.avatar);

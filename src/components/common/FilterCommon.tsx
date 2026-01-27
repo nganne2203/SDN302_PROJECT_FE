@@ -8,6 +8,7 @@ import PaginationCommon from './PaginationCommon'
 
 const { Option } = Select
 
+/* eslint-disable no-unused-vars */
 export interface FilterField {
   key: string
   label: string

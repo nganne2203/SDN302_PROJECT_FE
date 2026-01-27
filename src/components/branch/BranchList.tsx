@@ -5,6 +5,7 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { Branch } from '@/features/branch/branchTypes'
 import type { User } from '@/features/user/userTypes'
 
+/* eslint-disable no-unused-vars */
 interface BranchWithKey extends Record<string, unknown> {
   key: string
   _id: string

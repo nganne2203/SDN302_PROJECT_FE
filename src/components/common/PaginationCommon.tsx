@@ -2,6 +2,7 @@ import { Pagination as AntPagination } from 'antd'
 import type { PaginationProps as AntPaginationProps } from 'antd'
 import type { ReactNode } from 'react'
 
+/* eslint-disable no-unused-vars */
 export interface PaginationCommonProps {
   current?: number
   pageSize?: number

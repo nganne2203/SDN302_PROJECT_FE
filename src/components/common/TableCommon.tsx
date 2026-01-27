@@ -2,6 +2,7 @@ import { Table as AntTable, Empty, Spin } from 'antd'
 import type { TableProps as AntTableProps, ColumnType } from 'antd/es/table'
 import type { ReactNode, Key } from 'react'
 
+/* eslint-disable no-unused-vars */
 export interface TableColumn<T = Record<string, unknown>> {
   key: string
   title: string

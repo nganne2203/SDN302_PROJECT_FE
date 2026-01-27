@@ -2,6 +2,7 @@ import { FilterCommon } from '@/components/common'
 import type { FilterField } from '@/components/common/FilterCommon'
 import type { CategoryFilter } from '@/features/category/categoryTypes'
 
+/* eslint-disable no-unused-vars */
 interface CategoryFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void

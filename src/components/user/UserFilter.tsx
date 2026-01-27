@@ -4,6 +4,7 @@ import type { FilterOption } from '@/types/filter'
 import type { UserFilter } from '@/features/user/userTypes'
 import { ROLE_LABELS, USER_ROLES } from '@/constants/constant'
 
+/* eslint-disable no-unused-vars */
 interface UserFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void

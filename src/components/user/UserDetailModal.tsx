@@ -16,6 +16,7 @@ import {
 import { useBranch } from '@/hooks/useBranch'
 import { useEffect, useState } from 'react'
 
+/* eslint-disable no-unused-vars */
 interface UserDetailModalProps {
   isOpen: boolean;
   user?: User | null;

@@ -40,11 +40,13 @@ const CategoryManagement = lazy(
 )
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 
+/* eslint-disable no-console */
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <LoaderCommon />
   </div>
 )
+/* eslint-disable no-unused-vars */
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (

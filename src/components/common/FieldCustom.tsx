@@ -16,6 +16,7 @@ import { Controller as FormController } from 'react-hook-form'
 import { AlertCircle, Eye, EyeOff, Upload as UploadIcon } from 'lucide-react'
 import { useState } from 'react'
 
+/* eslint-disable no-unused-vars */
 interface BaseFieldProps {
   label?: string
   error?: string
