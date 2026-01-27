@@ -1,7 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import axiosRetry from 'axios-retry'
 import { env } from '@/configs/env'
-import { STORAGE_KEYS, HTTP_STATUS, API_ENDPOINTS } from '@/constants/constant'
+import { STORAGE_KEYS, HTTP_STATUS, API_ENDPOINTS, ROUTES } from '@/constants/constant'
 import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 
 // Create axios instance
@@ -64,7 +64,7 @@ apiClient.interceptors.response.use(
         removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
         removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
         removeStorage(STORAGE_KEYS.USER_INFO)
-        window.location.href = '/login'
+        window.location.href = ROUTES.HOME
       }
     }
 
