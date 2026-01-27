@@ -77,6 +77,11 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/api/orders/${id}`,
     CREATE: '/api/orders',
     CANCEL: (id: string) => `/api/orders/${id}/cancel`
+  },
+  UPLOAD: {
+    IMAGE: '/api/uploads/images',
+    MULTIPLE_IMAGES: '/api/uploads/multiple-images',
+    IMAGE_DETAIL: (publicId: string) => `/api/uploads/images/${publicId}`
   }
 } as const
 

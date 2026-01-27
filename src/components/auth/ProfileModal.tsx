@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { Modal, Spin } from 'antd'
 import { userProfileSchema, type ProfileFormData } from '@/utils/validator'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +8,8 @@ import useUser from '@/hooks/useUser'
 import ProfileHeader from './ProfileHeader'
 import ProfileContentLeft from './ProfileContentLeft'
 import ProfileContentRight from './ProfileContentRight'
+import uploadApi from '@/apis/upload'
+import type { UpdateProfilePayload } from '@/features/user/userTypes'
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ interface ProfileModalProps {
 const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
   const { profile, updateProfile, isLoading, fetchProfile } = useUser()
   const [isEditMode, setIsEditMode] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const prevIsOpenRef = useRef(isOpen)
   const { control, handleSubmit, setValue, reset } = useForm<ProfileFormData>({
     resolver: zodResolver(userProfileSchema)
@@ -40,13 +43,48 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
 
   useEffect(() => {
     if (profile) {
-      reset(profile)
+      reset({
+        fullname: profile.fullname || '',
+        email: profile.email,
+        phone: profile.phone || '',
+        addresses: profile.addresses || [],
+        avatar: profile.avatarId || ''
+      })
+      setAvatarPreview(profile.avatar)
     }
   }, [profile, reset])
 
+  const handleAvatarUpload = useCallback(
+    async (file: File) => {
+      try {
+        setUploadingAvatar(true)
+        const response = await uploadApi.uploadImage(file)
+        const { publicId, imageUrl } = response.data
+
+        setValue('avatar', publicId)
+        setAvatarPreview(imageUrl)
+        toast.success('Tải ảnh thành công')
+      } catch {
+        toast.error('Tải ảnh thất bại, vui lòng thử lại')
+        return false
+      } finally {
+        setUploadingAvatar(false)
+      }
+
+      return false
+    },
+    [setValue]
+  )
+
   const onSubmit = useCallback(
     async (data: ProfileFormData) => {
-      const result = await updateProfile(data)
+      const payload: UpdateProfilePayload = {
+        fullname: data.fullname,
+        phone: data.phone,
+        avatar: data.avatar || undefined
+      }
+
+      const result = await updateProfile(payload)
 
       if (result) {
         setIsEditMode(false)
@@ -87,7 +125,13 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
           />
 
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto h-[calc(60vh)]'>
-            <ProfileContentLeft control={control} disabled={!isEditMode} />
+            <ProfileContentLeft
+              control={control}
+              disabled={!isEditMode}
+              avatarUrl={avatarPreview || profile?.avatar}
+              onAvatarUpload={handleAvatarUpload}
+              uploading={uploadingAvatar}
+            />
             <ProfileContentRight
               control={control}
               fields={fields}

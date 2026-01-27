@@ -116,6 +116,16 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface UploadedImage {
+  imageUrl: string;
+  publicId: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+  createdAt?: string;
+}
+
 export interface VerifyOTPResponse {
   accessToken?: string;
   refreshToken?: string;
@@ -138,6 +148,7 @@ export interface UserInfo {
   email: string;
   fullname: string;
   phone?: string;
+  avatarId?: string;
   avatar?: string;
   role: UserRole;
   branch?: string | null;
@@ -150,6 +161,7 @@ export interface BackendUser {
   email: string;
   fullname: string;
   phone?: string;
+  avatarId?: string;
   avatar?: string;
   role: UserRole;
   branch?: string | null;
