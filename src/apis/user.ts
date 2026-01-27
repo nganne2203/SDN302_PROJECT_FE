@@ -2,10 +2,11 @@ import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
 import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
+import uploadApi from './upload'
 
 export interface UpdateProfileRequest {
-  fullName?: string
-  phoneNumber?: string
+  fullname?: string
+  phone?: string
   avatar?: string
 }
 
@@ -14,12 +15,41 @@ export interface ChangePasswordRequest {
   newPassword: string
 }
 
+const resolveUserAvatar = async (user: UserInfo): Promise<UserInfo> => {
+  const publicId = user.avatarId || user.avatar
+
+  if (!publicId || publicId.startsWith('http')) {
+    return {
+      ...user,
+      avatar: user.avatar,
+      avatarId: user.avatarId || publicId
+    }
+  }
+
+  try {
+    const imageResponse = await uploadApi.getImage(publicId)
+    return {
+      ...user,
+      avatarId: publicId,
+      avatar: imageResponse.data.imageUrl
+    }
+  } catch {
+    return {
+      ...user,
+      avatarId: publicId
+    }
+  }
+}
+
 export const userApi = {
   getProfile: async (): Promise<ApiResponse<UserInfo>> => {
     const response = await apiClient.get<ApiResponse<ProfileResponse>>(API_ENDPOINTS.USER.PROFILE)
+    const userInfo = mapBackendUserToUserInfo(response.data.data.user)
+    const userWithAvatar = await resolveUserAvatar(userInfo)
+
     return {
       ...response.data,
-      data: mapBackendUserToUserInfo(response.data.data.user)
+      data: userWithAvatar
     }
   },
 
@@ -28,7 +58,12 @@ export const userApi = {
       API_ENDPOINTS.USER.UPDATE_PROFILE,
       data
     )
-    return response.data
+    const userWithAvatar = await resolveUserAvatar(response.data.data)
+
+    return {
+      ...response.data,
+      data: userWithAvatar
+    }
   },
 
   changePassword: async (data: ChangePasswordRequest): Promise<ApiResponse<null>> => {

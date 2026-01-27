@@ -1,8 +1,8 @@
 import type { UserInfo, ShippingAddress, UserRole } from '@/types/api'
 
 export interface UpdateProfilePayload {
-  fullName?: string;
-  phoneNumber?: string;
+  fullname?: string;
+  phone?: string;
   avatar?: string;
 }
 
