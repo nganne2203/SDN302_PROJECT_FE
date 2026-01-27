@@ -1,4 +1,4 @@
-import type { UserInfo, ShippingAddress, UserRole } from "@/types/api";
+import type { UserInfo, ShippingAddress, UserRole } from '@/types/api';
 
 export interface UpdateProfilePayload {
   fullName?: string;

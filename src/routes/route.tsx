@@ -3,45 +3,45 @@ import {
   createBrowserRouter,
   Navigate,
   type RouteObject,
-} from "react-router-dom";
-import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from "@/constants/constant";
-import { getStorage } from "@/utils/storage";
-import { STORAGE_KEYS } from "@/constants/constant";
-import type { UserRole } from "@/types/api";
+} from 'react-router-dom';
+import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant';
+import { getStorage } from '@/utils/storage';
+import { STORAGE_KEYS } from '@/constants/constant';
+import type { UserRole } from '@/types/api';
 
 // Lazy load pages for better performance
-import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
 
 // Lazy loaded components - Public pages
-const Home = lazy(() => import("@/pages/customer/Home"));
-const Login = lazy(() => import("@/pages/auth/Login"));
-const Register = lazy(() => import("@/pages/auth/Register"));
-const ForgotPassword = lazy(() => import("@/pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("@/pages/auth/ResetPassword"));
-const SetPassword = lazy(() => import("@/pages/auth/SetPassword"));
-const Cart = lazy(() => import("@/pages/customer/Cart"));
-const AuthCallback = lazy(() => import("@/pages/auth/AuthCallback"));
-const Profile = lazy(() => import("@/pages/customer/Profile"));
-const EditProfile = lazy(() => import("@/pages/customer/EditProfile"));
+const Home = lazy(() => import('@/pages/customer/Home'));
+const Login = lazy(() => import('@/pages/auth/Login'));
+const Register = lazy(() => import('@/pages/auth/Register'));
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword'));
+const Cart = lazy(() => import('@/pages/customer/Cart'));
+const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
+const Profile = lazy(() => import('@/pages/customer/Profile'));
+const EditProfile = lazy(() => import('@/pages/customer/EditProfile'));
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
-  () => import("@/components/layout/ManagementLayout"),
+  () => import('@/components/layout/ManagementLayout'),
 );
-const ManagementDashboard = lazy(() => import("@/pages/management/Dashboard"));
-const ManagementProducts = lazy(() => import("@/pages/management/Product"));
-const ManagementOrders = lazy(() => import("@/pages/management/Order"));
-const LoaderCommon = lazy(() => import("@/components/common/LoaderCommon"));
+const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'));
+const ManagementProducts = lazy(() => import('@/pages/management/Product'));
+const ManagementOrders = lazy(() => import('@/pages/management/Order'));
+const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'));
 const BranchesManagement = lazy(
-  () => import("@/pages/management/admin/Branch"),
+  () => import('@/pages/management/admin/Branch'),
 );
 const CategoryManagement = lazy(
-  () => import("@/pages/management/admin/Category"),
+  () => import('@/pages/management/admin/Category'),
 );
-const UsersManagement = lazy(() => import("@/pages/management/admin/User"));
+const UsersManagement = lazy(() => import('@/pages/management/admin/User'));
 
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
+  <div className='flex items-center justify-center min-h-screen'>
     <LoaderCommon />
   </div>
 );
@@ -219,7 +219,7 @@ export const routes: RouteObject[] = [
   // Management Routes (Admin, Manager, Staff)
   // ========================
   {
-    path: "/management",
+    path: '/management',
     element: (
       <ManagementRoute>
         <Suspense fallback={<LoadingFallback />}>
@@ -233,27 +233,27 @@ export const routes: RouteObject[] = [
         element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />,
       },
       {
-        path: "dashboard",
+        path: 'dashboard',
         element: withSuspense(ManagementDashboard),
       },
       {
-        path: "products",
+        path: 'products',
         element: withSuspense(ManagementProducts),
       },
       {
-        path: "orders",
+        path: 'orders',
         element: withSuspense(ManagementOrders),
       },
       {
-        path: "categories",
+        path: 'categories',
         element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>,
       },
       {
-        path: "users",
+        path: 'users',
         element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>,
       },
       {
-        path: "branches",
+        path: 'branches',
         element: withSuspense(BranchesManagement),
       },
     ],
@@ -262,7 +262,7 @@ export const routes: RouteObject[] = [
   // Legacy Routes (redirect to new paths)
   // ========================
   {
-    path: "/auth/callback",
+    path: '/auth/callback',
     element: <Navigate to={ROUTES.AUTH_CALLBACK} replace />,
   },
 
@@ -270,12 +270,12 @@ export const routes: RouteObject[] = [
   // 404 Not Found
   // ========================
   {
-    path: "*",
+    path: '*',
     element: (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
-          <p className="text-gray-600">Trang không tồn tại</p>
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-center'>
+          <h1 className='text-4xl font-bold text-gray-800 mb-4'>404</h1>
+          <p className='text-gray-600'>Trang không tồn tại</p>
         </div>
       </div>
     ),

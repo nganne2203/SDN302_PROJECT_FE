@@ -1,39 +1,39 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const emailSchema = z
   .string()
-  .min(1, "Email là bắt buộc")
-  .email("Email không hợp lệ");
+  .min(1, 'Email là bắt buộc')
+  .email('Email không hợp lệ');
 
 export const passwordSchema = z
   .string()
-  .min(1, "Mật khẩu là bắt buộc")
-  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-  .max(20, "Mật khẩu không được quá 20 ký tự")
-  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất một chữ hoa")
-  .regex(/[a-z]/, "Mật khẩu phải có ít nhất một chữ thường")
-  .regex(/[0-9]/, "Mật khẩu phải có ít nhất một chữ số")
+  .min(1, 'Mật khẩu là bắt buộc')
+  .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+  .max(20, 'Mật khẩu không được quá 20 ký tự')
+  .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất một chữ hoa')
+  .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
+  .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số')
   .regex(
-    /[!@#$%^&*(),.?":{}|<>]/,
-    "Mật khẩu phải có ít nhất một ký tự đặc biệt",
+    /[!@#$%^&*(),.?':{}|<>]/,
+    'Mật khẩu phải có ít nhất một ký tự đặc biệt',
   );
 
 export const phoneSchema = z
   .string()
-  .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, "Số điện thoại không hợp lệ")
+  .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ')
   .optional()
-  .or(z.literal(""));
+  .or(z.literal(''));
 
 export const fullNameSchema = z
   .string()
-  .min(1, "Họ tên là bắt buộc")
-  .min(2, "Họ tên phải có ít nhất 2 ký tự")
-  .max(100, "Họ tên không được quá 100 ký tự");
+  .min(1, 'Họ tên là bắt buộc')
+  .min(2, 'Họ tên phải có ít nhất 2 ký tự')
+  .max(100, 'Họ tên không được quá 100 ký tự');
 
 export const otpCodeSchema = z
   .string()
-  .length(6, "Mã OTP phải có 6 số")
-  .regex(/^\d{6}$/, "Mã OTP chỉ chứa số");
+  .length(6, 'Mã OTP phải có 6 số')
+  .regex(/^\d{6}$/, 'Mã OTP chỉ chứa số');
 
 export const loginSchema = z.object({
   email: emailSchema,
@@ -44,13 +44,13 @@ export const registerSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
     fullName: fullNameSchema,
     phoneNumber: phoneSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
   });
 
 export const otpVerificationSchema = z.object({
@@ -64,56 +64,56 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z
   .object({
     newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
   });
 
 export const setPasswordSchema = z
   .object({
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
+    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu là bắt buộc'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
   });
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Mật khẩu hiện tại là bắt buộc"),
+    currentPassword: z.string().min(1, 'Mật khẩu hiện tại là bắt buộc'),
     newPassword: passwordSchema,
-    confirmNewPassword: z.string().min(1, "Xác nhận mật khẩu mới là bắt buộc"),
+    confirmNewPassword: z.string().min(1, 'Xác nhận mật khẩu mới là bắt buộc'),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmNewPassword"],
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmNewPassword'],
   })
   .refine((data) => data.currentPassword !== data.newPassword, {
-    message: "Mật khẩu mới phải khác mật khẩu hiện tại",
-    path: ["newPassword"],
+    message: 'Mật khẩu mới phải khác mật khẩu hiện tại',
+    path: ['newPassword'],
   });
 
 export const shippingAddressSchema = z.object({
   fullName: fullNameSchema,
   phoneNumber: z
     .string()
-    .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, "Số điện thoại không hợp lệ"),
-  province: z.string().min(1, "Tỉnh/Thành phố là bắt buộc"),
-  district: z.string().min(1, "Quận/Huyện là bắt buộc"),
-  ward: z.string().min(1, "Phường/Xã là bắt buộc"),
-  address: z.string().min(1, "Địa chỉ chi tiết là bắt buộc"),
+    .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ'),
+  province: z.string().min(1, 'Tỉnh/Thành phố là bắt buộc'),
+  district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
+  ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
+  address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc'),
 });
 
 export const userAddressSchema = z.object({
-  fullname: z.string().min(1, "Vui lòng nhập họ và tên người nhận").trim(),
-  phone: z.string().regex(/^[0-9]{10,11}$/, "Số điện thoại không hợp lệ"),
-  addressLine: z.string().min(1, "Vui lòng nhập địa chỉ chi tiết").trim(),
-  city: z.string().min(1, "Vui lòng nhập thành phố").trim(),
-  district: z.string().min(1, "Vui lòng nhập quận/huyện").trim(),
-  ward: z.string().min(1, "Vui lòng nhập phường/xã").trim(),
+  fullname: z.string().min(1, 'Vui lòng nhập họ và tên người nhận').trim(),
+  phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
+  addressLine: z.string().min(1, 'Vui lòng nhập địa chỉ chi tiết').trim(),
+  city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
+  district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
+  ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
   isDefault: z.boolean().optional(),
 });
 
