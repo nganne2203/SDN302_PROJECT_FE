@@ -3,6 +3,7 @@ import type { FilterField } from '@/components/common/FilterCommon'
 import type { FilterOption } from '@/types/filter'
 import type { BranchFilter } from '@/types/api'
 
+/* eslint-disable no-unused-vars */
 interface BranchFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void
@@ -24,7 +25,7 @@ const BranchFilterComponent = ({
   onFilterChange,
   pagination,
   onPageChange,
-  onReset,
+  onReset
 }: BranchFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -34,19 +35,19 @@ const BranchFilterComponent = ({
       options: [
         { label: 'Tất cả', value: '' },
         { label: 'Hoạt động', value: 'true' },
-        { label: 'Vô hiệu hóa', value: 'false' },
-      ],
-    },
+        { label: 'Vô hiệu hóa', value: 'false' }
+      ]
+    }
   ]
 
   const sortOptions: FilterOption[] = [
     { label: 'Ngày tạo', value: 'createdAt' },
-    { label: 'Tên chi nhánh', value: 'name' },
+    { label: 'Tên chi nhánh', value: 'name' }
   ]
 
   const filterValues = {
     ...filter,
-    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive,
+    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive
   }
 
   return (

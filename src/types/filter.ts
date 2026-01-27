@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export type SortOrder = 'asc' | 'desc' | ''
 
 export interface FilterOption {
@@ -62,5 +63,5 @@ export const DEFAULT_FILTER_CONFIG: Required<FilterConfig> = {
   defaultSortBy: '',
   defaultSortOrder: '',
   searchDebounceDelay: 500,
-  limitOptions: [10, 20, 50, 100],
+  limitOptions: [10, 20, 50, 100]
 }

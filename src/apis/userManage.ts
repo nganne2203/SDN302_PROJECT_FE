@@ -1,7 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { 
-  ApiResponse, 
+import type {
+  ApiResponse,
   PaginatedResponse,
   CreateUserRequest,
   UpdateUserRequest,
@@ -48,7 +48,7 @@ export const userManageApi = {
       data
     )
     return response.data
-  },
+  }
 }
 
 export default userManageApi

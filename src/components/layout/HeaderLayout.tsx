@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge, Dropdown, Input } from 'antd'
-import { 
-  ShoppingCartOutlined, 
-  UserOutlined, 
+import {
+  ShoppingCartOutlined,
+  UserOutlined,
   SearchOutlined,
   MenuOutlined
 } from '@ant-design/icons'
@@ -20,16 +20,16 @@ const HeaderLayout = () => {
 
   const userMenuItems = isAuthenticated
     ? [
-        { key: 'profile', label: <Link to={ROUTES.PROFILE}>Tài khoản</Link> },
-        { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
-        ...(managementItem ? [managementItem] : []),
-        { type: 'divider' as const },
-        { key: 'logout', label: 'Đăng xuất', onClick: logout },
-      ]
+      { key: 'profile', label: <Link to={ROUTES.PROFILE}>Tài khoản</Link> },
+      { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
+      ...(managementItem ? [managementItem] : []),
+      { type: 'divider' as const },
+      { key: 'logout', label: 'Đăng xuất', onClick: logout }
+    ]
     : [
-        { key: 'login', label: <Link to={ROUTES.LOGIN}>Đăng nhập</Link> },
-        { key: 'register', label: <Link to={ROUTES.REGISTER}>Đăng ký</Link> },
-      ]
+      { key: 'login', label: <Link to={ROUTES.LOGIN}>Đăng nhập</Link> },
+      { key: 'register', label: <Link to={ROUTES.REGISTER}>Đăng ký</Link> }
+    ]
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">

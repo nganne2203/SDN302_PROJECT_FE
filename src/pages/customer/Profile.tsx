@@ -16,18 +16,18 @@ const Profile = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(ROUTES.LOGIN);
-      return;
+      navigate(ROUTES.LOGIN)
+      return
     }
-    fetchProfile();
-  }, [fetchProfile, isAuthenticated, navigate]);
+    fetchProfile()
+  }, [fetchProfile, isAuthenticated, navigate])
 
   if (isLoading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
         <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -97,7 +97,7 @@ const Profile = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

@@ -25,7 +25,7 @@ const ManagementUser = () => {
     updateUserStatus,
     handleSetFilter,
     handleClearFilter,
-    handleClearError,
+    handleClearError
   } = useUserManagement()
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -43,7 +43,7 @@ const ManagementUser = () => {
       role: (filter.role as UserRole) || undefined,
       isActive: typeof filter.isActive === 'boolean' ? filter.isActive : undefined,
       sortBy: (filter.sortBy as string) || 'createdAt',
-      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc',
+      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc'
     }
 
     const paramsKey = JSON.stringify(filterParams)
@@ -82,7 +82,7 @@ const ManagementUser = () => {
       handleSetFilter({
         sortBy: sortData.field || 'createdAt',
         sortOrder: (sortData.order as 'asc' | 'desc') || 'desc',
-        page: 1,
+        page: 1
       })
       return
     }
@@ -119,7 +119,7 @@ const ManagementUser = () => {
       const result = await getUserById(user._id)
       if (result.type.includes('fulfilled')) {
         setIsEditMode(true)
-        setSelectedUser(result.payload)
+        setSelectedUser(result.payload as User)
         setIsFormModalOpen(true)
       } else {
         toast.error('Không thể tải thông tin người dùng')
@@ -161,7 +161,7 @@ const ManagementUser = () => {
           role: formData.role,
           branch: formData.branch || undefined,
           avatar: formData.avatar || undefined,
-          addresses: formData.addresses.length > 0 ? formData.addresses : undefined,
+          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
         })
 
         if (result.type.includes('fulfilled')) {
@@ -181,7 +181,7 @@ const ManagementUser = () => {
           role: formData.role,
           branch: formData.branch || undefined,
           avatar: formData.avatar || undefined,
-          addresses: formData.addresses.length > 0 ? formData.addresses : undefined,
+          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
         })
 
         if (result.type.includes('fulfilled')) {
@@ -231,7 +231,7 @@ const ManagementUser = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onPageChange={handlePageChange}
         onReset={handleClearFilter}
@@ -243,7 +243,7 @@ const ManagementUser = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onUpdateStatus={handleUpdateStatus}
         onPageChange={handlePageChange}

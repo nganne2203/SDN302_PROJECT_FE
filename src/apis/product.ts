@@ -1,10 +1,10 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { 
-  ApiResponse, 
-  PaginatedResponse, 
-  Product, 
-  ProductFilter 
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  Product,
+  ProductFilter
 } from '@/types/api'
 
 export const productApi = {
@@ -36,7 +36,7 @@ export const productApi = {
       API_ENDPOINTS.PRODUCT.CATEGORIES
     )
     return response.data
-  },
+  }
 }
 
 export default productApi

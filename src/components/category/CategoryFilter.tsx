@@ -2,6 +2,7 @@ import { FilterCommon } from '@/components/common'
 import type { FilterField } from '@/components/common/FilterCommon'
 import type { CategoryFilter } from '@/features/category/categoryTypes'
 
+/* eslint-disable no-unused-vars */
 interface CategoryFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void
@@ -23,7 +24,7 @@ const CategoryFilterComponent = ({
   onFilterChange,
   pagination,
   onPageChange,
-  onReset,
+  onReset
 }: CategoryFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -33,9 +34,9 @@ const CategoryFilterComponent = ({
       options: [
         { label: 'Tên', value: 'name' },
         { label: 'Ngày tạo', value: 'createdAt' },
-        { label: 'Ngày cập nhật', value: 'updatedAt' },
-      ],
-    },
+        { label: 'Ngày cập nhật', value: 'updatedAt' }
+      ]
+    }
   ]
 
   return (

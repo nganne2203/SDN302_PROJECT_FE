@@ -38,7 +38,7 @@ const CardCommon = ({
   cover,
   actions,
   onClick,
-  type,
+  type
 }: CardCommonProps) => {
   const cardTitle = subtitle ? (
     <div>
@@ -46,11 +46,11 @@ const CardCommon = ({
         {title}
       </div>
       {subtitle && (
-        <div style={{ 
-          fontSize: 12, 
-          fontWeight: 400, 
+        <div style={{
+          fontSize: 12,
+          fontWeight: 400,
           color: '#8c8c8c',
-          marginTop: 4 
+          marginTop: 4
         }}>
           {subtitle}
         </div>
@@ -68,13 +68,13 @@ const CardCommon = ({
     className: `card-common ${className}`,
     style: {
       ...(onClick && { cursor: 'pointer' }),
-      ...style,
+      ...style
     },
     styles,
     cover,
     actions,
     onClick,
-    ...(type === 'inner' && { type }),
+    ...(type === 'inner' && { type })
   }
 
   return <AntCard {...antCardProps}>{children}</AntCard>

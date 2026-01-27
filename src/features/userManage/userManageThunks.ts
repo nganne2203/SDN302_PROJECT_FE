@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { userManageApi } from '@/apis/userManage'
-import type { 
-  UserManageFilter, 
-  CreateUserRequest, 
+import type {
+  UserManageFilter,
+  CreateUserRequest,
   UpdateUserRequest
 } from '@/types/api'
 import type { User, FetchUsersPayload } from './userManageTypes'
@@ -17,7 +17,7 @@ export const fetchUsersThunk = createAsyncThunk<FetchUsersPayload, UserManageFil
       const response = await userManageApi.getUsers(filter)
       return {
         items: response.data,
-        pagination: response.pagination,
+        pagination: response.pagination
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>

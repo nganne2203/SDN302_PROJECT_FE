@@ -8,7 +8,7 @@ const initialState: OrderState = {
   selectedOrder: null,
   pagination: null,
   isLoading: false,
-  error: null,
+  error: null
 }
 
 const orderSlice = createSlice({
@@ -24,7 +24,7 @@ const orderSlice = createSlice({
     clearOrders: (state) => {
       state.orders = []
       state.pagination = null
-    },
+    }
   },
   extraReducers: (builder) => {
     // Fetch Orders
@@ -91,7 +91,7 @@ const orderSlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const { setSelectedOrder, clearError, clearOrders } = orderSlice.actions

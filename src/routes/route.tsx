@@ -2,15 +2,15 @@
 import {
   createBrowserRouter,
   Navigate,
-  type RouteObject,
-} from 'react-router-dom';
-import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant';
-import { getStorage } from '@/utils/storage';
-import { STORAGE_KEYS } from '@/constants/constant';
-import type { UserRole } from '@/types/api';
+  type RouteObject
+} from 'react-router-dom'
+import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant'
+import { getStorage } from '@/utils/storage'
+import { STORAGE_KEYS } from '@/constants/constant'
+import type { UserRole } from '@/types/api'
 
 // Lazy load pages for better performance
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 
 // Lazy loaded components - Public pages
 const Home = lazy(() => import('@/pages/customer/Home'));
@@ -25,136 +25,138 @@ const Profile = lazy(() => import('@/pages/customer/Profile'));
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
-  () => import('@/components/layout/ManagementLayout'),
-);
-const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'));
-const ManagementProducts = lazy(() => import('@/pages/management/Product'));
-const ManagementOrders = lazy(() => import('@/pages/management/Order'));
-const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'));
+  () => import('@/components/layout/ManagementLayout')
+)
+const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
+const ManagementProducts = lazy(() => import('@/pages/management/Product'))
+const ManagementOrders = lazy(() => import('@/pages/management/Order'))
+const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
-  () => import('@/pages/management/admin/Branch'),
-);
+  () => import('@/pages/management/admin/Branch')
+)
 const CategoryManagement = lazy(
-  () => import('@/pages/management/admin/Category'),
-);
-const UsersManagement = lazy(() => import('@/pages/management/admin/User'));
+  () => import('@/pages/management/admin/Category')
+)
+const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 
+/* eslint-disable no-console */
 const LoadingFallback = () => (
   <div className='flex items-center justify-center min-h-screen'>
     <LoaderCommon />
   </div>
-);
+)
+/* eslint-disable no-unused-vars */
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (
   <Suspense fallback={<LoadingFallback />}>
     <Component />
   </Suspense>
-);
+)
 
 /**
  * Get current user from storage
  */
 const getCurrentUser = (): { role: UserRole } | null => {
   try {
-    const userStr = getStorage(STORAGE_KEYS.USER_INFO);
+    const userStr = getStorage(STORAGE_KEYS.USER_INFO)
     if (userStr) {
-      return JSON.parse(userStr);
+      return JSON.parse(userStr)
     }
   } catch {
-    return null;
+    return null
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Check if user is authenticated
  */
 const isAuthenticated = (): boolean => {
-  return !!getStorage(STORAGE_KEYS.ACCESS_TOKEN);
-};
+  return !!getStorage(STORAGE_KEYS.ACCESS_TOKEN)
+}
 
 /**
  * Protected Route Wrapper - Requires authentication
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
-    console.log(isAuthenticated);
+    console.log(isAuthenticated)
 
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 /**
  * Guest Route Wrapper - Only for non-authenticated users
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
   if (isAuthenticated()) {
-    const user = getCurrentUser();
+    const user = getCurrentUser()
     if (user && MANAGEMENT_ROLES.includes(user.role)) {
-      return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />;
+      return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
     }
-    return <Navigate to={ROUTES.HOME} replace />;
+    return <Navigate to={ROUTES.HOME} replace />
   }
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 /**
  * Management Route Wrapper - Only for Admin, Manager, Staff
  */
 const ManagementRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  const user = getCurrentUser();
+  const user = getCurrentUser()
   if (!user || !MANAGEMENT_ROLES.includes(user.role)) {
-    return <Navigate to={ROUTES.HOME} replace />;
+    return <Navigate to={ROUTES.HOME} replace />
   }
 
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 /**
  * Admin Only Route Wrapper
  */
 const AdminRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  const user = getCurrentUser();
+  const user = getCurrentUser()
   if (!user || user.role !== USER_ROLES.ADMIN) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />;
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
 
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 // eslint-disable-next-line
 const ManagerRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
-  const user = getCurrentUser();
+  const user = getCurrentUser()
   if (!user || user.role !== USER_ROLES.MANAGER) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />;
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 // eslint-disable-next-line
 const StaffRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
-  const user = getCurrentUser();
+  const user = getCurrentUser()
   if (!user || user.role !== USER_ROLES.STAFF) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />;
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 // Route configuration
 export const routes: RouteObject[] = [
@@ -163,11 +165,11 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.HOME,
-    element: withSuspense(Home),
+    element: withSuspense(Home)
   },
   {
     path: ROUTES.CART,
-    element: withSuspense(Cart),
+    element: withSuspense(Cart)
   },
 
   // ========================
@@ -175,19 +177,19 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.LOGIN,
-    element: <GuestRoute>{withSuspense(Login)}</GuestRoute>,
+    element: <GuestRoute>{withSuspense(Login)}</GuestRoute>
   },
   {
     path: ROUTES.REGISTER,
-    element: <GuestRoute>{withSuspense(Register)}</GuestRoute>,
+    element: <GuestRoute>{withSuspense(Register)}</GuestRoute>
   },
   {
     path: ROUTES.FORGOT_PASSWORD,
-    element: <GuestRoute>{withSuspense(ForgotPassword)}</GuestRoute>,
+    element: <GuestRoute>{withSuspense(ForgotPassword)}</GuestRoute>
   },
   {
     path: ROUTES.RESET_PASSWORD,
-    element: <GuestRoute>{withSuspense(ResetPassword)}</GuestRoute>,
+    element: <GuestRoute>{withSuspense(ResetPassword)}</GuestRoute>
   },
 
   // ========================
@@ -195,11 +197,11 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.AUTH_CALLBACK,
-    element: withSuspense(AuthCallback),
+    element: withSuspense(AuthCallback)
   },
   {
     path: ROUTES.SET_PASSWORD,
-    element: withSuspense(SetPassword),
+    element: withSuspense(SetPassword)
   },
 
   // ========================
@@ -207,7 +209,7 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.PROFILE,
-    element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>,
+    element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>
   },
 
   // ========================
@@ -225,40 +227,40 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />,
+        element: <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
       },
       {
         path: 'dashboard',
-        element: withSuspense(ManagementDashboard),
+        element: withSuspense(ManagementDashboard)
       },
       {
         path: 'products',
-        element: withSuspense(ManagementProducts),
+        element: withSuspense(ManagementProducts)
       },
       {
         path: 'orders',
-        element: withSuspense(ManagementOrders),
+        element: withSuspense(ManagementOrders)
       },
       {
         path: 'categories',
-        element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>,
+        element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>
       },
       {
         path: 'users',
-        element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>,
+        element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>
       },
       {
         path: 'branches',
-        element: withSuspense(BranchesManagement),
-      },
-    ],
+        element: withSuspense(BranchesManagement)
+      }
+    ]
   },
   // ========================
   // Legacy Routes (redirect to new paths)
   // ========================
   {
     path: '/auth/callback',
-    element: <Navigate to={ROUTES.AUTH_CALLBACK} replace />,
+    element: <Navigate to={ROUTES.AUTH_CALLBACK} replace />
   },
 
   // ========================
@@ -273,11 +275,11 @@ export const routes: RouteObject[] = [
           <p className='text-gray-600'>Trang không tồn tại</p>
         </div>
       </div>
-    ),
-  },
-];
+    )
+  }
+]
 
 // Create browser router
-export const router = createBrowserRouter(routes);
+export const router = createBrowserRouter(routes)
 
-export default router;
+export default router

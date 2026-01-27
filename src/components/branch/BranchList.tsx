@@ -5,6 +5,7 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { Branch } from '@/features/branch/branchTypes'
 import type { User } from '@/features/user/userTypes'
 
+/* eslint-disable no-unused-vars */
 interface BranchWithKey extends Record<string, unknown> {
   key: string
   _id: string
@@ -33,13 +34,13 @@ const BranchListComponent = ({
   pagination,
   onEdit,
   onUpdateStatus,
-  onPageChange,
+  onPageChange
 }: BranchListProps) => {
   const managerMap = new Map(managers.map(m => [m._id, m]))
 
   const rows: BranchWithKey[] = branches.map(b => ({
     ...b,
-    key: b._id,
+    key: b._id
   }))
 
   const columns: TableColumn<BranchWithKey>[] = [
@@ -49,14 +50,14 @@ const BranchListComponent = ({
       dataIndex: 'name',
       width: 220,
       sortable: true,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'address',
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 320,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'manager',
@@ -68,7 +69,7 @@ const BranchListComponent = ({
         if (!id) return '-'
         const m = managerMap.get(id)
         return m ? `${m.fullname} (${m.email})` : id
-      },
+      }
     },
     {
       key: 'isActive',
@@ -78,14 +79,14 @@ const BranchListComponent = ({
       render: (value: unknown) => {
         const active = Boolean(value)
         return active ? <Tag color="green">Hoạt động</Tag> : <Tag color="red">Vô hiệu</Tag>
-      },
+      }
     },
     {
       key: 'createdAt',
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       width: 160,
-      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm'),
+      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm')
     },
     {
       key: 'actions',
@@ -106,8 +107,8 @@ const BranchListComponent = ({
             {record.isActive ? 'Vô hiệu' : 'Kích hoạt'}
           </Button>
         </Space>
-      ),
-    },
+      )
+    }
   ]
 
   if (isLoading) {
@@ -124,7 +125,7 @@ const BranchListComponent = ({
         current: pagination?.page || 1,
         pageSize: pagination?.limit || 10,
         total: pagination?.total || 0,
-        onChange: (page, pageSize) => onPageChange(page, pageSize),
+        onChange: (page, pageSize) => onPageChange(page, pageSize)
       }}
       scroll={{ x: 'max-content' }}
       bordered

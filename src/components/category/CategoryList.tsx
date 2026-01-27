@@ -5,6 +5,7 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { Category } from '@/features/category/categoryTypes'
 import dayjs from 'dayjs'
 
+/* eslint-disable no-unused-vars */
 interface CategoryWithKey extends Record<string, unknown> {
   key: string
   _id: string
@@ -39,11 +40,11 @@ const CategoryListComponent = ({
   onEdit,
   onDelete,
   onUpdateStatus,
-  onPageChange,
+  onPageChange
 }: CategoryListProps) => {
   const categoryWithKeys: CategoryWithKey[] = categories.map(cat => ({
     ...cat,
-    key: cat._id,
+    key: cat._id
   }))
 
   const tableColumns: TableColumn<CategoryWithKey>[] = [
@@ -52,20 +53,20 @@ const CategoryListComponent = ({
       title: 'Tên danh mục',
       dataIndex: 'name',
       width: 200,
-      sortable: true,
+      sortable: true
     },
     {
       key: 'description',
       title: 'Mô tả',
       dataIndex: 'description',
       width: 200,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'slug',
       title: 'Slug',
       dataIndex: 'slug',
-      width: 100,
+      width: 100
     },
     {
       key: 'isActive',
@@ -79,7 +80,7 @@ const CategoryListComponent = ({
             {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
           </span>
         )
-      },
+      }
     },
     {
       key: 'createdAt',
@@ -90,7 +91,7 @@ const CategoryListComponent = ({
       render: (value: unknown) => {
         const dateStr = value as string
         return dayjs(dateStr).format('DD/MM/YYYY HH:mm')
-      },
+      }
     },
     {
       key: 'actions',
@@ -125,8 +126,8 @@ const CategoryListComponent = ({
             </Button>
           </Popconfirm>
         </Space>
-      ),
-    },
+      )
+    }
   ]
 
   return (
@@ -143,7 +144,7 @@ const CategoryListComponent = ({
             current: pagination?.page || 1,
             pageSize: pagination?.limit || 10,
             total: pagination?.total || 0,
-            onChange: (page, pageSize) => onPageChange(page, pageSize),
+            onChange: (page, pageSize) => onPageChange(page, pageSize)
           }}
           scroll={{ x: 'max-content' }}
           bordered
