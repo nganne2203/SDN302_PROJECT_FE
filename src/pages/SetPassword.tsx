@@ -32,33 +32,33 @@ const SetPassword = () => {
 
   const {
     handleSubmit,
-    control,
+    control
   } = useForm<SetPasswordFormData>({
     resolver: zodResolver(setPasswordSchema),
     defaultValues: {
       password: '',
-      confirmPassword: '',
-    },
+      confirmPassword: ''
+    }
   })
 
   const onSubmit = useCallback(async (data: SetPasswordFormData) => {
     if (isLoading) return
 
     const result = await setPassword({ password: data.password })
-    
+
     if (result.success) {
       toast.success(result.message || 'Đặt mật khẩu thành công!')
       setStorage(STORAGE_KEYS.HAS_PASSWORD, 'true')
 
       try {
         const profileResponse = await userApi.getProfile()
-        const user = profileResponse.data 
+        const user = profileResponse.data
         setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
 
         dispatch(setCredentials({
           user,
           accessToken: accessToken as string,
-          refreshToken: refreshToken as string,
+          refreshToken: refreshToken as string
         }))
 
         if (MANAGEMENT_ROLES.includes(user.role)) {

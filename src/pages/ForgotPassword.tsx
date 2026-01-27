@@ -13,33 +13,33 @@ import { ROUTES, OTP_TYPES } from '@/constants/constant'
 
 const ForgotPassword = () => {
   const navigate = useNavigate()
-  const { 
-    requestPasswordReset, 
+  const {
+    requestPasswordReset,
     isLoading,
     pendingEmail,
     isOTPModalOpen,
-    hideOTPModal,
+    hideOTPModal
   } = useAuth()
-  
+
   const [localEmail, setLocalEmail] = useState('')
 
   const {
     handleSubmit,
     control,
-    getValues,
+    getValues
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: '',
-    },
+      email: ''
+    }
   })
 
   const onSubmit = useCallback(async (data: ForgotPasswordFormData) => {
     if (isLoading) return
-    
+
     setLocalEmail(data.email)
     const result = await requestPasswordReset({ email: data.email })
-    
+
     if (result.success) {
       toast.success(result.message || 'Mã xác thực đã được gửi đến email của bạn')
     } else {
@@ -58,8 +58,8 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <Link 
-          to={ROUTES.LOGIN} 
+        <Link
+          to={ROUTES.LOGIN}
           className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
