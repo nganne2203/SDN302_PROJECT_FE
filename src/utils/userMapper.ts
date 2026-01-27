@@ -1,4 +1,4 @@
-import type { BackendUser, UserInfo } from '@/types/api';
+import type { BackendUser, UserInfo } from '@/types/api'
 
 export function mapBackendUserToUserInfo(user: BackendUser): UserInfo {
   return {
@@ -8,6 +8,6 @@ export function mapBackendUserToUserInfo(user: BackendUser): UserInfo {
     phone: user.phone,
     avatar: user.avatar,
     role: user.role,
-    addresses: user.addresses,
-  };
+    addresses: user.addresses
+  }
 }

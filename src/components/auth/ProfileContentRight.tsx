@@ -1,14 +1,14 @@
-import { Card } from 'antd';
-import { ButtonCommon, FieldCustom } from '../common';
+import { Card } from 'antd'
+import { ButtonCommon, FieldCustom } from '../common'
 import {
   type Control,
   type FieldArrayWithId,
   type UseFieldArrayAppend,
   type UseFieldArrayRemove,
-  type UseFormSetValue,
-} from 'react-hook-form';
-import { MapPin, Plus, Trash2 } from 'lucide-react';
-import type { ProfileFormData } from '@/utils/validator';
+  type UseFormSetValue
+} from 'react-hook-form'
+import { MapPin, Plus, Trash2 } from 'lucide-react'
+import type { ProfileFormData } from '@/utils/validator'
 
 interface ProfileContentRightProps {
   control: Control<ProfileFormData>;
@@ -16,6 +16,7 @@ interface ProfileContentRightProps {
   append: UseFieldArrayAppend<ProfileFormData, 'addresses'>;
   remove: UseFieldArrayRemove;
   setValue: UseFormSetValue<ProfileFormData>;
+  disabled?: boolean;
 }
 
 const ProfileContentRight = ({
@@ -24,6 +25,7 @@ const ProfileContentRight = ({
   append,
   remove,
   setValue,
+  disabled = false
 }: ProfileContentRightProps) => {
   return (
     <div className='lg:col-span-2'>
@@ -32,30 +34,31 @@ const ProfileContentRight = ({
         bordered={false}
         title={
           <span className='text-lg font-bold flex items-center gap-2'>
-            <MapPin className='w-5 h-5 text-primary' /> Sổ địa chỉ
+            <MapPin className='w-5 h-5 text-primary' /> Địa chỉ
           </span>
         }
-        extra={
-          <ButtonCommon
-            type='button'
-            variant='outline'
-            size='sm'
-            icon={<Plus className='w-4 h-4' />}
-            onClick={() =>
-              append({
-                fullname: '',
-                phone: '',
-                addressLine: '',
-                city: '',
-                district: '',
-                ward: '',
-                isDefault: false,
-              })
-            }
-          >
-            Thêm địa chỉ
-          </ButtonCommon>
-        }
+        // extra={
+        //   <ButtonCommon
+        //     type='button'
+        //     variant='outline'
+        //     size='sm'
+        //     icon={<Plus className='w-4 h-4' />}
+        //     disabled={disabled}
+        //     onClick={() =>
+        //       append({
+        //         fullname: '',
+        //         phone: '',
+        //         addressLine: '',
+        //         city: '',
+        //         district: '',
+        //         ward: '',
+        //         isDefault: false
+        //       })
+        //     }
+        //   >
+        //     Thêm địa chỉ
+        //   </ButtonCommon>
+        // }
       >
         <div className='space-y-6'>
           {fields.map((field, index) => (
@@ -68,7 +71,8 @@ const ProfileContentRight = ({
                   <button
                     type='button'
                     onClick={() => remove(index)}
-                    className='p-2 text-gray-400 hover:text-red-500 transition-colors'
+                    disabled={disabled}
+                    className='p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     <Trash2 className='w-4 h-4' />
                   </button>
@@ -94,6 +98,7 @@ const ProfileContentRight = ({
                       value={value as string}
                       onChange={onChange}
                       error={error}
+                      disabled={disabled}
                       className='mb-0'
                     />
                   )}
@@ -108,6 +113,7 @@ const ProfileContentRight = ({
                       value={value as string}
                       onChange={onChange}
                       error={error}
+                      disabled={disabled}
                       className='mb-0'
                     />
                   )}
@@ -123,6 +129,7 @@ const ProfileContentRight = ({
                         value={value as string}
                         onChange={onChange}
                         error={error}
+                        disabled={disabled}
                         className='mb-0'
                       />
                     )}
@@ -139,6 +146,7 @@ const ProfileContentRight = ({
                         value={value as string}
                         onChange={onChange}
                         error={error}
+                        disabled={disabled}
                         className='mb-0'
                       />
                     )}
@@ -152,6 +160,7 @@ const ProfileContentRight = ({
                         value={value as string}
                         onChange={onChange}
                         error={error}
+                        disabled={disabled}
                         className='mb-0'
                       />
                     )}
@@ -165,6 +174,7 @@ const ProfileContentRight = ({
                         value={value as string}
                         onChange={onChange}
                         error={error}
+                        disabled={disabled}
                         className='mb-0'
                       />
                     )}
@@ -182,16 +192,16 @@ const ProfileContentRight = ({
                         checked={
                           fields.length === 1 ? true : (value as boolean)
                         }
-                        disabled={fields.length === 1}
+                        disabled={fields.length === 1 || disabled}
                         onChange={(checked) => {
                           if (checked) {
                             fields.forEach((_, idx) => {
                               if (idx !== index) {
-                                setValue(`addresses.${idx}.isDefault`, false);
+                                setValue(`addresses.${idx}.isDefault`, false)
                               }
-                            });
+                            })
                           }
-                          onChange(checked);
+                          onChange(checked)
                         }}
                         label='Đặt làm địa chỉ mặc định'
                         className='mb-0'
@@ -209,6 +219,7 @@ const ProfileContentRight = ({
               variant='primary'
               className='w-full border-dashed'
               icon={<Plus className='w-4 h-4' />}
+              disabled={disabled}
               onClick={() =>
                 append({
                   fullname: '',
@@ -217,7 +228,7 @@ const ProfileContentRight = ({
                   city: '',
                   district: '',
                   ward: '',
-                  isDefault: false,
+                  isDefault: false
                 })
               }
             >
@@ -232,6 +243,7 @@ const ProfileContentRight = ({
               <ButtonCommon
                 variant='ghost'
                 className='mt-2'
+                disabled={disabled}
                 onClick={() =>
                   append({
                     fullname: '',
@@ -240,7 +252,7 @@ const ProfileContentRight = ({
                     city: '',
                     district: '',
                     ward: '',
-                    isDefault: true,
+                    isDefault: true
                   })
                 }
               >
@@ -251,7 +263,7 @@ const ProfileContentRight = ({
         </div>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default ProfileContentRight;
+export default ProfileContentRight

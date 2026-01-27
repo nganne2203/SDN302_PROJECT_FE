@@ -13,15 +13,14 @@ import type { UserRole } from '@/types/api'
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 
 // Lazy loaded components - Public pages
-const Home = lazy(() => import('@/pages/customer/Home'));
-const Login = lazy(() => import('@/pages/auth/Login'));
-const Register = lazy(() => import('@/pages/auth/Register'));
-const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
-const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
-const SetPassword = lazy(() => import('@/pages/auth/SetPassword'));
-const Cart = lazy(() => import('@/pages/customer/Cart'));
-const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
-const Profile = lazy(() => import('@/pages/customer/Profile'));
+const Home = lazy(() => import('@/pages/customer/Home'))
+const Login = lazy(() => import('@/pages/auth/Login'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
+const Cart = lazy(() => import('@/pages/customer/Cart'))
+const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -79,6 +78,7 @@ const isAuthenticated = (): boolean => {
 /**
  * Protected Route Wrapper - Requires authentication
  */
+// eslint-disable-next-line
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     console.log(isAuthenticated)
@@ -202,14 +202,6 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.SET_PASSWORD,
     element: withSuspense(SetPassword)
-  },
-
-  // ========================
-  // Protected Routes (authenticated users)
-  // ========================
-  {
-    path: ROUTES.PROFILE,
-    element: <ProtectedRoute>{withSuspense(Profile)}</ProtectedRoute>
   },
 
   // ========================

@@ -1,14 +1,15 @@
-import { Avatar, Card, Divider, Upload } from 'antd';
-import { Camera, Mail, Phone, User } from 'lucide-react';
-import { FieldCustom } from '../common';
-import { type Control } from 'react-hook-form';
-import type { ProfileFormData } from '@/utils/validator';
+import { Avatar, Card, Divider, Upload } from 'antd'
+import { Camera, Mail, Phone, User } from 'lucide-react'
+import { FieldCustom } from '../common'
+import { type Control } from 'react-hook-form'
+import type { ProfileFormData } from '@/utils/validator'
 
 interface ProfileContentLeftProps {
   control: Control<ProfileFormData>;
+  disabled?: boolean;
 }
 
-const ProfileContentLeft = ({ control }: ProfileContentLeftProps) => {
+const ProfileContentLeft = ({ control, disabled = false }: ProfileContentLeftProps) => {
   return (
     <div className='lg:col-span-1 space-y-6'>
       <Card className='shadow-sm rounded-xl border-gray-200'>
@@ -48,6 +49,7 @@ const ProfileContentLeft = ({ control }: ProfileContentLeftProps) => {
                 value={value as string}
                 onChange={onChange}
                 error={error}
+                disabled={disabled}
                 prefix={<User className='w-4 h-4 text-gray-400 mr-2' />}
               />
             )}
@@ -78,6 +80,7 @@ const ProfileContentLeft = ({ control }: ProfileContentLeftProps) => {
                 value={value as string}
                 onChange={onChange}
                 error={error}
+                disabled={disabled}
                 prefix={<Phone className='w-4 h-4 text-gray-400 mr-2' />}
               />
             )}
@@ -85,7 +88,7 @@ const ProfileContentLeft = ({ control }: ProfileContentLeftProps) => {
         </div>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default ProfileContentLeft;
+export default ProfileContentLeft

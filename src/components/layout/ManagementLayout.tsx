@@ -86,7 +86,7 @@ const ManagementLayout = () => {
                 />
                 <div className="hidden md:block">
                   <p className="text-sm font-medium text-gray-800 m-0 leading-tight">
-                    {user?.fullName || 'User'}
+                    {user?.fullname || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 m-0 leading-tight">
                     {user?.role ? ROLE_LABELS[user.role] : ''}
@@ -103,7 +103,7 @@ const ManagementLayout = () => {
       </Layout>
 
       <ProfileModal
-        open={profileModalOpen}
+        isOpen={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}
       />
     </Layout>

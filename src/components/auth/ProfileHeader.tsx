@@ -1,12 +1,13 @@
-import { Save } from 'lucide-react';
-import { ButtonCommon } from '../common';
+import { Save, Edit } from 'lucide-react'
+import { ButtonCommon } from '../common'
 
 interface ProfileHeaderProps {
   isLoading: boolean;
-  onSubmit: () => void;
+  onSubmit: () => void
+  isEditMode: boolean;
 }
 
-const ProfileHeader = ({ isLoading, onSubmit }: ProfileHeaderProps) => {
+const ProfileHeader = ({ isLoading, onSubmit, isEditMode }: ProfileHeaderProps) => {
   return (
     <div className='mb-6 flex items-center justify-between'>
       <div className='flex items-center gap-4'>
@@ -20,12 +21,12 @@ const ProfileHeader = ({ isLoading, onSubmit }: ProfileHeaderProps) => {
       <ButtonCommon
         onClick={onSubmit}
         isLoading={isLoading}
-        icon={<Save className='w-4 h-4' />}
+        icon={isEditMode ? <Save className='w-4 h-4' /> : <Edit className='w-4 h-4' />}
       >
-        Lưu thay đổi
+        {isEditMode ? 'Cập nhật hồ sơ' : 'Lưu thay đổi'}
       </ButtonCommon>
     </div>
-  );
-};
+  )
+}
 
-export default ProfileHeader;
+export default ProfileHeader
