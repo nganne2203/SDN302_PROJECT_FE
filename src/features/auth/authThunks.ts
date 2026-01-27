@@ -3,8 +3,8 @@ import { authApi } from '@/apis/auth'
 import { userApi } from '@/apis/user'
 import { STORAGE_KEYS, OTP_TYPES } from '@/constants/constant'
 import { setStorage, removeStorage, getStorage, clearStorage } from '@/utils/storage'
-import type { 
-  LoginPayload, 
+import type {
+  LoginPayload,
   RegisterPayload,
   RegisterSuccessPayload,
   VerifyOTPPayload,
@@ -15,7 +15,7 @@ import type {
   ConfirmResetPasswordPayload,
   SetPasswordPayload,
   ChangePasswordPayload,
-  AuthSuccessPayload,
+  AuthSuccessPayload
 } from './authTypes'
 import type { AxiosError } from 'axios'
 import type { ApiError } from '@/types/api'
@@ -23,15 +23,15 @@ import type { ApiError } from '@/types/api'
 const extractErrorMessage = (error: unknown, defaultMessage: string): string => {
   const axiosError = error as AxiosError<ApiError>
   const errorData = axiosError.response?.data
-  
+
   if (errorData?.message) {
     return errorData.message
   }
-  
+
   if (errorData?.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
     return errorData.errors[0]
   }
-  
+
   return defaultMessage
 }
 
@@ -41,7 +41,7 @@ const extractErrorCode = (error: unknown): string | null => {
 }
 
 export const loginThunk = createAsyncThunk<
-  AuthSuccessPayload, 
+  AuthSuccessPayload,
   LoginPayload,
   { rejectValue: { message: string; code?: string } }
 >(
@@ -81,15 +81,15 @@ export const registerThunk = createAsyncThunk<
         password: data.password,
         phone: data.phoneNumber || '',
         avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.fullName),
-        captchaToken: data.captchaToken,
+        captchaToken: data.captchaToken
       }
-      
+
       const response = await authApi.register(apiPayload)
       setStorage(STORAGE_KEYS.PENDING_EMAIL, data.email)
-      
+
       return {
         email: data.email,
-        message: response.message,
+        message: response.message
       }
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error, 'Đăng ký thất bại'))
@@ -106,31 +106,31 @@ export const verifyOTPThunk = createAsyncThunk<
   async (data, { rejectWithValue }) => {
     try {
       const response = await authApi.verifyOTP(data)
-      
+
       if (data.type === OTP_TYPES.VERIFY_EMAIL && response.data) {
         const { accessToken, refreshToken } = response.data
-        
+
         if (accessToken && refreshToken) {
           setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
           setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
-          
+
           const profileResponse = await userApi.getProfile()
-          const user = profileResponse.data 
+          const user = profileResponse.data
           setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
-          
+
           removeStorage(STORAGE_KEYS.PENDING_EMAIL)
-          
+
           return {
             message: response.message,
             accessToken,
             refreshToken,
-            user,
+            user
           }
         }
       }
-      
+
       return {
-        message: response.message,
+        message: response.message
       }
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error, 'Xác thực OTP thất bại'))
@@ -167,12 +167,12 @@ export const resetPasswordThunk = createAsyncThunk<
   async (data, { rejectWithValue }) => {
     try {
       const response = await authApi.resetPassword(data)
-      
+
       setStorage(STORAGE_KEYS.PENDING_EMAIL, data.email)
-      
+
       return {
         email: data.email,
-        message: response.message,
+        message: response.message
       }
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error, 'Yêu cầu đặt lại mật khẩu thất bại'))
@@ -189,9 +189,9 @@ export const confirmResetPasswordThunk = createAsyncThunk<
   async (data, { rejectWithValue }) => {
     try {
       const response = await authApi.confirmResetPassword(data)
-      
+
       removeStorage(STORAGE_KEYS.PENDING_EMAIL)
-      
+
       return response.message
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error, 'Đặt lại mật khẩu thất bại'))

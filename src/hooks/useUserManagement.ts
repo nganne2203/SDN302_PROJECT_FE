@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { 
-  fetchUsersThunk, 
+import {
+  fetchUsersThunk,
   createUserThunk,
   getUserByIdThunk,
   updateUserThunk,
-  updateUserStatusThunk 
+  updateUserStatusThunk
 } from '@/features/userManage/userManageThunks'
 import { setFilter, clearFilter, setSelectedUser, clearError } from '@/features/userManage/userManageSlices'
 import type { User, UserManageFilter } from '@/features/userManage/userManageTypes'
@@ -23,7 +23,7 @@ export const useUserManagement = () => {
     filter = {},
     listLoading = false,
     actionLoading = false,
-    error,
+    error
   } = userManageState || {}
 
   const fetchUsers = useCallback(
@@ -86,7 +86,7 @@ export const useUserManagement = () => {
   const usersWithDefaults = useMemo(
     () => users.map((user: User) => ({
       key: user._id,
-      ...user,
+      ...user
     })),
     [users]
   )
@@ -108,7 +108,7 @@ export const useUserManagement = () => {
     handleSetFilter,
     handleClearFilter,
     handleSetSelectedUser,
-    handleClearError,
+    handleClearError
   }
 }
 

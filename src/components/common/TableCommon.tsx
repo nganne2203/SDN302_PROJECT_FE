@@ -2,6 +2,7 @@ import { Table as AntTable, Empty, Spin } from 'antd'
 import type { TableProps as AntTableProps, ColumnType } from 'antd/es/table'
 import type { ReactNode, Key } from 'react'
 
+/* eslint-disable no-unused-vars */
 export interface TableColumn<T = Record<string, unknown>> {
   key: string
   title: string
@@ -65,7 +66,7 @@ const TableCommon = <T extends Record<string, unknown>>({
   expandable,
   showHeader = true,
   title,
-  footer,
+  footer
 }: TableCommonProps<T>) => {
   // Convert custom columns to Ant Design columns
   const antColumns: ColumnType<T>[] = columns
@@ -81,47 +82,47 @@ const TableCommon = <T extends Record<string, unknown>>({
         fixed: col.fixed,
         ellipsis: col.ellipsis,
         filters: col.filters,
-        filterSearch: col.filterSearch,
+        filterSearch: col.filterSearch
       }
-      
+
       // Only add dataIndex if it exists
       if (col.dataIndex !== undefined) {
         column.dataIndex = col.dataIndex as never
       }
-      
+
       // Only add onFilter if it exists
       if (col.onFilter !== undefined) {
         column.onFilter = col.onFilter as never
       }
-      
+
       return column
     })
 
   // Handle row click
   const onRow = onRowClick
     ? (record: T, index?: number) => ({
-        onClick: () => onRowClick(record, index),
-        style: { cursor: 'pointer' },
-      })
+      onClick: () => onRowClick(record, index),
+      style: { cursor: 'pointer' }
+    })
     : undefined
 
   // Configure pagination
-  const paginationConfig = typeof pagination === 'boolean' 
+  const paginationConfig = typeof pagination === 'boolean'
     ? (pagination ? {
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) => 
-          `${range[0]}-${range[1]} of ${total} items`,
-        pageSizeOptions: ['10', '20', '50', '100'],
-      } : false)
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number, range: [number, number]) =>
+        `${range[0]}-${range[1]} of ${total} items`,
+      pageSizeOptions: ['10', '20', '50', '100']
+    } : false)
     : {
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) => 
-          `${range[0]}-${range[1]} of ${total} items`,
-        pageSizeOptions: ['10', '20', '50', '100'],
-        ...pagination,
-      }
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number, range: [number, number]) =>
+        `${range[0]}-${range[1]} of ${total} items`,
+      pageSizeOptions: ['10', '20', '50', '100'],
+      ...pagination
+    }
 
   return (
     <Spin spinning={loading}>
@@ -147,7 +148,7 @@ const TableCommon = <T extends Record<string, unknown>>({
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={emptyText}
             />
-          ),
+          )
         }}
       />
     </Spin>

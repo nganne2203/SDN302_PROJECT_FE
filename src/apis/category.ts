@@ -1,8 +1,8 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { 
-  ApiResponse, 
-  PaginatedResponse,
+import type {
+  ApiResponse,
+  PaginatedResponse
 } from '@/types/api'
 import type { Category, CategoryFilter, CreateCategoryPayload } from '@/features/category/categoryTypes'
 
@@ -51,7 +51,7 @@ export const categoryApi = {
       { isActive }
     )
     return response.data
-  },
+  }
 }
 
 export default categoryApi

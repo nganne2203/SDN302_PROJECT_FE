@@ -1,6 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit'
 
 // Logger middleware for development
+/* eslint-disable no-console */
 export const loggerMiddleware: Middleware = (store) => (next) => (action) => {
   if (import.meta.env.DEV) {
     console.group(typeof action === 'object' && action !== null && 'type' in action ? (action as { type: string }).type : 'Unknown Action')

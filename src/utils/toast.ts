@@ -13,7 +13,7 @@ const getToastConfig = (options?: ToastOptions): ToastifyOptions => ({
   hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
-  draggable: true,
+  draggable: true
 })
 
 export const toast = {
@@ -32,7 +32,7 @@ export const toast = {
   loading: (content: string, options?: ToastOptions): Id =>
     toastify.loading(content, {
       ...getToastConfig(options),
-      autoClose: false,
+      autoClose: false
     }),
 
   update: (
@@ -44,7 +44,7 @@ export const toast = {
       render: content,
       type,
       isLoading: false,
-      autoClose: 3000,
+      autoClose: 3000
     })
   },
 
@@ -54,7 +54,7 @@ export const toast = {
 
   dismissAll: (): void => {
     toastify.dismiss()
-  },
+  }
 }
 
 interface PromiseMessages {
@@ -70,7 +70,7 @@ export const toastPromise = <T>(
   return toastify.promise(promise, {
     pending: messages.loading,
     success: messages.success,
-    error: messages.error,
+    error: messages.error
   })
 }
 

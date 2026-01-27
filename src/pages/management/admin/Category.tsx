@@ -23,7 +23,7 @@ const ManagementCategory = () => {
     updateCategory,
     deleteCategory,
     updateCategoryStatus,
-    validateCategoryForm,
+    validateCategoryForm
   } = useCategory()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -41,7 +41,7 @@ const ManagementCategory = () => {
       limit: (filter.limit as number) || 10,
       search: (filter.search as string) || undefined,
       sortBy: (filter.sortBy as string) || 'createdAt',
-      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc',
+      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc'
     }
     const paramsKey = JSON.stringify(filterParams)
 
@@ -63,7 +63,7 @@ const ManagementCategory = () => {
     if (category) {
       setFormData({
         name: category.name,
-        description: category.description || '',
+        description: category.description || ''
       })
       setSelectedCategoryId(category._id)
       handleSetSelectedCategory(category)
@@ -90,7 +90,7 @@ const ManagementCategory = () => {
   const handleFormChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }))
     if (formErrors[field]) {
       setFormErrors(prev => {
@@ -114,12 +114,12 @@ const ManagementCategory = () => {
       if (isEditMode && selectedCategoryId) {
         result = await updateCategory(selectedCategoryId, {
           name: formData.name,
-          description: formData.description || undefined,
+          description: formData.description || undefined
         })
       } else {
         result = await createCategory({
           name: formData.name,
-          description: formData.description || undefined,
+          description: formData.description || undefined
         })
       }
 
@@ -176,7 +176,7 @@ const ManagementCategory = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onEdit={handleOpenModal}
         onDelete={handleDelete}

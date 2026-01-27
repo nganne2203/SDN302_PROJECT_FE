@@ -1,6 +1,6 @@
-import type { UserRole } from '@/types/api';
+import type { UserRole } from '@/types/api'
 
-export type { UserRole };
+export type { UserRole }
 
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'access_token',
@@ -10,8 +10,8 @@ export const STORAGE_KEYS = {
   THEME: 'theme',
   LANGUAGE: 'language',
   HAS_PASSWORD: 'has_password',
-  PENDING_EMAIL: 'pending_email',
-} as const;
+  PENDING_EMAIL: 'pending_email'
+} as const
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -28,7 +28,7 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/api/auth/reset-password',
     CONFIRM_RESET_PASSWORD: '/api/auth/confirm-reset-password',
     GOOGLE_LOGIN: '/api/auth/google',
-    GOOGLE_CALLBACK: '/api/auth/google/callback',
+    GOOGLE_CALLBACK: '/api/auth/google/callback'
   },
   USER: {
     ALL_USERS: '/api/users',
@@ -40,13 +40,13 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/users/${id}`,
     UPDATE_STATUS: (id: string) => `/api/users/${id}/status`,
     CHANGE_PASSWORD: '/api/auth/change-password',
-    ADDRESSES: '/api/users/addresses',
+    ADDRESSES: '/api/users/addresses'
   },
   PRODUCT: {
     LIST: '/api/products',
     DETAIL: (id: string) => `/api/products/${id}`,
     CATEGORIES: '/api/products/categories',
-    SEARCH: '/api/products/search',
+    SEARCH: '/api/products/search'
   },
   CATEGORY: {
     LIST: '/api/category',
@@ -54,7 +54,7 @@ export const API_ENDPOINTS = {
     CREATE: '/api/category',
     UPDATE: (id: string) => `/api/category/${id}`,
     DELETE: (id: string) => `/api/category/${id}`,
-    UPDATE_STATUS: (id: string) => `/api/category/${id}/status`,
+    UPDATE_STATUS: (id: string) => `/api/category/${id}/status`
   },
   BRANCH: {
     LIST: '/api/branch',
@@ -63,22 +63,22 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/branch/${id}`,
     UPDATE_STATUS: (id: string) => `/api/branch/${id}/status`,
     ASSIGN_MANAGER: (id: string) => `/api/branch/${id}/manager`,
-    REMOVE_MANAGER: (id: string) => `/api/branch/${id}/manager/remove`,
+    REMOVE_MANAGER: (id: string) => `/api/branch/${id}/manager/remove`
   },
   CART: {
     GET: '/api/cart',
     ADD: '/api/cart/add',
     UPDATE: '/api/cart/update',
     REMOVE: (itemId: string) => `/api/cart/remove/${itemId}`,
-    CLEAR: '/api/cart/clear',
+    CLEAR: '/api/cart/clear'
   },
   ORDER: {
     LIST: '/api/orders',
     DETAIL: (id: string) => `/api/orders/${id}`,
     CREATE: '/api/orders',
-    CANCEL: (id: string) => `/api/orders/${id}/cancel`,
-  },
-} as const;
+    CANCEL: (id: string) => `/api/orders/${id}/cancel`
+  }
+} as const
 
 export const HTTP_STATUS = {
   OK: 200,
@@ -89,8 +89,8 @@ export const HTTP_STATUS = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
-} as const;
+  INTERNAL_SERVER_ERROR: 500
+} as const
 
 export const APP_CONFIG = {
   ITEMS_PER_PAGE: 12,
@@ -99,8 +99,8 @@ export const APP_CONFIG = {
   DEBOUNCE_DELAY: 300,
   TOAST_DURATION: 3000,
   OTP_RESEND_COOLDOWN: 60,
-  OTP_LENGTH: 6,
-} as const;
+  OTP_LENGTH: 6
+} as const
 
 export const ROUTES = {
   HOME: '/',
@@ -135,44 +135,44 @@ export const ROUTES = {
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
-    CUSTOMER_SUPPORT: '/management/customer-support',
+    CUSTOMER_SUPPORT: '/management/customer-support'
   },
   ADMIN: {
     DASHBOARD: '/admin',
     PRODUCTS: '/admin/products',
     ORDERS: '/admin/orders',
     USERS: '/admin/users',
-    CATEGORIES: '/admin/categories',
-  },
-} as const;
+    CATEGORIES: '/admin/categories'
+  }
+} as const
 
 export const USER_ROLES = {
   CUSTOMER: 'customer',
   ADMIN: 'admin',
   MANAGER: 'manager',
-  STAFF: 'staff',
-} as const;
+  STAFF: 'staff'
+} as const
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   [USER_ROLES.CUSTOMER]: 'Khách hàng',
   [USER_ROLES.ADMIN]: 'Quản trị viên',
   [USER_ROLES.MANAGER]: 'Quản lý chi nhánh',
-  [USER_ROLES.STAFF]: 'Nhân viên',
-} as const;
+  [USER_ROLES.STAFF]: 'Nhân viên'
+} as const
 
 export const MANAGEMENT_ROLES: UserRole[] = [
   USER_ROLES.ADMIN,
   USER_ROLES.MANAGER,
-  USER_ROLES.STAFF,
-];
+  USER_ROLES.STAFF
+]
 
 export const OTP_TYPES = {
   VERIFY_EMAIL: 'verify_email',
   RESET_PASSWORD: 'reset_password',
   CHANGE_PASSWORD: 'change_password',
   CHANGE_EMAIL: 'change_email',
-  CHANGE_INFO: 'change_info',
-} as const;
+  CHANGE_INFO: 'change_info'
+} as const
 
 export type OTPType = (typeof OTP_TYPES)[keyof typeof OTP_TYPES];
 
@@ -186,27 +186,27 @@ export const ERROR_CODES = {
   TOKEN_EXPIRED: 'TOKEN_EXPIRED',
   INVALID_TOKEN: 'INVALID_TOKEN',
   ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
-  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
-} as const;
+  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS'
+} as const
 
 export const ORDER_STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
   CONFIRMED: 'Đã xác nhận',
   SHIPPING: 'Đang giao hàng',
   DELIVERED: 'Đã giao hàng',
-  CANCELLED: 'Đã hủy',
-} as const;
+  CANCELLED: 'Đã hủy'
+} as const
 
 export const PAYMENT_STATUS_LABELS = {
   PENDING: 'Chờ thanh toán',
   PAID: 'Đã thanh toán',
   FAILED: 'Thanh toán thất bại',
-  REFUNDED: 'Đã hoàn tiền',
-} as const;
+  REFUNDED: 'Đã hoàn tiền'
+} as const
 
 export const PAYMENT_METHOD_LABELS = {
   COD: 'Thanh toán khi nhận hàng',
   BANK_TRANSFER: 'Chuyển khoản ngân hàng',
   CREDIT_CARD: 'Thẻ tín dụng',
-  E_WALLET: 'Ví điện tử',
-} as const;
+  E_WALLET: 'Ví điện tử'
+} as const

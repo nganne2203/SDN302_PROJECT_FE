@@ -3,11 +3,10 @@ import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField } fro
 import { Button, Divider } from 'antd'
 import { Plus, Trash2, MapPin } from 'lucide-react'
 import type { User, Address } from '@/features/user/userTypes'
-import type { UserRole } from '@/types/api'
+import type { Branch, UserRole } from '@/types/api'
 import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import { emailSchema, passwordSchema, fullNameSchema, userAddressSchema } from '@/utils/validator'
 import { useBranch } from '@/hooks/useBranch'
-
 interface UserFormData {
   fullname: string
   email: string
@@ -19,6 +18,7 @@ interface UserFormData {
   addresses: Address[]
 }
 
+/* eslint-disable no-unused-vars */
 interface UserFormModalProps {
   isOpen: boolean
   isEditMode: boolean
@@ -35,7 +35,7 @@ const emptyAddress: Address = {
   city: '',
   district: '',
   ward: '',
-  isDefault: false,
+  isDefault: false
 }
 
 const UserFormModal = ({
@@ -44,7 +44,7 @@ const UserFormModal = ({
   user,
   isSubmitting,
   onClose,
-  onSubmit,
+  onSubmit
 }: UserFormModalProps) => {
   const getInitialFormData = (): UserFormData => {
     if (isEditMode && user) {
@@ -56,7 +56,7 @@ const UserFormModal = ({
         role: user.role || USER_ROLES.CUSTOMER as UserRole,
         branch: user.branch || '',
         avatar: user.avatar || '',
-        addresses: user.addresses?.length > 0 ? user.addresses : [],
+        addresses: user.addresses?.length > 0 ? user.addresses : []
       }
     }
     return {
@@ -67,7 +67,7 @@ const UserFormModal = ({
       role: USER_ROLES.CUSTOMER as UserRole,
       branch: '',
       avatar: '',
-      addresses: [],
+      addresses: []
     }
   }
 
@@ -95,7 +95,7 @@ const UserFormModal = ({
   const handleAddressChange = (index: number, field: keyof Address, value: string | boolean) => {
     const newAddresses = [...formData.addresses]
     newAddresses[index] = { ...newAddresses[index], [field]: value }
-    
+
     if (field === 'isDefault' && value === true) {
       newAddresses.forEach((addr, i) => {
         if (i !== index) {
@@ -103,7 +103,7 @@ const UserFormModal = ({
         }
       })
     }
-    
+
     setFormData(prev => ({ ...prev, addresses: newAddresses }))
     const errorKey = `address_${index}`
     if (errors[errorKey]) {
@@ -114,14 +114,14 @@ const UserFormModal = ({
   const handleAddAddress = () => {
     setFormData(prev => ({
       ...prev,
-      addresses: [...prev.addresses, { ...emptyAddress }],
+      addresses: [...prev.addresses, { ...emptyAddress }]
     }))
   }
 
   const handleRemoveAddress = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      addresses: prev.addresses.filter((_, i) => i !== index),
+      addresses: prev.addresses.filter((_, i) => i !== index)
     }))
   }
 
@@ -170,7 +170,7 @@ const UserFormModal = ({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      const validAddresses = formData.addresses.filter(addr => 
+      const validAddresses = formData.addresses.filter(addr =>
         addr.fullname && addr.phone && addr.addressLine && addr.city
       )
       onSubmit({ ...formData, addresses: validAddresses })
@@ -181,7 +181,7 @@ const UserFormModal = ({
     { value: USER_ROLES.CUSTOMER, label: ROLE_LABELS[USER_ROLES.CUSTOMER] },
     { value: USER_ROLES.STAFF, label: ROLE_LABELS[USER_ROLES.STAFF] },
     { value: USER_ROLES.MANAGER, label: ROLE_LABELS[USER_ROLES.MANAGER] },
-    { value: USER_ROLES.ADMIN, label: ROLE_LABELS[USER_ROLES.ADMIN] },
+    { value: USER_ROLES.ADMIN, label: ROLE_LABELS[USER_ROLES.ADMIN] }
   ]
 
   return (
@@ -276,7 +276,7 @@ const UserFormModal = ({
               required={formData.role === USER_ROLES.STAFF || formData.role === USER_ROLES.MANAGER}
               value={formData.branch}
               onChange={(value) => handleChange('branch', value as string)}
-              options={branches.map(branch => ({
+              options={branches.map((branch : Branch) => ({
                 value: branch._id,
                 label: `${branch.name} - ${branch.address}`
               }))}

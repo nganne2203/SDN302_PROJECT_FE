@@ -1,12 +1,12 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { 
-  ApiResponse, 
+import type {
+  ApiResponse,
   SimpleResponse,
   AuthTokens,
   RegisterResponse,
   VerifyOTPResponse,
-  LoginRequest, 
+  LoginRequest,
   RegisterRequest,
   VerifyOTPRequest,
   ResendOTPRequest,
@@ -14,7 +14,7 @@ import type {
   ConfirmResetPasswordRequest,
   SetPasswordRequest,
   ChangePasswordRequest,
-  RefreshTokenRequest,
+  RefreshTokenRequest
 } from '@/types/api'
 
 export const authApi = {
@@ -98,7 +98,7 @@ export const authApi = {
   logoutAll: async (): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(API_ENDPOINTS.AUTH.LOGOUT_ALL)
     return response.data
-  },
+  }
 }
 
 export default authApi

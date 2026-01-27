@@ -11,8 +11,8 @@ const UserHeader = ({ title = 'Quản lý người dùng', onCreateUser }: UserH
     <div className="mb-6 flex justify-between items-center">
       <h1 className="text-3xl font-bold">{title}</h1>
       {onCreateUser && (
-        <ButtonCommon 
-          variant="primary" 
+        <ButtonCommon
+          variant="primary"
           onClick={onCreateUser}
           icon={<Plus className="w-4 h-4" />}
         >

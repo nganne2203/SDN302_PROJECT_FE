@@ -7,7 +7,7 @@ import type {
   BranchFilter,
   FetchBranchesPayload,
   CreateBranchPayload,
-  UpdateBranchPayload,
+  UpdateBranchPayload
 } from './branchTypes'
 
 const getErrorMessage = (error: unknown, fallback: string) => {

@@ -13,10 +13,10 @@ const mockCartItems = [
       id: 'p1',
       name: 'Ốp lưng iPhone 15 Pro Max',
       images: ['https://via.placeholder.com/100'],
-      price: 199000,
+      price: 199000
     },
     quantity: 2,
-    price: 199000,
+    price: 199000
   },
   {
     id: '2',
@@ -25,11 +25,11 @@ const mockCartItems = [
       id: 'p2',
       name: 'Sạc nhanh 20W Apple',
       images: ['https://via.placeholder.com/100'],
-      price: 450000,
+      price: 450000
     },
     quantity: 1,
-    price: 450000,
-  },
+    price: 450000
+  }
 ]
 
 const Cart = () => {
@@ -72,7 +72,7 @@ const Cart = () => {
             </p>
           </div>
         </div>
-      ),
+      )
     },
     {
       title: 'Số lượng',
@@ -87,7 +87,7 @@ const Cart = () => {
           onChange={(value) => handleQuantityChange(record.id, value)}
           className="w-20"
         />
-      ),
+      )
     },
     {
       title: 'Thành tiền',
@@ -97,7 +97,7 @@ const Cart = () => {
         <span className="font-semibold text-gray-800">
           {formatCurrency(record.price * record.quantity)}
         </span>
-      ),
+      )
     },
     {
       title: '',
@@ -110,8 +110,8 @@ const Cart = () => {
           icon={<DeleteOutlined />}
           onClick={() => handleRemoveItem(record.id)}
         />
-      ),
-    },
+      )
+    }
   ]
 
   if (cartItems.length === 0) {

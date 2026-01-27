@@ -11,6 +11,7 @@ interface UserWithKey extends Record<string, unknown> {
   _id: string
 }
 
+/* eslint-disable no-unused-vars */
 interface UserListProps {
   users: User[]
   isLoading: boolean
@@ -32,11 +33,11 @@ const UserListComponent = ({
   onUpdateStatus,
   onPageChange,
   onViewUser,
-  onEditUser,
+  onEditUser
 }: UserListProps) => {
   const usersWithKeys: UserWithKey[] = users.map(user => ({
     ...user,
-    key: user._id,
+    key: user._id
   }))
 
   const tableColumns: TableColumn<UserWithKey>[] = [
@@ -46,21 +47,21 @@ const UserListComponent = ({
       dataIndex: 'fullname',
       width: 220,
       sortable: true,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'email',
       title: 'Email',
       dataIndex: 'email',
       width: 220,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'role',
       title: 'Vai trò',
       dataIndex: 'role',
       width: 120,
-      render: (value: unknown) => ROLE_LABELS[value as keyof typeof ROLE_LABELS] || '-',
+      render: (value: unknown) => ROLE_LABELS[value as keyof typeof ROLE_LABELS] || '-'
     },
     {
       key: 'isActive',
@@ -74,14 +75,14 @@ const UserListComponent = ({
             {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
           </span>
         )
-      },
+      }
     },
     {
       key: 'provider',
       title: 'Phương thức',
       dataIndex: 'provider',
       width: 120,
-      render: (value: unknown) => value === 'google' ? 'Google' : 'Local',
+      render: (value: unknown) => value === 'google' ? 'Google' : 'Local'
     },
     {
       key: 'createdAt',
@@ -89,7 +90,7 @@ const UserListComponent = ({
       dataIndex: 'createdAt',
       width: 160,
       sortable: true,
-      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm'),
+      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm')
     },
     {
       key: 'actions',
@@ -127,8 +128,8 @@ const UserListComponent = ({
             {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
           </Button>
         </Space>
-      ),
-    },
+      )
+    }
   ]
 
   return (
@@ -145,7 +146,7 @@ const UserListComponent = ({
             current: pagination?.page || 1,
             pageSize: pagination?.limit || 10,
             total: pagination?.total || 0,
-            onChange: (page, pageSize) => onPageChange(page, pageSize),
+            onChange: (page, pageSize) => onPageChange(page, pageSize)
           }}
           scroll={{ x: 'max-content' }}
           bordered

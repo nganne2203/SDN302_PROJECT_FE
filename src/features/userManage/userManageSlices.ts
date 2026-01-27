@@ -1,11 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { UserManageState, FetchUsersPayload, User } from './userManageTypes'
-import { 
+import {
   fetchUsersThunk,
   createUserThunk,
   getUserByIdThunk,
   updateUserThunk,
-  updateUserStatusThunk,
+  updateUserStatusThunk
 } from './userManageThunks'
 
 const initialState: UserManageState = {
@@ -15,7 +15,7 @@ const initialState: UserManageState = {
   filter: {},
   listLoading: false,
   actionLoading: false,
-  error: null,
+  error: null
 }
 
 const userManageSlice = createSlice({
@@ -42,7 +42,7 @@ const userManageSlice = createSlice({
       state.error = null
       state.listLoading = false
       state.actionLoading = false
-    },
+    }
   },
   extraReducers: (builder) => {
     // Fetch users
@@ -132,7 +132,7 @@ const userManageSlice = createSlice({
         state.actionLoading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const {
@@ -140,7 +140,7 @@ export const {
   clearFilter,
   setSelectedUser,
   clearError,
-  resetUserManage,
+  resetUserManage
 } = userManageSlice.actions
 
 export default userManageSlice.reducer

@@ -1,4 +1,4 @@
-import type { UserInfo, ShippingAddress, UserRole } from '@/types/api';
+import type { UserInfo, ShippingAddress, UserRole } from '@/types/api'
 
 export interface UpdateProfilePayload {
   fullName?: string;
@@ -46,4 +46,11 @@ export interface UserState {
   addresses: ShippingAddress[];
   isLoading: boolean;
   error: string | null;
+}
+
+export interface UserFilter {
+  role?: UserRole | ''
+  isActive?: boolean | ''
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc' | ''
 }

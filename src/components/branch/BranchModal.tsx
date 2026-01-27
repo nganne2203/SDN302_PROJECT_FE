@@ -4,6 +4,7 @@ import { ModalCommon, ButtonCommon } from '@/components/common'
 import type { BranchFormData } from '@/hooks/useBranch'
 import type { User } from '@/features/user/userTypes'
 
+/* eslint-disable no-unused-vars */
 interface BranchModalProps {
   isOpen: boolean
   isEditMode: boolean
@@ -29,13 +30,13 @@ const BranchModalComponent = ({
   onClose,
   onFormChange,
   onManagerChange,
-  onSubmit,
+  onSubmit
 }: BranchModalProps) => {
   const managerOptions = useMemo(
     () =>
       managers.map((m) => ({
         value: m._id,
-        label: `${m.fullname} (${m.email})`,
+        label: `${m.fullname} (${m.email})`
       })),
     [managers]
   )
