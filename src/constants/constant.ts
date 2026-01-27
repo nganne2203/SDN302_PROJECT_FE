@@ -78,14 +78,6 @@ export const API_ENDPOINTS = {
     CREATE: "/api/orders",
     CANCEL: (id: string) => `/api/orders/${id}/cancel`,
   },
-
-  BRANCH: {
-    LIST: "/api/branch",
-    DETAIL: (id: string) => `/api/branch/${id}`,
-    CREATE: "/api/branch",
-    UPDATE: (id: string) => `/api/branch/${id}`,
-    DELETE: (id: string) => `/api/branch/${id}`,
-  },
 } as const
 
 
