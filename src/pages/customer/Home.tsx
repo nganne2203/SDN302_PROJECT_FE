@@ -1,10 +1,12 @@
-import { useEffect, useRef } from 'react'
-import FooterLayout from '@/components/layout/FooterLayout'
-import HeaderLayout from '@/components/layout/HeaderLayout'
+import { useEffect, useRef, useState } from 'react'
 import { useProduct } from '@/hooks/useProduct'
 import LoaderCommon from '@/components/common/LoaderCommon'
 import { useNavigate } from 'react-router-dom'
 import { ShoppingOutlined, TruckOutlined, SafetyOutlined, CustomerServiceOutlined } from '@ant-design/icons'
+import ProductCard from '@/components/product/ProductCard'
+import SectionHeader from '@/components/common/SectionHeader'
+import BranchCard from '@/components/branch/BranchCard'
+import useBranch from '@/hooks/useBranch'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -15,7 +17,7 @@ const Home = () => {
     fetchNewArrivals,
     isLoading
   } = useProduct()
-
+  const { branches, fetchBranches, isLoading: isBranchLoading } = useBranch()
   const hasFetchedRef = useRef(false)
 
   useEffect(() => {
@@ -23,15 +25,15 @@ const Home = () => {
     hasFetchedRef.current = true
     fetchFeaturedProducts()
     fetchNewArrivals()
-  }, [fetchFeaturedProducts, fetchNewArrivals])
+    fetchBranches()
+  }, [fetchFeaturedProducts, fetchNewArrivals, fetchBranches])
 
   const displayProducts = featuredProducts.slice(0, 4)
   const displayNewArrivals = newArrivals.slice(0, 4)
+  const displayBranches = branches.slice(0, 4)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderLayout />
-
       {/* Hero Section with Search */}
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
         <div className="container mx-auto px-4 text-center">
@@ -52,7 +54,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-12 border-b">
+      <section className="bg-white py-12 ">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="flex flex-col items-center text-center">
@@ -88,19 +90,9 @@ const Home = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Sản phẩm nổi bật
-            </h2>
-            <button
-              onClick={() => navigate('/products')}
-              className="text-blue-600 hover:text-blue-800 font-semibold"
-            >
-              Xem tất cả →
-            </button>
-          </div>
+          <SectionHeader title="Sản phẩm nổi bật" />
 
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -109,50 +101,7 @@ const Home = () => {
           ) : displayProducts && displayProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {displayProducts.map((product) => (
-                <div
-                  key={product._id}
-                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200"
-                  onClick={() => navigate(`/products/${product._id}`)}
-                >
-                  <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <span className="text-gray-400 text-sm">Hình ảnh sản phẩm</span>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xs text-gray-500 mb-2">{product.category?.name}</p>
-                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-14">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <span className="text-blue-600 font-bold text-lg">
-                          {product.price?.toLocaleString('vi-VN')} ₫
-                        </span>
-                      </div>
-                      {product.ratingAvg && (
-                        <div className="text-sm text-yellow-500">
-                          ⭐ {product.ratingAvg.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/products/${product._id}`)
-                      }}
-                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      Xem chi tiết
-                    </button>
-                  </div>
-                </div>
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
           ) : (
@@ -167,17 +116,7 @@ const Home = () => {
       {displayNewArrivals && displayNewArrivals.length > 0 && (
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-800">
-                Sản phẩm mới nhất
-              </h2>
-              <button
-                onClick={() => navigate('/products')}
-                className="text-blue-600 hover:text-blue-800 font-semibold"
-              >
-                Xem tất cả →
-              </button>
-            </div>
+            <SectionHeader title="Sản phẩm mới nhất" />
 
             {isLoading ? (
               <div className="flex justify-center py-12">
@@ -186,50 +125,7 @@ const Home = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {displayNewArrivals.map((product) => (
-                  <div
-                    key={product._id}
-                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200"
-                    onClick={() => navigate(`/products/${product._id}`)}
-                  >
-                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-                      {product.images && product.images.length > 0 ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-sm">Hình ảnh sản phẩm</span>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <p className="text-xs text-gray-500 mb-2">{product.category?.name}</p>
-                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-14">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <span className="text-blue-600 font-bold text-lg">
-                            {product.price?.toLocaleString('vi-VN')} ₫
-                          </span>
-                        </div>
-                        {product.ratingAvg && (
-                          <div className="text-sm text-yellow-500">
-                            ⭐ {product.ratingAvg.toFixed(1)}
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigate(`/products/${product._id}`)
-                        }}
-                        className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-                      >
-                        Xem chi tiết
-                      </button>
-                    </div>
-                  </div>
+                  <ProductCard key={product._id} product={product} />
                 ))}
               </div>
             )}
@@ -237,8 +133,31 @@ const Home = () => {
         </section>
       )}
 
+      {(isBranchLoading || displayBranches.length > 0) && (
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <SectionHeader title="Hệ thống chi nhánh" />
+
+            {isBranchLoading ? (
+              <div className="flex justify-center py-12">
+                <LoaderCommon />
+              </div>
+            ) : displayBranches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {displayBranches.map((branch) => (
+                  <BranchCard key={branch._id} branch={branch} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                Không có chi nhánh
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
-      <FooterLayout />
     </div>
   )
 }
