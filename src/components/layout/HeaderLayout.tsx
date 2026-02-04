@@ -36,24 +36,23 @@ const HeaderLayout = () => {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link to={ROUTES.HOME} className="flex items-center">
-            <span className="text-2xl font-bold text-blue-600">PhoneAcc</span>
-          </Link>
-
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <Input
-              placeholder="Tìm kiếm sản phẩm..."
-              prefix={<SearchOutlined className="text-gray-400" />}
-              size="large"
-              className="rounded-lg"
-            />
+        <div className="flex items-center h-16">
+          <div className="flex items-center">
+            <Link to={ROUTES.HOME} className="flex items-center">
+              <span className="text-2xl font-bold text-blue-600">PhoneAcc</span>
+            </Link>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex flex-1 items-center justify-center space-x-6">
+            <Link to={ROUTES.HOME} className="text-gray-600 hover:text-blue-600">
+              Trang chủ
+            </Link>
             <Link to={ROUTES.PRODUCTS} className="text-gray-600 hover:text-blue-600">
               Sản phẩm
             </Link>
+          </nav>
+
+          <div className="hidden md:flex items-center space-x-4">
             <Link to={ROUTES.CART} className="relative">
               <Badge count={3} size="small">
                 <ShoppingCartOutlined className="text-2xl text-gray-600 hover:text-blue-600" />
@@ -65,10 +64,10 @@ const HeaderLayout = () => {
                 {isAuthenticated && <span>{user?.fullname}</span>}
               </button>
             </Dropdown>
-          </nav>
+          </div>
 
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 ml-auto"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <MenuOutlined className="text-xl" />

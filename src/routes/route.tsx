@@ -11,6 +11,7 @@ import type { UserRole } from '@/types/api'
 
 // Lazy load pages for better performance
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
+import CustomerLayout from '@/components/layout/CustomerLayout'
 
 // Lazy loaded components - Public pages
 const Home = lazy(() => import('@/pages/customer/Home'))
@@ -54,6 +55,12 @@ const withSuspense = (Component: ComponentType): ReactNode => (
   <Suspense fallback={<LoadingFallback />}>
     <Component />
   </Suspense>
+)
+
+const withCustomerLayout = (Component: ComponentType): ReactNode => (
+  <CustomerLayout>
+    {withSuspense(Component)}
+  </CustomerLayout>
 )
 
 /**
@@ -168,19 +175,19 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.HOME,
-    element: withSuspense(Home)
+    element: withCustomerLayout(Home)
   },
   {
     path: ROUTES.CART,
-    element: withSuspense(Cart)
+    element: withCustomerLayout(Cart)
   },
   {
     path: ROUTES.PRODUCTS,
-    element: withSuspense(ProductBrowse)
+    element: withCustomerLayout(ProductBrowse)
   },
   {
     path: ROUTES.PRODUCT_DETAIL,
-    element: withSuspense(ProductDetailPage)
+    element: withCustomerLayout(ProductDetailPage)
   },
 
   // ========================
