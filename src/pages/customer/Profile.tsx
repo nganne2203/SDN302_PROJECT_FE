@@ -40,7 +40,7 @@ const Profile = () => {
             />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-800">
-                {profile?.fullName || 'Tài khoản'}
+                {profile?.fullname || 'Tài khoản'}
               </h1>
               <p className="text-sm text-gray-500">
                 Vai trò: <span className="font-semibold">{profile?.role || '-'}</span>
@@ -76,7 +76,7 @@ const Profile = () => {
                 <Phone className="w-4 h-4" />
                 <span className="font-semibold">Số điện thoại</span>
               </div>
-              <p className="mt-1 text-gray-800">{profile?.phoneNumber || '-'}</p>
+              <p className="mt-1 text-gray-800">{profile?.phone || '-'}</p>
             </div>
           </div>
         </div>

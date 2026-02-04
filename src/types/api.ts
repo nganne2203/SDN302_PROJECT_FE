@@ -126,6 +126,11 @@ export interface UploadedImage {
   createdAt?: string;
 }
 
+export interface UploadMultipleImagesResponse {
+  images: UploadedImage[];
+  publicIds: string[];
+}
+
 export interface VerifyOTPResponse {
   accessToken?: string;
   refreshToken?: string;
@@ -189,33 +194,67 @@ export interface AuthResponse {
 }
 
 export interface Product {
-  id: string;
+  _id: string;
   name: string;
+  slug: string;
   description: string;
+  category: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
   price: number;
-  originalPrice?: number;
   images: string[];
-  categoryId: string;
-  categoryName: string;
-  brand: string;
-  stock: number;
-  rating: number;
-  reviewCount: number;
+  material?: string;
+  compatibility?: string[];
+  ratingAvg: number;
+  ratingCount: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ProductFilter {
+  page?: number;
+  limit?: number;
+  search?: string;
   categoryId?: string;
-  brand?: string;
   minPrice?: number;
   maxPrice?: number;
-  search?: string;
-  sortBy?: 'price' | 'name' | 'createdAt' | 'rating';
+  isActive?: boolean;
+  sortBy?: 'name' | 'price' | 'createdAt' | 'updatedAt' | 'ratingAvg' | 'ratingCount';
   sortOrder?: 'asc' | 'desc';
-  page?: number;
-  pageSize?: number;
+}
+
+export interface CreateProductRequest {
+  name: string;
+  description: string;
+  categoryId: string;
+  price: number;
+  images: string[];
+  material?: string;
+  compatibility?: string[];
+}
+
+export interface UpdateProductRequest {
+  name?: string;
+  description?: string;
+  categoryId?: string;
+  price?: number;
+  images?: string[];
+  material?: string;
+  compatibility?: string[];
+}
+
+export interface UpdateProductStatusRequest {
+  isActive: boolean;
+}
+
+export interface ProductWithStock extends Product {
+  stockInfo?: {
+    available: boolean;
+    quantity: number;
+  };
 }
 
 export interface Branch {

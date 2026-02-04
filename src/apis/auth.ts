@@ -52,7 +52,7 @@ export const authApi = {
 
   resetPassword: async (data: ResetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      API_ENDPOINTS.USER.RESET_PASSWORD,
       data
     )
     return response.data
@@ -60,7 +60,7 @@ export const authApi = {
 
   confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.CONFIRM_RESET_PASSWORD,
+      API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
       data
     )
     return response.data
@@ -68,7 +68,7 @@ export const authApi = {
 
   setPassword: async (data: SetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.SET_PASSWORD,
+      API_ENDPOINTS.USER.SET_PASSWORD,
       data
     )
     return response.data
@@ -76,7 +76,7 @@ export const authApi = {
 
   changePassword: async (data: ChangePasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      API_ENDPOINTS.USER.CHANGE_PASSWORD,
       data
     )
     return response.data
