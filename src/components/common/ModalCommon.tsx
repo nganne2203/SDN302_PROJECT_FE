@@ -25,20 +25,20 @@ const ModalCommon = ({
   className = '',
   footer = null,
   closable = true,
-  maskClosable = true,
+  maskClosable = true
 }: ModalCommonProps) => {
   const getWidth = (): number => {
     switch (size) {
-      case 'sm':
-        return 400
-      case 'md':
-        return 600
-      case 'lg':
-        return 800
-      case 'xl':
-        return 1000
-      default:
-        return 600
+    case 'sm':
+      return 400
+    case 'md':
+      return 600
+    case 'lg':
+      return 800
+    case 'xl':
+      return 1000
+    default:
+      return 600
     }
   }
 

@@ -4,6 +4,7 @@ import type { FilterOption } from '@/types/filter'
 import type { UserFilter } from '@/features/user/userTypes'
 import { ROLE_LABELS, USER_ROLES } from '@/constants/constant'
 
+/* eslint-disable no-unused-vars */
 interface UserFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void
@@ -23,9 +24,7 @@ const UserFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
-  onReset,
+  onReset
 }: UserFilterProps) => {
   const filterFields: FilterField[] = [
     {
@@ -37,8 +36,8 @@ const UserFilterComponent = ({
         { label: ROLE_LABELS[USER_ROLES.ADMIN], value: USER_ROLES.ADMIN },
         { label: ROLE_LABELS[USER_ROLES.MANAGER], value: USER_ROLES.MANAGER },
         { label: ROLE_LABELS[USER_ROLES.STAFF], value: USER_ROLES.STAFF },
-        { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER },
-      ],
+        { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER }
+      ]
     },
     {
       key: 'isActive',
@@ -47,19 +46,19 @@ const UserFilterComponent = ({
       options: [
         { label: 'Tất cả', value: '' },
         { label: 'Hoạt động', value: 'true' },
-        { label: 'Vô hiệu hóa', value: 'false' },
-      ],
-    },
+        { label: 'Vô hiệu hóa', value: 'false' }
+      ]
+    }
   ]
 
   const sortOptions: FilterOption[] = [
     { label: 'Ngày tạo', value: 'createdAt' },
-    { label: 'Tên', value: 'fullname' },
+    { label: 'Tên', value: 'fullname' }
   ]
 
   const filterValues = {
     ...filter,
-    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive,
+    isActive: typeof filter.isActive === 'boolean' ? String(filter.isActive) : filter.isActive
   }
 
   return (
@@ -76,11 +75,6 @@ const UserFilterComponent = ({
       sortOrder={(filter.sortOrder as 'asc' | 'desc') || 'desc'}
       onSortChange={(field, order) => onFilterChange('sort', { field, order })}
       showSort
-      page={pagination?.page || 1}
-      limit={pagination?.limit || 10}
-      total={pagination?.total || 0}
-      onPageChange={onPageChange}
-      showPagination
       onReset={onReset}
       showReset
       compact

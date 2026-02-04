@@ -1,13 +1,20 @@
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/apps/hooks'
-import { fetchUsersThunk, updateUserStatusThunk } from '@/features/user/userThunks'
-import { setFilter, clearFilter, setSelectedUser, clearError } from '@/features/user/userSlices'
-import type { User, UserFilter } from '@/features/user/userTypes'
+import {
+  fetchUsersThunk,
+  createUserThunk,
+  getUserByIdThunk,
+  updateUserThunk,
+  updateUserStatusThunk
+} from '@/features/userManage/userManageThunks'
+import { setFilter, clearFilter, setSelectedUser, clearError } from '@/features/userManage/userManageSlices'
+import type { User, UserManageFilter } from '@/features/userManage/userManageTypes'
+import type { CreateUserRequest, UpdateUserRequest } from '@/types/api'
 
 export const useUserManagement = () => {
   const dispatch = useAppDispatch()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userState = useAppSelector((state: any) => state.user)
+  const userManageState = useAppSelector((state: any) => state.userManage)
 
   const {
     users = [],
@@ -15,12 +22,34 @@ export const useUserManagement = () => {
     pagination,
     filter = {},
     listLoading = false,
-    error,
-  } = userState || {}
+    actionLoading = false,
+    error
+  } = userManageState || {}
 
   const fetchUsers = useCallback(
-    async (filterData?: UserFilter) => {
+    async (filterData?: UserManageFilter) => {
       return dispatch(fetchUsersThunk(filterData))
+    },
+    [dispatch]
+  )
+
+  const createUser = useCallback(
+    async (data: CreateUserRequest) => {
+      return dispatch(createUserThunk(data))
+    },
+    [dispatch]
+  )
+
+  const getUserById = useCallback(
+    async (id: string) => {
+      return dispatch(getUserByIdThunk(id))
+    },
+    [dispatch]
+  )
+
+  const updateUser = useCallback(
+    async (id: string, data: UpdateUserRequest) => {
+      return dispatch(updateUserThunk({ id, data }))
     },
     [dispatch]
   )
@@ -57,7 +86,7 @@ export const useUserManagement = () => {
   const usersWithDefaults = useMemo(
     () => users.map((user: User) => ({
       key: user._id,
-      ...user,
+      ...user
     })),
     [users]
   )
@@ -68,14 +97,18 @@ export const useUserManagement = () => {
     pagination,
     filter,
     listLoading,
+    actionLoading,
     error,
 
     fetchUsers,
+    createUser,
+    getUserById,
+    updateUser,
     updateUserStatus,
     handleSetFilter,
     handleClearFilter,
     handleSetSelectedUser,
-    handleClearError,
+    handleClearError
   }
 }
 

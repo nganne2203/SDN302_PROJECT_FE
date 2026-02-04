@@ -4,12 +4,14 @@ import type { TableColumn } from '@/components/common/TableCommon'
 import type { User } from '@/features/user/userTypes'
 import dayjs from 'dayjs'
 import { ROLE_LABELS } from '@/constants/constant'
+import { Eye, Pencil } from 'lucide-react'
 
 interface UserWithKey extends Record<string, unknown> {
   key: string
   _id: string
 }
 
+/* eslint-disable no-unused-vars */
 interface UserListProps {
   users: User[]
   isLoading: boolean
@@ -20,6 +22,8 @@ interface UserListProps {
   }
   onUpdateStatus: (id: string, isActive: boolean) => void
   onPageChange: (page: number, pageSize: number) => void
+  onViewUser?: (user: User) => void
+  onEditUser?: (user: User) => void
 }
 
 const UserListComponent = ({
@@ -28,10 +32,12 @@ const UserListComponent = ({
   pagination,
   onUpdateStatus,
   onPageChange,
+  onViewUser,
+  onEditUser
 }: UserListProps) => {
   const usersWithKeys: UserWithKey[] = users.map(user => ({
     ...user,
-    key: user._id,
+    key: user._id
   }))
 
   const tableColumns: TableColumn<UserWithKey>[] = [
@@ -41,21 +47,21 @@ const UserListComponent = ({
       dataIndex: 'fullname',
       width: 220,
       sortable: true,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'email',
       title: 'Email',
       dataIndex: 'email',
       width: 220,
-      ellipsis: true,
+      ellipsis: true
     },
     {
       key: 'role',
       title: 'Vai trò',
       dataIndex: 'role',
       width: 120,
-      render: (value: unknown) => ROLE_LABELS[value as keyof typeof ROLE_LABELS] || '-',
+      render: (value: unknown) => ROLE_LABELS[value as keyof typeof ROLE_LABELS] || '-'
     },
     {
       key: 'isActive',
@@ -69,14 +75,14 @@ const UserListComponent = ({
             {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
           </span>
         )
-      },
+      }
     },
     {
       key: 'provider',
       title: 'Phương thức',
       dataIndex: 'provider',
       width: 120,
-      render: (value: unknown) => value === 'google' ? 'Google' : 'Local',
+      render: (value: unknown) => value === 'google' ? 'Google' : 'Local'
     },
     {
       key: 'createdAt',
@@ -84,25 +90,46 @@ const UserListComponent = ({
       dataIndex: 'createdAt',
       width: 160,
       sortable: true,
-      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm'),
+      render: (value: unknown) => dayjs(value as string).format('DD/MM/YYYY HH:mm')
     },
     {
       key: 'actions',
       title: 'Hành động',
-      width: 140,
+      width: 200,
       fixed: 'right',
       render: (_: unknown, record: UserWithKey) => (
         <Space>
+          {onViewUser && (
+            <Button
+              type="default"
+              size="small"
+              icon={<Eye className="w-4 h-4" />}
+              onClick={() => onViewUser(record as unknown as User)}
+            >
+              Xem
+            </Button>
+          )}
+          {onEditUser && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<Pencil className="w-4 h-4" />}
+              onClick={() => onEditUser(record as unknown as User)}
+            >
+              Sửa
+            </Button>
+          )}
           <Button
             type={record.isActive ? 'default' : 'primary'}
             size="small"
             onClick={() => onUpdateStatus(record._id, !record.isActive)}
+            danger={record.isActive as boolean}
           >
             {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
           </Button>
         </Space>
-      ),
-    },
+      )
+    }
   ]
 
   return (
@@ -119,7 +146,7 @@ const UserListComponent = ({
             current: pagination?.page || 1,
             pageSize: pagination?.limit || 10,
             total: pagination?.total || 0,
-            onChange: (page, pageSize) => onPageChange(page, pageSize),
+            onChange: (page, pageSize) => onPageChange(page, pageSize)
           }}
           scroll={{ x: 'max-content' }}
           bordered

@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUserManagement } from '@/hooks/useUserManagement'
-import type { UserFilter } from '@/features/user/userTypes'
+import type { UserManageFilter } from '@/types/api'
 import { toast } from '@/utils/toast'
 import UserHeader from '@/components/user/UserHeader'
 import UserFilterComponent from '@/components/user/UserFilter'
 import UserListComponent from '@/components/user/UserList'
+import UserFormModal from '@/components/user/UserFormModal'
+import UserDetailModal from '@/components/user/UserDetailModal'
 import type { UserRole } from '@/types/api'
+import type { User } from '@/features/user/userTypes'
 
 const ManagementUser = () => {
   const {
@@ -13,25 +16,34 @@ const ManagementUser = () => {
     pagination,
     filter,
     listLoading,
+    actionLoading,
     error,
     fetchUsers,
+    createUser,
+    getUserById,
+    updateUser,
     updateUserStatus,
     handleSetFilter,
     handleClearFilter,
-    handleClearError,
+    handleClearError
   } = useUserManagement()
+
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   const lastFetchParamsRef = useRef<string>('')
 
   useEffect(() => {
-    const filterParams: UserFilter = {
+    const filterParams: UserManageFilter = {
       page: (filter.page as number) || 1,
       limit: (filter.limit as number) || 10,
       search: (filter.search as string) || undefined,
       role: (filter.role as UserRole) || undefined,
       isActive: typeof filter.isActive === 'boolean' ? filter.isActive : undefined,
       sortBy: (filter.sortBy as string) || 'createdAt',
-      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc',
+      sortOrder: (filter.sortOrder as 'asc' | 'desc') || 'desc'
     }
 
     const paramsKey = JSON.stringify(filterParams)
@@ -70,7 +82,7 @@ const ManagementUser = () => {
       handleSetFilter({
         sortBy: sortData.field || 'createdAt',
         sortOrder: (sortData.order as 'asc' | 'desc') || 'desc',
-        page: 1,
+        page: 1
       })
       return
     }
@@ -95,9 +107,115 @@ const ManagementUser = () => {
     }
   }, [updateUserStatus])
 
+  const handleCreateUser = useCallback(() => {
+    setIsEditMode(false)
+    setSelectedUser(null)
+    setIsFormModalOpen(true)
+  }, [])
+
+  const handleEditUser = useCallback(async (user: User) => {
+    // Fetch fresh user data to ensure we have all details including addresses
+    try {
+      const result = await getUserById(user._id)
+      if (result.type.includes('fulfilled')) {
+        setIsEditMode(true)
+        setSelectedUser(result.payload as User)
+        setIsFormModalOpen(true)
+      } else {
+        toast.error('Không thể tải thông tin người dùng')
+      }
+    } catch {
+      toast.error('Đã xảy ra lỗi khi tải thông tin người dùng')
+    }
+  }, [getUserById])
+
+  const handleViewUser = useCallback((user: User) => {
+    setSelectedUser(user)
+    setIsDetailModalOpen(true)
+  }, [])
+
+  const handleFormSubmit = useCallback(async (formData: {
+    fullname: string
+    email: string
+    password: string
+    phone: string
+    role: UserRole
+    branch: string
+    avatar: string
+    addresses: Array<{
+      fullname: string
+      phone: string
+      addressLine: string
+      city: string
+      district: string
+      ward: string
+      isDefault: boolean
+    }>
+  }) => {
+    try {
+      if (isEditMode && selectedUser) {
+        const result = await updateUser(selectedUser._id, {
+          fullname: formData.fullname,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          role: formData.role,
+          branch: formData.branch || undefined,
+          avatar: formData.avatar || undefined,
+          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
+        })
+
+        if (result.type.includes('fulfilled')) {
+          toast.success('Cập nhật người dùng thành công')
+          setIsFormModalOpen(false)
+          setSelectedUser(null)
+          fetchUsers(filter as UserManageFilter)
+        } else if (result.payload) {
+          toast.error(result.payload as string)
+        }
+      } else {
+        const result = await createUser({
+          fullname: formData.fullname,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone || undefined,
+          role: formData.role,
+          branch: formData.branch || undefined,
+          avatar: formData.avatar || undefined,
+          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
+        })
+
+        if (result.type.includes('fulfilled')) {
+          toast.success('Tạo người dùng thành công')
+          setIsFormModalOpen(false)
+          fetchUsers(filter as UserManageFilter)
+        } else if (result.payload) {
+          toast.error(result.payload as string)
+        }
+      }
+    } catch {
+      toast.error('Đã xảy ra lỗi khi xử lý yêu cầu')
+    }
+  }, [isEditMode, selectedUser, createUser, updateUser, fetchUsers, filter])
+
+  const handleCloseFormModal = useCallback(() => {
+    setIsFormModalOpen(false)
+    setSelectedUser(null)
+    setIsEditMode(false)
+  }, [])
+
+  const handleCloseDetailModal = useCallback(() => {
+    setIsDetailModalOpen(false)
+    setSelectedUser(null)
+  }, [])
+
+  const handleEditFromDetail = useCallback((user: User) => {
+    setIsDetailModalOpen(false)
+    handleEditUser(user)
+  }, [handleEditUser])
+
   return (
     <div className="p-2">
-      <UserHeader />
+      <UserHeader onCreateUser={handleCreateUser} />
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -113,7 +231,7 @@ const ManagementUser = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onPageChange={handlePageChange}
         onReset={handleClearFilter}
@@ -125,10 +243,28 @@ const ManagementUser = () => {
         pagination={{
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
-          total: pagination?.totalItems || 0,
+          total: pagination?.totalItems || 0
         }}
         onUpdateStatus={handleUpdateStatus}
         onPageChange={handlePageChange}
+        onViewUser={handleViewUser}
+        onEditUser={handleEditUser}
+      />
+
+      <UserFormModal
+        isOpen={isFormModalOpen}
+        isEditMode={isEditMode}
+        user={selectedUser}
+        isSubmitting={actionLoading}
+        onClose={handleCloseFormModal}
+        onSubmit={handleFormSubmit}
+      />
+
+      <UserDetailModal
+        isOpen={isDetailModalOpen}
+        user={selectedUser}
+        onClose={handleCloseDetailModal}
+        onEdit={handleEditFromDetail}
       />
     </div>
   )

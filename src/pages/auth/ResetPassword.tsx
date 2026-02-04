@@ -19,11 +19,11 @@ const ResetPassword = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const state = location.state as LocationState | null
-  
-  const { 
-    confirmPasswordReset, 
+
+  const {
+    confirmPasswordReset,
     isLoading,
-    pendingEmail,
+    pendingEmail
   } = useAuth()
 
   const email = state?.email || pendingEmail
@@ -37,23 +37,23 @@ const ResetPassword = () => {
 
   const {
     handleSubmit,
-    control,
+    control
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       newPassword: '',
-      confirmPassword: '',
-    },
+      confirmPassword: ''
+    }
   })
 
   const onSubmit = useCallback(async (data: ResetPasswordFormData) => {
     if (isLoading || !email) return
-    
+
     const result = await confirmPasswordReset({
       email,
-      newPassword: data.newPassword,
+      newPassword: data.newPassword
     })
-    
+
     if (result.success) {
       toast.success(result.message || 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập.')
     } else {
@@ -68,8 +68,8 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <Link 
-          to={ROUTES.FORGOT_PASSWORD} 
+        <Link
+          to={ROUTES.FORGOT_PASSWORD}
           className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

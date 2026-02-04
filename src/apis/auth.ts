@@ -1,12 +1,12 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { 
-  ApiResponse, 
+import type {
+  ApiResponse,
   SimpleResponse,
   AuthTokens,
   RegisterResponse,
   VerifyOTPResponse,
-  LoginRequest, 
+  LoginRequest,
   RegisterRequest,
   VerifyOTPRequest,
   ResendOTPRequest,
@@ -14,7 +14,7 @@ import type {
   ConfirmResetPasswordRequest,
   SetPasswordRequest,
   ChangePasswordRequest,
-  RefreshTokenRequest,
+  RefreshTokenRequest
 } from '@/types/api'
 
 export const authApi = {
@@ -52,7 +52,7 @@ export const authApi = {
 
   resetPassword: async (data: ResetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      API_ENDPOINTS.USER.RESET_PASSWORD,
       data
     )
     return response.data
@@ -60,7 +60,7 @@ export const authApi = {
 
   confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.CONFIRM_RESET_PASSWORD,
+      API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
       data
     )
     return response.data
@@ -68,7 +68,7 @@ export const authApi = {
 
   setPassword: async (data: SetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.SET_PASSWORD,
+      API_ENDPOINTS.USER.SET_PASSWORD,
       data
     )
     return response.data
@@ -76,7 +76,7 @@ export const authApi = {
 
   changePassword: async (data: ChangePasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
-      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      API_ENDPOINTS.USER.CHANGE_PASSWORD,
       data
     )
     return response.data
@@ -98,7 +98,7 @@ export const authApi = {
   logoutAll: async (): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(API_ENDPOINTS.AUTH.LOGOUT_ALL)
     return response.data
-  },
+  }
 }
 
 export default authApi

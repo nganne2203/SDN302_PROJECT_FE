@@ -1,6 +1,7 @@
 import { ModalCommon, ButtonCommon, InputField, TextAreaField } from '@/components/common'
 import type { CategoryFormData } from '@/hooks/useCategory'
 
+/* eslint-disable no-unused-vars */
 interface CategoryModalProps {
   isOpen: boolean
   isEditMode: boolean
@@ -20,7 +21,7 @@ const CategoryModalComponent = ({
   isSubmitting,
   onClose,
   onFormChange,
-  onSubmit,
+  onSubmit
 }: CategoryModalProps) => {
   return (
     <ModalCommon

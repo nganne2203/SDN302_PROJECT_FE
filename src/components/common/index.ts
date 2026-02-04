@@ -17,6 +17,6 @@ export {
   CheckboxField,
   RadioField,
   UploadField,
-  ControlledField,
+  ControlledField
 } from './FieldCustom'
 export { default as FieldCustom } from './FieldCustom'

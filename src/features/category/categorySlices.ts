@@ -6,7 +6,7 @@ import {
   createCategoryThunk,
   updateCategoryThunk,
   deleteCategoryThunk,
-  updateCategoryStatusThunk,
+  updateCategoryStatusThunk
 } from './categoryThunks'
 
 const initialState: CategoryState = {
@@ -15,7 +15,7 @@ const initialState: CategoryState = {
   pagination: null,
   filter: {},
   isLoading: false,
-  error: null,
+  error: null
 }
 
 const categorySlice = createSlice({
@@ -40,7 +40,7 @@ const categorySlice = createSlice({
       state.pagination = null
       state.filter = {}
       state.error = null
-    },
+    }
   },
   extraReducers: (builder) => {
     // Fetch Categories
@@ -155,7 +155,7 @@ const categorySlice = createSlice({
         state.isLoading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 export const { setFilter, clearFilter, setSelectedCategory, clearError, resetCategories } = categorySlice.actions

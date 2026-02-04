@@ -1,7 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import axiosRetry from 'axios-retry'
 import { env } from '@/configs/env'
-import { STORAGE_KEYS, HTTP_STATUS, API_ENDPOINTS } from '@/constants/constant'
+import { STORAGE_KEYS, HTTP_STATUS, API_ENDPOINTS, ROUTES } from '@/constants/constant'
 import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 
 // Create axios instance
@@ -10,8 +10,8 @@ export const apiClient = axios.create({
   timeout: 30000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 })
 
 // Configure axios retry
@@ -20,7 +20,7 @@ axiosRetry(apiClient, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
-  },
+  }
 })
 
 // Request interceptor
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(
         const refreshToken = getStorage(STORAGE_KEYS.REFRESH_TOKEN)
         if (refreshToken) {
           const response = await axios.post(`${env.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`, {
-            refreshToken,
+            refreshToken
           })
 
           const { accessToken, refreshToken: newRefreshToken } = response.data.data
@@ -64,7 +64,7 @@ apiClient.interceptors.response.use(
         removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
         removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
         removeStorage(STORAGE_KEYS.USER_INFO)
-        window.location.href = '/login'
+        window.location.href = ROUTES.HOME
       }
     }
 

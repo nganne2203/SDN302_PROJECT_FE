@@ -10,65 +10,182 @@ export const STORAGE_KEYS = {
   THEME: 'theme',
   LANGUAGE: 'language',
   HAS_PASSWORD: 'has_password',
-  PENDING_EMAIL: 'pending_email',
+  PENDING_EMAIL: 'pending_email'
 } as const
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
-    LOGOUT: '/api/auth/logout',
-    LOGOUT_ALL: '/api/auth/logout-all',
-    REFRESH_TOKEN: '/api/auth/refresh-token',
-    VERIFY_OTP: '/api/auth/verify-otp',
-    RESEND_OTP: '/api/auth/resend-verification-code',
-    PROFILE: '/api/auth/profile',
-    SET_PASSWORD: '/api/auth/set-password',
-    CHANGE_PASSWORD: '/api/auth/change-password',
-    RESET_PASSWORD: '/api/auth/reset-password',
-    CONFIRM_RESET_PASSWORD: '/api/auth/confirm-reset-password',
-    GOOGLE_LOGIN: '/api/auth/google',
-    GOOGLE_CALLBACK: '/api/auth/google/callback',
+    LOGIN: '/api/v1/auth/login',
+    REGISTER: '/api/v1/auth/register',
+    LOGOUT: '/api/v1/auth/logout',
+    LOGOUT_ALL: '/api/v1/auth/logout-all',
+    REFRESH_TOKEN: '/api/v1/auth/refresh-token',
+    VERIFY_OTP: '/api/v1/auth/verify-otp',
+    RESEND_OTP: '/api/v1/auth/resend-verification-code',
+    GOOGLE_LOGIN: '/api/v1/auth/google',
+    GOOGLE_CALLBACK: '/api/v1/auth/google/callback'
   },
   USER: {
-    ALL_USERS: '/api/users',
-    CREATE_USER: '/api/users',
-    GET_MANAGER: '/api/users/manager',
-    PROFILE: '/api/auth/profile',
-    UPDATE_PROFILE: '/api/users/me',
-    DETAIL: (id: string) => `/api/users/${id}`,
-    UPDATE: (id: string) => `/api/users/${id}`,
-    UPDATE_STATUS: (id: string) => `/api/users/${id}/status`,
-    CHANGE_PASSWORD: '/api/auth/change-password',
-    ADDRESSES: '/api/users/addresses',
+    ALL_USERS: '/api/v1/users',
+    CREATE_USER: '/api/v1/users',
+    GET_MANAGER: '/api/v1/users/manager',
+    PROFILE: '/api/v1/users/profile',
+    UPDATE_PROFILE: '/api/v1/users/me',
+    DETAIL: (id: string) => `/api/v1/users/${id}`,
+    UPDATE: (id: string) => `/api/v1/users/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/v1/users/${id}/status`,
+    CHANGE_PASSWORD: '/api/v1/users/change-password',
+    SET_PASSWORD: '/api/v1/users/set-password',
+    RESET_PASSWORD: '/api/v1/users/reset-password',
+    CONFIRM_RESET_PASSWORD: '/api/v1/users/confirm-reset-password'
   },
   PRODUCT: {
-    LIST: '/api/products',
-    DETAIL: (id: string) => `/api/products/${id}`,
-    CATEGORIES: '/api/products/categories',
-    SEARCH: '/api/products/search',
+    LIST: '/api/v1/products',
+    CREATE: '/api/v1/products',
+    DETAIL: (id: string) => `/api/v1/products/${id}`,
+    UPDATE: (id: string) => `/api/v1/products/${id}`,
+    DELETE: (id: string) => `/api/v1/products/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/v1/products/${id}/status`,
+    WITH_STOCK: '/api/v1/products/with-stock',
+    FEATURED: '/api/v1/products/featured',
+    NEW_ARRIVALS: '/api/v1/products/new-arrivals',
+    SEARCH: '/api/v1/products/search',
+    BY_DEVICE: (deviceId: string) => `/api/v1/products/by-device/${deviceId}`,
+    BY_SLUG: (slug: string) => `/api/v1/products/slug/${slug}`,
+    CATEGORIES: '/api/v1/products/categories',
+    FOR_ORDER: (id: string) => `/api/v1/products/${id}/for-order`,
+    RELATED: (id: string) => `/api/v1/products/${id}/related`
   },
   CATEGORY: {
-    LIST: '/api/category',
-    DETAIL: (id: string) => `/api/category/${id}`,
-    CREATE: '/api/category',
-    UPDATE: (id: string) => `/api/category/${id}`,
-    DELETE: (id: string) => `/api/category/${id}`,
-    UPDATE_STATUS: (id: string) => `/api/category/${id}/status`,
+    LIST: '/api/v1/categories',
+    CREATE: '/api/v1/categories',
+    DETAIL: (id: string) => `/api/v1/categories/${id}`,
+    UPDATE: (id: string) => `/api/v1/categories/${id}`,
+    DELETE: (id: string) => `/api/v1/categories/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/v1/categories/${id}/status`
+  },
+  BRANCH: {
+    LIST: '/api/v1/branches',
+    CREATE: '/api/v1/branches',
+    MANAGERS: '/api/v1/branches/managers',
+    DETAIL: (id: string) => `/api/v1/branches/${id}`,
+    UPDATE: (id: string) => `/api/v1/branches/${id}`,
+    DELETE: (id: string) => `/api/v1/branches/${id}`,
+    ASSIGN_MANAGER: (id: string) => `/api/v1/branches/${id}/manager`,
+    REMOVE_MANAGER: (id: string) => `/api/v1/branches/${id}/manager/remove`,
+    UPDATE_STATUS: (id: string) => `/api/v1/branches/${id}/status`
+  },
+  DEVICE: {
+    LIST: '/api/v1/devices',
+    CREATE: '/api/v1/devices',
+    DETAIL: (id: string) => `/api/v1/devices/${id}`,
+    UPDATE: (id: string) => `/api/v1/devices/${id}`,
+    DELETE: (id: string) => `/api/v1/devices/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/v1/devices/${id}/status`
+  },
+  PRICING: {
+    LIST: '/api/v1/pricings',
+    CREATE: '/api/v1/pricings',
+    BY_PRODUCT: (productId: string) => `/api/v1/pricings/product/${productId}`,
+    DELETE_BY_PRODUCT: (productId: string) => `/api/v1/pricings/product/${productId}`,
+    CALCULATE: (productId: string) => `/api/v1/pricings/calculate/${productId}`,
+    DETAIL: (id: string) => `/api/v1/pricings/${id}`,
+    UPDATE: (id: string) => `/api/v1/pricings/${id}`,
+    DELETE: (id: string) => `/api/v1/pricings/${id}`,
+    BULK_CREATE: '/api/v1/pricings/bulk',
+    TOGGLE: (id: string) => `/api/v1/pricings/${id}/toggle`
+  },
+  STATISTICS: {
+    DASHBOARD: '/api/v1/statistics/dashboard',
+    REVENUE: '/api/v1/statistics/revenue',
+    ORDERS: '/api/v1/statistics/orders',
+    PRODUCTS: '/api/v1/statistics/products',
+    BRANCHES: '/api/v1/statistics/branches',
+    CUSTOMERS: '/api/v1/statistics/customers',
+    PAYMENTS: '/api/v1/statistics/payments',
+    INVENTORY: '/api/v1/statistics/inventory',
+    COMPARISON: '/api/v1/statistics/comparison'
   },
   CART: {
-    GET: '/api/cart',
-    ADD: '/api/cart/add',
-    UPDATE: '/api/cart/update',
-    REMOVE: (itemId: string) => `/api/cart/remove/${itemId}`,
-    CLEAR: '/api/cart/clear',
+    LIST: '/api/v1/carts',
+    ADD: '/api/v1/carts',
+    CLEAR: '/api/v1/carts/clear',
+    VALIDATE: '/api/v1/carts/validate-before-checkout',
+    REMOVE_ITEM: '/api/v1/carts/item',
+    UPDATE_QUANTITY: '/api/v1/carts/item/quantity',
+    UPDATE_SERVICES: '/api/v1/carts/item/services'
+  },
+  INVENTORY: {
+    CREATE: '/api/v1/inventories',
+    LIST: '/api/v1/inventories',
+    LOW_STOCK: '/api/v1/inventories/low-stock',
+    UPDATE: (inventoryId: string) => `/api/v1/inventories/${inventoryId}`,
+    BY_PRODUCT: (productId: string) => `/api/v1/inventories/product/${productId}`,
+    ADJUST: (productId: string) => `/api/v1/inventories/product/${productId}/adjust`
   },
   ORDER: {
-    LIST: '/api/orders',
-    DETAIL: (id: string) => `/api/orders/${id}`,
-    CREATE: '/api/orders',
-    CANCEL: (id: string) => `/api/orders/${id}/cancel`,
+    CREATE: '/api/v1/orders',
+    MY_ORDERS: '/api/v1/orders/my-orders',
+    STATISTICS: '/api/v1/orders/statistics',
+    ALL: '/api/v1/orders/all',
+    BY_ORDER_NUMBER: (orderNumber: string) => `/api/v1/orders/order-number/${orderNumber}`,
+    DETAIL: (orderId: string) => `/api/v1/orders/${orderId}`,
+    UPDATE_STATUS: (orderId: string) => `/api/v1/orders/${orderId}/status`,
+    CANCEL: (orderId: string) => `/api/v1/orders/${orderId}/cancel`,
+    UPDATE_DELIVERY: (orderId: string) => `/api/v1/orders/${orderId}/delivery`
   },
+  PAYMENT: {
+    BANKS: '/api/v1/payments/banks',
+    VNPAY_RETURN: '/api/v1/payments/vnpay-return',
+    VNPAY_IPN: '/api/v1/payments/vnpay-ipn',
+    VNPAY_CREATE: '/api/v1/payments/vnpay/create',
+    MY_PAYMENTS: '/api/v1/payments/my-payments',
+    STATUS: (orderNumber: string) => `/api/v1/payments/status/${orderNumber}`,
+    CHECK: (orderNumber: string) => `/api/v1/payments/check/${orderNumber}`,
+    BY_ORDER: (orderId: string) => `/api/v1/payments/order/${orderId}`,
+    CANCEL: (orderId: string) => `/api/v1/payments/${orderId}/cancel`
+  },
+  REVIEW: {
+    CREATE: '/api/v1/reviews',
+    LIST: '/api/v1/reviews',
+    MY_REVIEWS: '/api/v1/reviews/my-reviews',
+    BY_PRODUCT: (productId: string) => `/api/v1/reviews/product/${productId}`,
+    PRODUCT_STATS: (productId: string) => `/api/v1/reviews/product/${productId}/stats`,
+    CAN_REVIEW: (productId: string) => `/api/v1/reviews/product/${productId}/can-review`,
+    DETAIL: (id: string) => `/api/v1/reviews/${id}`,
+    UPDATE: (id: string) => `/api/v1/reviews/${id}`,
+    DELETE: (id: string) => `/api/v1/reviews/${id}`
+  },
+  SERVICE: {
+    CREATE: '/api/v1/services',
+    LIST: '/api/v1/services',
+    DETAIL: (id: string) => `/api/v1/services/${id}`,
+    UPDATE: (id: string) => `/api/v1/services/${id}`,
+    DELETE: (id: string) => `/api/v1/services/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/v1/services/${id}/status`,
+    BY_PRODUCT: (productId: string) => `/api/v1/services/product/${productId}`
+  },
+  STOCK_REQUEST: {
+    CREATE: '/api/v1/stock-requests',
+    LIST: '/api/v1/stock-requests',
+    PENDING: '/api/v1/stock-requests/pending',
+    BY_BRANCH: (branchId: string) => `/api/v1/stock-requests/branch/${branchId}`,
+    DETAIL: (requestId: string) => `/api/v1/stock-requests/${requestId}`,
+    APPROVE: (requestId: string) => `/api/v1/stock-requests/${requestId}/approve`,
+    REJECT: (requestId: string) => `/api/v1/stock-requests/${requestId}/reject`
+  },
+  STORE_INVENTORY: {
+    CREATE: '/api/v1/store-inventories',
+    BY_BRANCH: (branchId: string) => `/api/v1/store-inventories/${branchId}`,
+    OUT_OF_STOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/out-of-stock`,
+    BY_PRODUCT: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}`
+  },
+  UPLOAD: {
+    IMAGE: '/api/v1/uploads/images',
+    MULTIPLE_IMAGES: '/api/v1/uploads/multiple-images',
+    IMAGE_DETAIL: (publicId: string) => `/api/v1/uploads/images/${publicId}`,
+    DELETE_IMAGE: (publicId: string) => `/api/v1/uploads/images/${publicId}`
+  }
 } as const
 
 export const HTTP_STATUS = {
@@ -80,7 +197,7 @@ export const HTTP_STATUS = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
+  INTERNAL_SERVER_ERROR: 500
 } as const
 
 export const APP_CONFIG = {
@@ -90,7 +207,7 @@ export const APP_CONFIG = {
   DEBOUNCE_DELAY: 300,
   TOAST_DURATION: 3000,
   OTP_RESEND_COOLDOWN: 60,
-  OTP_LENGTH: 6,
+  OTP_LENGTH: 6
 } as const
 
 export const ROUTES = {
@@ -107,6 +224,7 @@ export const ROUTES = {
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',
+  EDIT_PROFILE: '/profile/edit',
   AUTH_CALLBACK: '/auth/callback',
   MANAGEMENT: {
     DASHBOARD: '/management/dashboard',
@@ -125,35 +243,35 @@ export const ROUTES = {
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
-    CUSTOMER_SUPPORT: '/management/customer-support',
+    CUSTOMER_SUPPORT: '/management/customer-support'
   },
   ADMIN: {
     DASHBOARD: '/admin',
     PRODUCTS: '/admin/products',
     ORDERS: '/admin/orders',
     USERS: '/admin/users',
-    CATEGORIES: '/admin/categories',
-  },
+    CATEGORIES: '/admin/categories'
+  }
 } as const
 
 export const USER_ROLES = {
   CUSTOMER: 'customer',
   ADMIN: 'admin',
   MANAGER: 'manager',
-  STAFF: 'staff',
+  STAFF: 'staff'
 } as const
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   [USER_ROLES.CUSTOMER]: 'Khách hàng',
   [USER_ROLES.ADMIN]: 'Quản trị viên',
   [USER_ROLES.MANAGER]: 'Quản lý chi nhánh',
-  [USER_ROLES.STAFF]: 'Nhân viên',
+  [USER_ROLES.STAFF]: 'Nhân viên'
 } as const
 
 export const MANAGEMENT_ROLES: UserRole[] = [
   USER_ROLES.ADMIN,
   USER_ROLES.MANAGER,
-  USER_ROLES.STAFF,
+  USER_ROLES.STAFF
 ]
 
 export const OTP_TYPES = {
@@ -161,10 +279,10 @@ export const OTP_TYPES = {
   RESET_PASSWORD: 'reset_password',
   CHANGE_PASSWORD: 'change_password',
   CHANGE_EMAIL: 'change_email',
-  CHANGE_INFO: 'change_info',
+  CHANGE_INFO: 'change_info'
 } as const
 
-export type OTPType = typeof OTP_TYPES[keyof typeof OTP_TYPES]
+export type OTPType = (typeof OTP_TYPES)[keyof typeof OTP_TYPES];
 
 export const ERROR_CODES = {
   EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
@@ -176,7 +294,7 @@ export const ERROR_CODES = {
   TOKEN_EXPIRED: 'TOKEN_EXPIRED',
   INVALID_TOKEN: 'INVALID_TOKEN',
   ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
-  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
+  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS'
 } as const
 
 export const ORDER_STATUS_LABELS = {
@@ -184,19 +302,19 @@ export const ORDER_STATUS_LABELS = {
   CONFIRMED: 'Đã xác nhận',
   SHIPPING: 'Đang giao hàng',
   DELIVERED: 'Đã giao hàng',
-  CANCELLED: 'Đã hủy',
+  CANCELLED: 'Đã hủy'
 } as const
 
 export const PAYMENT_STATUS_LABELS = {
   PENDING: 'Chờ thanh toán',
   PAID: 'Đã thanh toán',
   FAILED: 'Thanh toán thất bại',
-  REFUNDED: 'Đã hoàn tiền',
+  REFUNDED: 'Đã hoàn tiền'
 } as const
 
 export const PAYMENT_METHOD_LABELS = {
   COD: 'Thanh toán khi nhận hàng',
   BANK_TRANSFER: 'Chuyển khoản ngân hàng',
   CREDIT_CARD: 'Thẻ tín dụng',
-  E_WALLET: 'Ví điện tử',
+  E_WALLET: 'Ví điện tử'
 } as const

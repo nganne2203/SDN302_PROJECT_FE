@@ -13,8 +13,8 @@ const theme = {
   token: {
     colorPrimary: '#2563eb',
     borderRadius: 8,
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
+    fontFamily: 'Inter, system-ui, sans-serif'
+  }
 }
 
 const TokenRefreshProvider = () => {

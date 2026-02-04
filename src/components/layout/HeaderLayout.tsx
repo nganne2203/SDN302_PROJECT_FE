@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge, Dropdown, Input } from 'antd'
-import { 
-  ShoppingCartOutlined, 
-  UserOutlined, 
+import {
+  ShoppingCartOutlined,
+  UserOutlined,
   SearchOutlined,
   MenuOutlined
 } from '@ant-design/icons'
 import { ROUTES, MANAGEMENT_ROLES } from '@/constants/constant'
 import useAuth from '@/hooks/useAuth'
+import ProfileModal from '../auth/ProfileModal'
 
 const HeaderLayout = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   const managementItem = user?.role && MANAGEMENT_ROLES.includes(user.role)
     ? { key: 'management', label: <Link to={ROUTES.MANAGEMENT.DASHBOARD}>Quản lý hệ thống</Link> }
@@ -20,16 +22,16 @@ const HeaderLayout = () => {
 
   const userMenuItems = isAuthenticated
     ? [
-        { key: 'profile', label: <Link to={ROUTES.PROFILE}>Tài khoản</Link> },
-        { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
-        ...(managementItem ? [managementItem] : []),
-        { type: 'divider' as const },
-        { key: 'logout', label: 'Đăng xuất', onClick: logout },
-      ]
+      { key: 'profile', label: 'Tài khoản', onClick: () => setIsProfileModalOpen(true) },
+      { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
+      ...(managementItem ? [managementItem] : []),
+      { type: 'divider' as const },
+      { key: 'logout', label: 'Đăng xuất', onClick: logout }
+    ]
     : [
-        { key: 'login', label: <Link to={ROUTES.LOGIN}>Đăng nhập</Link> },
-        { key: 'register', label: <Link to={ROUTES.REGISTER}>Đăng ký</Link> },
-      ]
+      { key: 'login', label: <Link to={ROUTES.LOGIN}>Đăng nhập</Link> },
+      { key: 'register', label: <Link to={ROUTES.REGISTER}>Đăng ký</Link> }
+    ]
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -60,7 +62,7 @@ const HeaderLayout = () => {
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600">
                 <UserOutlined className="text-xl" />
-                {isAuthenticated && <span>{user?.fullName}</span>}
+                {isAuthenticated && <span>{user?.fullname}</span>}
               </button>
             </Dropdown>
           </nav>
@@ -106,12 +108,12 @@ const HeaderLayout = () => {
                     Quản lý hệ thống
                   </Link>
                 )}
-                <Link
-                  to={ROUTES.PROFILE}
+                <button
+                  onClick={() => setIsProfileModalOpen(true)}
                   className="block text-gray-600 hover:text-blue-600"
                 >
                   Tài khoản
-                </Link>
+                </button>
                 <button
                   onClick={logout}
                   className="block text-gray-600 hover:text-blue-600"
@@ -138,6 +140,11 @@ const HeaderLayout = () => {
           </div>
         )}
       </div>
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   )
 }
