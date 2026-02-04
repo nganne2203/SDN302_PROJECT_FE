@@ -140,6 +140,7 @@ const Register = () => {
             render={({ value, onChange, onBlur, error }) => (
               <InputField
                 label="Số điện thoại"
+                required
                 type="tel"
                 value={value as string}
                 onChange={(e) => onChange(e.target.value)}
