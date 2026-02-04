@@ -21,13 +21,15 @@ const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
+const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
   () => import('@/components/layout/ManagementLayout')
 )
 const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
-const ManagementProducts = lazy(() => import('@/pages/management/Product'))
+// const ManagementProducts = lazy(() => import('@/pages/management/Product'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
@@ -37,6 +39,7 @@ const CategoryManagement = lazy(
   () => import('@/pages/management/admin/Category')
 )
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
+const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -171,6 +174,14 @@ export const routes: RouteObject[] = [
     path: ROUTES.CART,
     element: withSuspense(Cart)
   },
+  {
+    path: ROUTES.PRODUCTS,
+    element: withSuspense(ProductBrowse)
+  },
+  {
+    path: ROUTES.PRODUCT_DETAIL,
+    element: withSuspense(ProductDetailPage)
+  },
 
   // ========================
   // Guest Routes (non-authenticated only)
@@ -227,7 +238,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'products',
-        element: withSuspense(ManagementProducts)
+        element: withSuspense(ProductManagement)
       },
       {
         path: 'orders',

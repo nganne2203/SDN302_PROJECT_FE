@@ -1,6 +1,6 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { ApiResponse, UploadedImage } from '@/types/api'
+import type { ApiResponse, UploadedImage, UploadMultipleImagesResponse } from '@/types/api'
 
 export const uploadApi = {
   uploadImage: async (file: File): Promise<ApiResponse<UploadedImage>> => {
@@ -9,6 +9,25 @@ export const uploadApi = {
 
     const response = await apiClient.post<ApiResponse<UploadedImage>>(
       API_ENDPOINTS.UPLOAD.IMAGE,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    return response.data
+  },
+
+  uploadMultipleImages: async (files: File[]): Promise<ApiResponse<UploadMultipleImagesResponse>> => {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('images', file)
+    })
+
+    const response = await apiClient.post<ApiResponse<UploadMultipleImagesResponse>>(
+      API_ENDPOINTS.UPLOAD.MULTIPLE_IMAGES,
       formData,
       {
         headers: {
