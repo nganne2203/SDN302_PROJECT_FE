@@ -1,5 +1,6 @@
 import type { Product, ProductFilter, CreateProductRequest, UpdateProductRequest } from '@/types/api'
 import type { PaginationMeta } from '@/types/api'
+import type { CacheMetadata } from '@/utils/cacheHelper'
 
 export interface ProductState {
   products: Product[]
@@ -13,6 +14,15 @@ export interface ProductState {
   isLoading: boolean
   isSubmitting: boolean
   error: string | null
+  // Cache metadata
+  cache: {
+    products: CacheMetadata
+    featuredProducts: CacheMetadata
+    newArrivals: CacheMetadata
+    categories: CacheMetadata
+    relatedProducts: Record<string, CacheMetadata>
+    productDetail: Record<string, CacheMetadata>
+  }
 }
 
 export interface FetchProductsPayload {

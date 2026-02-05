@@ -204,7 +204,7 @@ export interface Product {
     slug: string;
   };
   price: number;
-  images: string[];
+  images: Image[];
   material?: string;
   compatibility?: string[];
   ratingAvg: number;
@@ -212,6 +212,11 @@ export interface Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Image {
+  imageUrl: string;
+  publicId: string;
 }
 
 export interface ProductFilter {

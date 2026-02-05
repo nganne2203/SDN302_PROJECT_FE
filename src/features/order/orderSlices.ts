@@ -1,11 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { OrderState, FetchOrdersPayload } from './orderTypes'
 import type { Order } from '@/types/api'
-import { 
-  fetchOrdersThunk, 
+import {
+  fetchOrdersThunk,
   fetchAllOrdersThunk,
-  fetchOrderByIdThunk, 
-  createOrderThunk, 
+  fetchOrderByIdThunk,
+  createOrderThunk,
   cancelOrderThunk,
   updateOrderStatusThunk
 } from './orderThunks'

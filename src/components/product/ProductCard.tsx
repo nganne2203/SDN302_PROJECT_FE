@@ -1,32 +1,12 @@
 import { Link } from 'react-router-dom'
 import type { Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { useEffect, useState } from 'react'
-import uploadApi from '@/apis/upload'
 
 interface ProductCardProps {
   product: Product
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      if (product.images && product.images.length > 0) {
-        const publicId = product.images[0]
-        try {
-          const encodedPublicId = encodeURIComponent(publicId)
-          const res = await uploadApi.getImage(encodedPublicId)
-          setImageUrl(res.data.imageUrl)
-        } catch (err) {
-          setImageUrl(undefined)
-        }
-      }
-    }
-    fetchImage()
-  }, [product.images, product.name])
 
   return (
     <Link
@@ -35,9 +15,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     >
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        {imageUrl ? (
+        {product.images && product.images.length > 0 ? (
           <img
-            src={imageUrl}
+            src={product.images[0].imageUrl}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />

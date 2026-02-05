@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { BranchState, Branch, FetchBranchesPayload, BranchFilter } from './branchTypes'
+import { initialCacheMetadata, updateCacheMetadata, markCacheAsStale } from '@/utils/cacheHelper'
 import {
   fetchBranchesThunk,
   fetchBranchByIdThunk,
@@ -16,7 +17,8 @@ const initialState: BranchState = {
   pagination: null,
   filter: {},
   isLoading: false,
-  error: null
+  error: null,
+  cache: initialCacheMetadata()
 }
 
 const branchSlice = createSlice({
@@ -41,6 +43,9 @@ const branchSlice = createSlice({
       state.pagination = null
       state.filter = {}
       state.error = null
+    },
+    invalidateBranchCache: (state) => {
+      state.cache = markCacheAsStale()
     }
   },
   extraReducers: (builder) => {
@@ -54,6 +59,7 @@ const branchSlice = createSlice({
         state.isLoading = false
         state.branches = action.payload.items
         state.pagination = action.payload.pagination
+        state.cache = updateCacheMetadata()
       })
       .addCase(fetchBranchesThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -84,6 +90,7 @@ const branchSlice = createSlice({
           state.pagination.totalItems += 1
           state.pagination.totalPages = Math.ceil(state.pagination.totalItems / state.pagination.pageSize)
         }
+        state.cache = markCacheAsStale()
       })
       .addCase(createBranchThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -99,6 +106,7 @@ const branchSlice = createSlice({
         const idx = state.branches.findIndex(b => b._id === action.payload._id)
         if (idx !== -1) state.branches[idx] = action.payload
         if (state.selectedBranch?._id === action.payload._id) state.selectedBranch = action.payload
+        state.cache = markCacheAsStale()
       })
       .addCase(updateBranchThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -134,5 +142,5 @@ const branchSlice = createSlice({
   }
 })
 
-export const { setFilter, clearFilter, setSelectedBranch, clearError, resetBranches } = branchSlice.actions
+export const { setFilter, clearFilter, setSelectedBranch, clearError, resetBranches, invalidateBranchCache } = branchSlice.actions
 export default branchSlice.reducer

@@ -1,4 +1,5 @@
 import type { Branch, BranchFilter, PaginationMeta } from '@/types/api'
+import type { CacheMetadata } from '@/utils/cacheHelper'
 
 export type { Branch, BranchFilter }
 
@@ -9,6 +10,7 @@ export interface BranchState {
   pagination: PaginationMeta | null
   isLoading: boolean
   error: string | null
+  cache: CacheMetadata
 }
 
 export interface FetchBranchesPayload {
