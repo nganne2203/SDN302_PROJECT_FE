@@ -37,7 +37,8 @@ export const useBranch = () => {
   } = branchState || {}
 
   const fetchBranches = useCallback(
-    async (filterData?: BranchFilter) => dispatch(fetchBranchesThunk(filterData)),
+    async (filterData?: BranchFilter, forceRefresh = false) =>
+      dispatch(fetchBranchesThunk({ filter: filterData, forceRefresh })),
     [dispatch]
   )
 

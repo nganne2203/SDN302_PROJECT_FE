@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useProduct } from '@/hooks/useProduct'
 import LoaderCommon from '@/components/common/LoaderCommon'
 import { useNavigate } from 'react-router-dom'
@@ -7,6 +7,7 @@ import ProductCard from '@/components/product/ProductCard'
 import SectionHeader from '@/components/common/SectionHeader'
 import BranchCard from '@/components/branch/BranchCard'
 import useBranch from '@/hooks/useBranch'
+import type { Branch } from '@/types/api'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -144,7 +145,7 @@ const Home = () => {
               </div>
             ) : displayBranches.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {displayBranches.map((branch) => (
+                {displayBranches.map((branch: Branch) => (
                   <BranchCard key={branch._id} branch={branch} />
                 ))}
               </div>

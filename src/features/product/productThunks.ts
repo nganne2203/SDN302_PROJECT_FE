@@ -10,10 +10,26 @@ import type {
 import type { FetchProductsPayload } from './productTypes'
 import type { AxiosError } from 'axios'
 import type { ApiError } from '@/types/api'
+import { isCacheValid, CACHE_DURATION } from '@/utils/cacheHelper'
+import type { RootState } from '@/apps/store'
 
-export const fetchProductsThunk = createAsyncThunk<FetchProductsPayload, ProductFilter | undefined>(
+export const fetchProductsThunk = createAsyncThunk<
+  FetchProductsPayload,
+  { filter?: ProductFilter; forceRefresh?: boolean }
+>(
   'product/fetchProducts',
-  async (filter, { rejectWithValue }) => {
+  async ({ filter, forceRefresh = false }, { rejectWithValue, getState }) => {
+    // Check cache
+    const state = getState() as RootState
+    const { cache, products, pagination } = state.product
+    if (
+      !forceRefresh &&
+      products.length > 0 &&
+      isCacheValid(cache.products.lastFetched, CACHE_DURATION.MEDIUM)
+    ) {
+      return { data: products, pagination: pagination! }
+    }
+
     try {
       const response = await productApi.getProducts(filter)
       return {
@@ -29,9 +45,24 @@ export const fetchProductsThunk = createAsyncThunk<FetchProductsPayload, Product
   }
 )
 
-export const fetchProductByIdThunk = createAsyncThunk<Product, string>(
+export const fetchProductByIdThunk = createAsyncThunk<
+  Product,
+  { id: string; forceRefresh?: boolean }
+>(
   'product/fetchProductById',
-  async (id, { rejectWithValue }) => {
+  async ({ id, forceRefresh = false }, { rejectWithValue, getState }) => {
+    // Check cache
+    const state = getState() as RootState
+    const { cache, selectedProduct } = state.product
+
+    if (
+      !forceRefresh &&
+      selectedProduct?._id === id &&
+      isCacheValid(cache.productDetail[id]?.lastFetched, CACHE_DURATION.MEDIUM)
+    ) {
+      return selectedProduct
+    }
+
     try {
       const response = await productApi.getProductById(id)
       return response.data
@@ -109,10 +140,24 @@ export const updateProductStatusThunk = createAsyncThunk<
 
 export const fetchCategoriesThunk = createAsyncThunk<
   { _id: string; name: string; slug: string }[],
-  void
+  { forceRefresh?: boolean } | void
 >(
   'product/fetchCategories',
-  async (_, { rejectWithValue }) => {
+  async (options, { rejectWithValue, getState }) => {
+    const forceRefresh = options && typeof options === 'object' ? options.forceRefresh : false
+
+    // Check cache
+    const state = getState() as RootState
+    const { cache, categories } = state.product
+
+    if (
+      !forceRefresh &&
+      categories.length > 0 &&
+      isCacheValid(cache.categories.lastFetched, CACHE_DURATION.LONG)
+    ) {
+      return categories
+    }
+
     try {
       const response = await productApi.getCategories()
       return response.data
@@ -125,9 +170,27 @@ export const fetchCategoriesThunk = createAsyncThunk<
   }
 )
 
-export const fetchFeaturedProductsThunk = createAsyncThunk<Product[], number | undefined>(
+export const fetchFeaturedProductsThunk = createAsyncThunk<
+  Product[],
+  { limit?: number; forceRefresh?: boolean } | number | undefined
+>(
   'product/fetchFeaturedProducts',
-  async (limit, { rejectWithValue }) => {
+  async (options, { rejectWithValue, getState }) => {
+    const limit = typeof options === 'number' ? options : options?.limit
+    const forceRefresh = typeof options === 'object' && options?.forceRefresh
+
+    // Check cache
+    const state = getState() as RootState
+    const { cache, featuredProducts } = state.product
+
+    if (
+      !forceRefresh &&
+      featuredProducts.length > 0 &&
+      isCacheValid(cache.featuredProducts.lastFetched, CACHE_DURATION.MEDIUM)
+    ) {
+      return featuredProducts
+    }
+
     try {
       const response = await productApi.getFeaturedProducts(limit)
       return response.data
@@ -140,9 +203,27 @@ export const fetchFeaturedProductsThunk = createAsyncThunk<Product[], number | u
   }
 )
 
-export const fetchNewArrivalsThunk = createAsyncThunk<Product[], number | undefined>(
+export const fetchNewArrivalsThunk = createAsyncThunk<
+  Product[],
+  { limit?: number; forceRefresh?: boolean } | number | undefined
+>(
   'product/fetchNewArrivals',
-  async (limit, { rejectWithValue }) => {
+  async (options, { rejectWithValue, getState }) => {
+    const limit = typeof options === 'number' ? options : options?.limit
+    const forceRefresh = typeof options === 'object' && options?.forceRefresh
+
+    // Check cache
+    const state = getState() as RootState
+    const { cache, newArrivals } = state.product
+
+    if (
+      !forceRefresh &&
+      newArrivals.length > 0 &&
+      isCacheValid(cache.newArrivals.lastFetched, CACHE_DURATION.MEDIUM)
+    ) {
+      return newArrivals
+    }
+
     try {
       const response = await productApi.getNewArrivals(limit)
       return response.data

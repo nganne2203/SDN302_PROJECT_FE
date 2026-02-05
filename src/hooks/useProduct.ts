@@ -20,7 +20,7 @@ import {
   clearError,
   clearProducts
 } from '@/features/product/productSlices'
-import type { ProductFilter, Product, CreateProductRequest, UpdateProductRequest } from '@/types/api'
+import type { ProductFilter, Product, CreateProductRequest, UpdateProductRequest, Image } from '@/types/api'
 import { uploadApi } from '@/apis/upload'
 import { toast } from '@/utils/toast'
 
@@ -29,7 +29,7 @@ export interface ProductFormData {
   description: string
   categoryId: string
   price: number
-  images: string[]
+  images: Image[]| string[]
   imageFiles: File[]
   material?: string
   compatibility?: string[]
@@ -70,33 +70,33 @@ export const useProduct = () => {
 
   // Fetch products
   const fetchProducts = useCallback(
-    (filterParams?: ProductFilter) => {
-      dispatch(fetchProductsThunk(filterParams || filter))
+    (filterParams?: ProductFilter, forceRefresh = false) => {
+      dispatch(fetchProductsThunk({ filter: filterParams || filter, forceRefresh }))
     },
     [dispatch, filter]
   )
 
   // Fetch product by ID
   const fetchProductById = useCallback(
-    (id: string) => {
-      dispatch(fetchProductByIdThunk(id))
+    (id: string, forceRefresh = false) => {
+      dispatch(fetchProductByIdThunk({ id, forceRefresh }))
     },
     [dispatch]
   )
 
   // Fetch categories
-  const fetchCategories = useCallback(() => {
-    dispatch(fetchCategoriesThunk())
+  const fetchCategories = useCallback((forceRefresh = false) => {
+    dispatch(fetchCategoriesThunk({ forceRefresh }))
   }, [dispatch])
 
   // Fetch featured products
-  const fetchFeaturedProducts = useCallback((limit?: number) => {
-    dispatch(fetchFeaturedProductsThunk(limit))
+  const fetchFeaturedProducts = useCallback((limit?: number, forceRefresh = false) => {
+    dispatch(fetchFeaturedProductsThunk({ limit, forceRefresh }))
   }, [dispatch])
 
   // Fetch new arrivals
-  const fetchNewArrivals = useCallback((limit?: number) => {
-    dispatch(fetchNewArrivalsThunk(limit))
+  const fetchNewArrivals = useCallback((limit?: number, forceRefresh = false) => {
+    dispatch(fetchNewArrivalsThunk({ limit, forceRefresh }))
   }, [dispatch])
 
   // Fetch related products
@@ -237,7 +237,10 @@ export const useProduct = () => {
       }
 
       // Combine existing and new images
-      const allImages = [...formData.images, ...uploadedImageIds]
+      const existingImageIds = formData.images.map(img =>
+        typeof img === 'string' ? img : img.publicId
+      )
+      const allImages = [...existingImageIds, ...uploadedImageIds]
 
       const productData: CreateProductRequest | UpdateProductRequest = {
         name: formData.name,

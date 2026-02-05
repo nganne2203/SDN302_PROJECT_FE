@@ -7,6 +7,22 @@ import {
   ShoppingOutlined
 } from '@ant-design/icons'
 import { useState } from 'react'
+import type { ColumnsType } from 'antd/es/table'
+
+interface InventoryItem {
+  key: string
+  sku: string
+  productName: string
+  category: string
+  currentStock: number
+  minimumStock: number
+  maximumStock: number
+  unitCost: number
+  retailPrice: number
+  lastRestockDate: string
+  location: string
+  status: string
+}
 
 const BranchInventory = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -88,12 +104,11 @@ const BranchInventory = () => {
     }
   ])
 
-
   const totalValue = inventory.reduce((sum, item) => sum + item.currentStock * item.unitCost, 0)
   const lowStockCount = inventory.filter((item) => item.currentStock < item.minimumStock).length
   const optimalCount = inventory.filter((item) => item.status === 'optimal').length
 
-  const handleEditStock = (record: any) => {
+  const handleEditStock = (record: InventoryItem) => {
     setEditingId(record.key)
     form.setFieldsValue({
       currentStock: record.currentStock,
@@ -104,13 +119,16 @@ const BranchInventory = () => {
     setIsModalVisible(true)
   }
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: Partial<InventoryItem>) => {
     if (editingId) {
       setInventory(
         inventory.map((item) => {
           if (item.key === editingId) {
-            const currentStock = values.currentStock
-            const minimumStock = values.minimumStock
+            const currentStock = values.currentStock ?? item.currentStock
+            const minimumStock = values.minimumStock ?? item.minimumStock
+            const maximumStock = values.maximumStock ?? item.maximumStock
+            const location = values.location ?? item.location
+
             let status = 'optimal'
             if (currentStock === 0) status = 'out_of_stock'
             else if (currentStock < minimumStock) status = 'low_stock'
@@ -120,8 +138,8 @@ const BranchInventory = () => {
               ...item,
               currentStock,
               minimumStock,
-              maximumStock: values.maximumStock,
-              location: values.location,
+              maximumStock,
+              location,
               status
             }
           }
@@ -183,7 +201,7 @@ const BranchInventory = () => {
       title: 'Tồn kho hiện tại',
       key: 'stockStatus',
       width: 150,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: InventoryItem) => (
         <Tooltip title={`Tối thiểu: ${record.minimumStock}, Tối đa: ${record.maximumStock}`}>
           <div>
             <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>
@@ -208,7 +226,7 @@ const BranchInventory = () => {
       title: 'Giá vốn / Bán lẻ',
       key: 'prices',
       width: 150,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: InventoryItem) => (
         <div style={{ fontSize: '12px' }}>
           <div>Vốn: {(record.unitCost / 1000000).toFixed(1)}M₫</div>
           <div style={{ color: '#52c41a', fontWeight: 'bold' }}>Bán: {(record.retailPrice / 1000000).toFixed(1)}M₫</div>
@@ -240,7 +258,7 @@ const BranchInventory = () => {
       title: 'Hành động',
       key: 'action',
       width: 120,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: InventoryItem) => (
         <Space size="small">
           <Button
             type="default"
@@ -333,14 +351,14 @@ const BranchInventory = () => {
               {
                 title: 'Tồn kho / Tối thiểu',
                 key: 'stock',
-                render: (_: any, record: any) => `${record.currentStock} / ${record.minimumStock}`,
+                render: (_: unknown, record: InventoryItem) => `${record.currentStock} / ${record.minimumStock}`,
                 width: 130
               },
               {
                 title: 'Cần nhập',
                 key: 'needStock',
                 width: 100,
-                render: (_: any, record: any) => (
+                render: (_: unknown, record: InventoryItem) => (
                   <strong style={{ color: '#cf1322' }}>
                     {Math.max(record.minimumStock - record.currentStock, 0)} cái
                   </strong>
@@ -372,8 +390,8 @@ const BranchInventory = () => {
 
       {/* Inventory Table */}
       <Card title="📋 Danh sách tồn kho">
-        <Table
-          columns={columns as any}
+        <Table<InventoryItem>
+          columns={columns as ColumnsType<InventoryItem>}
           dataSource={filteredInventory}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 1400 }}

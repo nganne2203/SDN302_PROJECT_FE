@@ -22,6 +22,7 @@ const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 
@@ -216,6 +217,10 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.AUTH_CALLBACK,
     element: withSuspense(AuthCallback)
+  },
+  {
+    path: ROUTES.AUTH_ERROR,
+    element: withSuspense(AuthError)
   },
   {
     path: ROUTES.SET_PASSWORD,

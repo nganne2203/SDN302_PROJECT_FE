@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import useAuth from '@/hooks/useAuth'
 import { USER_ROLES } from '@/constants/constant'
 import AdminOrderManagement from './order/AdminOrderManagement'
@@ -7,24 +7,20 @@ import ManagerOrderManagement from './order/ManagerOrderManagement'
 
 const ManagementOrders = () => {
   const { user } = useAuth()
-  const [OrderComponent, setOrderComponent] = useState<React.ComponentType | null>(null)
 
-  useEffect(() => {
-    if (!user) return
+  // Use useMemo to compute component based on user role
+  const OrderComponent = useMemo(() => {
+    if (!user) return null
 
-    // Render component phù hợp với role
     switch (user.role) {
-      case USER_ROLES.ADMIN:
-        setOrderComponent(() => AdminOrderManagement)
-        break
-      case USER_ROLES.STAFF:
-        setOrderComponent(() => StaffOrderManagement)
-        break
-      case USER_ROLES.MANAGER:
-        setOrderComponent(() => ManagerOrderManagement)
-        break
-      default:
-        setOrderComponent(null)
+    case USER_ROLES.ADMIN:
+      return AdminOrderManagement
+    case USER_ROLES.STAFF:
+      return StaffOrderManagement
+    case USER_ROLES.MANAGER:
+      return ManagerOrderManagement
+    default:
+      return null
     }
   }, [user])
 
