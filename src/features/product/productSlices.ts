@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { ProductState, FetchProductsPayload } from './productTypes'
 import type { Product, ProductFilter } from '@/types/api'
+import { initialCacheMetadata, updateCacheMetadata, markCacheAsStale } from '@/utils/cacheHelper'
 import {
   fetchProductsThunk,
   fetchProductByIdThunk,
@@ -26,7 +27,15 @@ const initialState: ProductState = {
   relatedProducts: [],
   isLoading: false,
   isSubmitting: false,
-  error: null
+  error: null,
+  cache: {
+    products: initialCacheMetadata(),
+    featuredProducts: initialCacheMetadata(),
+    newArrivals: initialCacheMetadata(),
+    categories: initialCacheMetadata(),
+    relatedProducts: {},
+    productDetail: {}
+  }
 }
 
 const productSlice = createSlice({
@@ -48,6 +57,19 @@ const productSlice = createSlice({
     clearProducts: (state) => {
       state.products = []
       state.pagination = null
+    },
+    invalidateProductCache: (state) => {
+      state.cache.products = markCacheAsStale()
+      state.cache.featuredProducts = markCacheAsStale()
+      state.cache.newArrivals = markCacheAsStale()
+    },
+    invalidateAllCache: (state) => {
+      state.cache.products = markCacheAsStale()
+      state.cache.featuredProducts = markCacheAsStale()
+      state.cache.newArrivals = markCacheAsStale()
+      state.cache.categories = markCacheAsStale()
+      state.cache.relatedProducts = {}
+      state.cache.productDetail = {}
     }
   },
   extraReducers: (builder) => {
@@ -61,6 +83,7 @@ const productSlice = createSlice({
         state.isLoading = false
         state.products = action.payload.data
         state.pagination = action.payload.pagination
+        state.cache.products = updateCacheMetadata()
       })
       .addCase(fetchProductsThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -76,6 +99,7 @@ const productSlice = createSlice({
       .addCase(fetchProductByIdThunk.fulfilled, (state, action: PayloadAction<Product>) => {
         state.isLoading = false
         state.selectedProduct = action.payload
+        state.cache.productDetail[action.payload._id] = updateCacheMetadata()
       })
       .addCase(fetchProductByIdThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -91,6 +115,10 @@ const productSlice = createSlice({
       .addCase(createProductThunk.fulfilled, (state, action: PayloadAction<Product>) => {
         state.isSubmitting = false
         state.products.unshift(action.payload)
+        // Invalidate cache when new product is created
+        state.cache.products = markCacheAsStale()
+        state.cache.featuredProducts = markCacheAsStale()
+        state.cache.newArrivals = markCacheAsStale()
       })
       .addCase(createProductThunk.rejected, (state, action) => {
         state.isSubmitting = false
@@ -112,6 +140,9 @@ const productSlice = createSlice({
         if (state.selectedProduct?._id === action.payload._id) {
           state.selectedProduct = action.payload
         }
+        // Invalidate cache when product is updated
+        state.cache.products = markCacheAsStale()
+        state.cache.productDetail[action.payload._id] = markCacheAsStale()
       })
       .addCase(updateProductThunk.rejected, (state, action) => {
         state.isSubmitting = false
@@ -127,6 +158,9 @@ const productSlice = createSlice({
       .addCase(deleteProductThunk.fulfilled, (state, action: PayloadAction<string>) => {
         state.isSubmitting = false
         state.products = state.products.filter((p) => p._id !== action.payload)
+        // Invalidate cache when product is deleted
+        state.cache.products = markCacheAsStale()
+        delete state.cache.productDetail[action.payload]
       })
       .addCase(deleteProductThunk.rejected, (state, action) => {
         state.isSubmitting = false
@@ -159,6 +193,7 @@ const productSlice = createSlice({
       .addCase(fetchCategoriesThunk.fulfilled, (state, action) => {
         state.isLoading = false
         state.categories = action.payload
+        state.cache.categories = updateCacheMetadata()
       })
       .addCase(fetchCategoriesThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -173,6 +208,7 @@ const productSlice = createSlice({
       .addCase(fetchFeaturedProductsThunk.fulfilled, (state, action: PayloadAction<Product[]>) => {
         state.isLoading = false
         state.featuredProducts = action.payload
+        state.cache.featuredProducts = updateCacheMetadata()
       })
       .addCase(fetchFeaturedProductsThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -187,6 +223,7 @@ const productSlice = createSlice({
       .addCase(fetchNewArrivalsThunk.fulfilled, (state, action: PayloadAction<Product[]>) => {
         state.isLoading = false
         state.newArrivals = action.payload
+        state.cache.newArrivals = updateCacheMetadata()
       })
       .addCase(fetchNewArrivalsThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -225,5 +262,13 @@ const productSlice = createSlice({
   }
 })
 
-export const { setFilter, clearFilter, setSelectedProduct, clearError, clearProducts } = productSlice.actions
+export const {
+  setFilter,
+  clearFilter,
+  setSelectedProduct,
+  clearError,
+  clearProducts,
+  invalidateProductCache,
+  invalidateAllCache
+} = productSlice.actions
 export default productSlice.reducer

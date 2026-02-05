@@ -11,6 +11,7 @@ import type { UserRole } from '@/types/api'
 
 // Lazy load pages for better performance
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
+import CustomerLayout from '@/components/layout/CustomerLayout'
 
 // Lazy loaded components - Public pages
 const Home = lazy(() => import('@/pages/customer/Home'))
@@ -21,6 +22,7 @@ const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 
@@ -54,6 +56,12 @@ const withSuspense = (Component: ComponentType): ReactNode => (
   <Suspense fallback={<LoadingFallback />}>
     <Component />
   </Suspense>
+)
+
+const withCustomerLayout = (Component: ComponentType): ReactNode => (
+  <CustomerLayout>
+    {withSuspense(Component)}
+  </CustomerLayout>
 )
 
 /**
@@ -168,19 +176,19 @@ export const routes: RouteObject[] = [
   // ========================
   {
     path: ROUTES.HOME,
-    element: withSuspense(Home)
+    element: withCustomerLayout(Home)
   },
   {
     path: ROUTES.CART,
-    element: withSuspense(Cart)
+    element: withCustomerLayout(Cart)
   },
   {
     path: ROUTES.PRODUCTS,
-    element: withSuspense(ProductBrowse)
+    element: withCustomerLayout(ProductBrowse)
   },
   {
     path: ROUTES.PRODUCT_DETAIL,
-    element: withSuspense(ProductDetailPage)
+    element: withCustomerLayout(ProductDetailPage)
   },
 
   // ========================
@@ -209,6 +217,10 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.AUTH_CALLBACK,
     element: withSuspense(AuthCallback)
+  },
+  {
+    path: ROUTES.AUTH_ERROR,
+    element: withSuspense(AuthError)
   },
   {
     path: ROUTES.SET_PASSWORD,

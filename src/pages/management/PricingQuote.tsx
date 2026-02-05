@@ -1,14 +1,28 @@
-import { Card, Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Row, Col, Space, Statistic, Alert, Divider } from 'antd'
+import { Card, Table, Button, Modal, Form, InputNumber, Select, Tag, Row, Col, Space, Statistic, Divider } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   CheckCircleOutlined,
-  PercentageOutlined,
-  DollarOutlined
+  PercentageOutlined
 } from '@ant-design/icons'
 import { useState } from 'react'
 import useAuth from '@/hooks/useAuth'
+import type { ColumnsType } from 'antd/es/table'
+
+interface PricingQuote {
+  key: string
+  quoteId: string
+  product: string
+  quantityFrom: number
+  quantityTo?: number
+  basePrice: number
+  discountPercent: number
+  finalPrice: number
+  status: string
+  createdDate: string
+  createdBy: string
+}
 
 const PricingQuote = () => {
   const { user } = useAuth()
@@ -91,7 +105,7 @@ const PricingQuote = () => {
     setIsModalVisible(true)
   }
 
-  const handleEditQuote = (record: any) => {
+  const handleEditQuote = (record: PricingQuote) => {
     setEditingId(record.key)
     form.setFieldsValue(record)
     setIsModalVisible(true)
@@ -125,7 +139,7 @@ const PricingQuote = () => {
     )
   }
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: Partial<PricingQuote> & { basePrice: number; discountPercent: number }) => {
     // Calculate final price
     const finalPrice = values.basePrice * (1 - values.discountPercent / 100)
 
@@ -134,12 +148,12 @@ const PricingQuote = () => {
         pricingQuotes.map((quote) =>
           quote.key === editingId
             ? {
-                ...quote,
-                ...values,
-                finalPrice,
-                createdDate: quote.createdDate,
-                createdBy: quote.createdBy
-              }
+              ...quote,
+              ...values,
+              finalPrice,
+              createdDate: quote.createdDate,
+              createdBy: quote.createdBy
+            }
             : quote
         )
       )
@@ -179,7 +193,7 @@ const PricingQuote = () => {
       title: 'Khoảng số lượng',
       key: 'quantityRange',
       width: 130,
-      render: (_: any, record: any) => {
+      render: (_: unknown, record: PricingQuote) => {
         const to = record.quantityTo || '∞'
         return `${record.quantityFrom} - ${to}`
       }
@@ -228,7 +242,7 @@ const PricingQuote = () => {
       title: 'Hành động',
       key: 'action',
       width: 200,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: PricingQuote) => (
         <Space size="small">
           <Button
             type="default"
@@ -350,8 +364,8 @@ const PricingQuote = () => {
 
       {/* Pricing Quotes Table */}
       <Card title="📋 Danh sách phiếu báo giá">
-        <Table
-          columns={columns as any}
+        <Table<PricingQuote>
+          columns={columns as ColumnsType<PricingQuote>}
           dataSource={pricingQuotes}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 1200 }}

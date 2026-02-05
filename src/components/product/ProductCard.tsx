@@ -7,6 +7,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+
   return (
     <Link
       to={`/products/${product._id}`}
@@ -16,7 +17,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         {product.images && product.images.length > 0 ? (
           <img
-            src={product.images[0]}
+            src={product.images[0].imageUrl}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />

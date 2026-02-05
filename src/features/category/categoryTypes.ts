@@ -1,4 +1,5 @@
 import type { PaginationMeta } from '@/types/api'
+import type { CacheMetadata } from '@/utils/cacheHelper'
 
 export interface Category {
   _id: string
@@ -19,6 +20,7 @@ export interface CategoryState {
   filter: CategoryFilter
   isLoading: boolean
   error: string | null
+  cache: CacheMetadata
 }
 
 export interface CategoryFilter {

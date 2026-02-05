@@ -498,6 +498,16 @@ const AdminDashboard = () => {
             <Button
               type="primary"
               block
+              onClick={() => navigate('/management/orders')}
+              icon={<ShoppingCartOutlined />}
+            >
+              Đơn hàng
+            </Button>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Button
+              type="default"
+              block
               onClick={() => navigate('/management/products')}
               icon={<ShoppingOutlined />}
             >

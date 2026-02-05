@@ -4,8 +4,7 @@ import {
   CheckCircleOutlined,
   FileTextOutlined,
   PercentageOutlined,
-  ArrowUpOutlined,
-  ClockCircleOutlined
+  ArrowUpOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '@/hooks/useAuth'

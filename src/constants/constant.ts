@@ -226,6 +226,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   EDIT_PROFILE: '/profile/edit',
   AUTH_CALLBACK: '/auth/callback',
+  AUTH_ERROR: '/auth/error',
   MANAGEMENT: {
     DASHBOARD: '/management/dashboard',
     BRANCHES: '/management/branches',

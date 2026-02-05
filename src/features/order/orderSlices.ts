@@ -1,7 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { OrderState, FetchOrdersPayload } from './orderTypes'
 import type { Order } from '@/types/api'
-import { fetchOrdersThunk, fetchOrderByIdThunk, createOrderThunk, cancelOrderThunk } from './orderThunks'
+import {
+  fetchOrdersThunk,
+  fetchAllOrdersThunk,
+  fetchOrderByIdThunk,
+  createOrderThunk,
+  cancelOrderThunk,
+  updateOrderStatusThunk
+} from './orderThunks'
 
 const initialState: OrderState = {
   orders: [],
@@ -39,6 +46,21 @@ const orderSlice = createSlice({
         state.pagination = action.payload.pagination
       })
       .addCase(fetchOrdersThunk.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+      })
+    // Fetch All Orders (Admin/Staff)
+    builder
+      .addCase(fetchAllOrdersThunk.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(fetchAllOrdersThunk.fulfilled, (state, action: PayloadAction<FetchOrdersPayload>) => {
+        state.isLoading = false
+        state.orders = action.payload.items
+        state.pagination = action.payload.pagination
+      })
+      .addCase(fetchAllOrdersThunk.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload as string
       })
@@ -88,6 +110,26 @@ const orderSlice = createSlice({
         }
       })
       .addCase(cancelOrderThunk.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+      })
+    // Update Order Status
+    builder
+      .addCase(updateOrderStatusThunk.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(updateOrderStatusThunk.fulfilled, (state, action: PayloadAction<Order>) => {
+        state.isLoading = false
+        const index = state.orders.findIndex((o) => o.id === action.payload.id)
+        if (index !== -1) {
+          state.orders[index] = action.payload
+        }
+        if (state.selectedOrder?.id === action.payload.id) {
+          state.selectedOrder = action.payload
+        }
+      })
+      .addCase(updateOrderStatusThunk.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload as string
       })

@@ -2,6 +2,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import branchApi from '@/apis/branch'
 import type { ApiError } from '@/types/api'
 import type { AxiosError } from 'axios'
+import { isCacheValid, CACHE_DURATION } from '@/utils/cacheHelper'
+import type { RootState } from '@/apps/store'
 import type {
   Branch,
   BranchFilter,
@@ -17,9 +19,24 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 
 export const fetchBranchesThunk = createAsyncThunk<
   FetchBranchesPayload,
-  BranchFilter | undefined,
+  { filter?: BranchFilter; forceRefresh?: boolean } | undefined,
   { rejectValue: string }
->('branch/fetchBranches', async (filter, { rejectWithValue }) => {
+>('branch/fetchBranches', async (options, { rejectWithValue, getState }) => {
+  const filter = options?.filter
+  const forceRefresh = options?.forceRefresh || false
+
+  // Check cache
+  const state = getState() as RootState
+  const { cache, branches, pagination } = state.branch
+
+  if (
+    !forceRefresh &&
+    branches.length > 0 &&
+    isCacheValid(cache.lastFetched, CACHE_DURATION.MEDIUM)
+  ) {
+    return { items: branches, pagination: pagination! }
+  }
+
   try {
     const response = await branchApi.getBranches(filter)
     return { items: response.data, pagination: response.pagination }
