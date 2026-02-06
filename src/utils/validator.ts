@@ -20,9 +20,8 @@ export const passwordSchema = z
 
 export const phoneSchema = z
   .string()
+  .min(1, 'Số điện thoại là bắt buộc')
   .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ')
-  .optional()
-  .or(z.literal(''))
 
 export const fullNameSchema = z
   .string()
