@@ -7,6 +7,8 @@ import categoryReducer from '@/features/category/categorySlices'
 import userManageReducer from '@/features/userManage/userManageSlices'
 import branchReducer from '@/features/branch/branchSlices'
 
+import serviceProductReducer from '@/features/serviceProduct/serviceProductSlice'
+
 const rootReducer = combineReducers({
   auth: authReducer,
   product: productReducer,
@@ -14,7 +16,8 @@ const rootReducer = combineReducers({
   user: userReducer,
   category: categoryReducer,
   userManage: userManageReducer,
-  branch: branchReducer
+  branch: branchReducer,
+  serviceProduct: serviceProductReducer
 })
 
 export type RootState = ReturnType<typeof rootReducer>

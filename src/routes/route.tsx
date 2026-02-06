@@ -43,6 +43,7 @@ const CategoryManagement = lazy(
 )
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
+const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -260,6 +261,10 @@ export const routes: RouteObject[] = [
       {
         path: 'products',
         element: withSuspense(ProductManagement)
+      },
+      {
+        path: ROUTES.MANAGEMENT.SERVICES,
+        element: withSuspense(ServiceProductManagement)
       },
       {
         path: 'orders',

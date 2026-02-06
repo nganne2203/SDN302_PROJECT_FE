@@ -14,7 +14,7 @@ export const passwordSchema = z
   .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
   .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số')
   .regex(
-    /[!@#$%^&*(),.?":{}|<>]/,
+    /[!@#$%^&*(),.?':{}|<>]/,
     'Mật khẩu phải có ít nhất một ký tự đặc biệt'
   )
 
@@ -124,6 +124,21 @@ export const userProfileSchema = z.object({
   avatar: z.string().optional()
 })
 
+export const updateServiceSchema = z.object({
+  name: z.string().min(1, 'Vui lòng nhập tên dịch vụ').optional(),
+  description: z.string().optional(),
+  type: z.string().min(1, 'Vui lòng chọn loại dịch vụ').optional(),
+  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0').optional(),
+})
+
+export const createServiceSchema = z.object({
+  product: z.string().min(1, 'Vui lòng chọn sản phẩm'),
+  name: z.string().min(1, 'Vui lòng nhập tên dịch vụ'),
+  description: z.string().optional(),
+  type: z.string().min(1, 'Vui lòng chọn loại dịch vụ'),
+  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0'),
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type OTPVerificationFormData = z.infer<typeof otpVerificationSchema>;
@@ -133,3 +148,5 @@ export type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export type ShippingAddressFormData = z.infer<typeof shippingAddressSchema>;
 export type ProfileFormData = z.infer<typeof userProfileSchema>;
+export type CreateServiceFormData = z.infer<typeof createServiceSchema>
+export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>
