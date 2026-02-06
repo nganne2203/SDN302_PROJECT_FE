@@ -24,12 +24,13 @@ const extractErrorMessage = (error: unknown, defaultMessage: string): string => 
   const axiosError = error as AxiosError<ApiError>
   const errorData = axiosError.response?.data
 
-  if (errorData?.message) {
-    return errorData.message
+  // Ưu tiên hiển thị nội dung từ errors array
+  if (errorData?.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+    return errorData.errors.join(', ')
   }
 
-  if (errorData?.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-    return errorData.errors[0]
+  if (errorData?.message) {
+    return errorData.message
   }
 
   return defaultMessage
