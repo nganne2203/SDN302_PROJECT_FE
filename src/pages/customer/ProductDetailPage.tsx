@@ -1,8 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useProduct } from '@/hooks/useProduct'
+import { useBranch } from '@/hooks/useBranch'
 import ProductDetail from '@/components/product/ProductDetail'
 import { ButtonCommon } from '@/components/common'
+import cartApi from '@/apis/cart'
+import { toast } from '@/utils/toast'
+import { API_ENDPOINTS, ROUTES } from '@/constants/constant'
+import apiClient from '@/services/apiClient'
+import type { Branch } from '@/types/api'
+import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import { serviceProductApi } from '@/apis/serviceProduct'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +22,14 @@ const ProductDetailPage = () => {
     fetchProductById,
     fetchRelatedProducts
   } = useProduct()
+  const { branches, fetchBranches } = useBranch()
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
+  const [branchStock, setBranchStock] = useState<number | null>(null)
+  const [isStockLoading, setIsStockLoading] = useState(false)
+  const [services, setServices] = useState<ServiceProduct[]>([])
+  const [isServiceLoading, setIsServiceLoading] = useState(false)
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
+  const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
     if (id) {
@@ -23,10 +39,74 @@ const ProductDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  const handleAddToCart = (productId: string, quantity: number) => {
-    // TODO: Implement add to cart functionality
-    // eslint-disable-next-line no-console
-    console.log('Add to cart:', productId, quantity)
+  useEffect(() => {
+    fetchBranches({ page: 1, limit: 50, isActive: true }, true)
+  }, [fetchBranches])
+
+  useEffect(() => {
+    if (!selectedBranchId && branches.length > 0) {
+      setSelectedBranchId(branches[0]._id)
+    }
+  }, [branches, selectedBranchId])
+
+  useEffect(() => {
+    if (!id) return
+    setIsServiceLoading(true)
+    serviceProductApi.getServicesByProduct(id)
+      .then((res) => {
+        const activeServices = res.data.filter((svc) => svc.isActive)
+        setServices(activeServices)
+      })
+      .catch(() => setServices([]))
+      .finally(() => setIsServiceLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    if (!id || !selectedBranchId) return
+    setIsStockLoading(true)
+    apiClient.get(API_ENDPOINTS.STORE_INVENTORY.BY_PRODUCT(selectedBranchId, id))
+      .then((res) => {
+        const quantityValue = res?.data?.data?.quantity
+        setBranchStock(typeof quantityValue === 'number' ? quantityValue : null)
+      })
+      .catch(() => setBranchStock(null))
+      .finally(() => setIsStockLoading(false))
+  }, [id, selectedBranchId])
+
+  useEffect(() => {
+    if (branchStock && quantity > branchStock) {
+      setQuantity(branchStock)
+    }
+  }, [branchStock, quantity])
+
+  const selectedServices = useMemo(
+    () => services.filter((svc) => selectedServiceIds.includes(svc._id)),
+    [services, selectedServiceIds]
+  )
+
+  const handleToggleService = (serviceId: string) => {
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
+    )
+  }
+
+  const handleAddToCart = async (productId: string, qty: number, serviceIds: string[]) => {
+    try {
+      const servicesPayload = serviceIds.map((serviceId) => ({ serviceId }))
+      await cartApi.addToCart(productId, qty, servicesPayload)
+      toast.success('Đã thêm vào giỏ hàng')
+      return true
+    } catch {
+      toast.error('Thêm vào giỏ hàng thất bại')
+      return false
+    }
+  }
+
+  const handleBuyNow = async (productId: string, qty: number, serviceIds: string[]) => {
+    const success = await handleAddToCart(productId, qty, serviceIds)
+    if (success) {
+      navigate(ROUTES.CART)
+    }
   }
 
   if (!selectedProduct && !isLoading) {
@@ -72,7 +152,20 @@ const ProductDetailPage = () => {
             product={selectedProduct}
             relatedProducts={relatedProducts}
             isLoading={isLoading}
+            branches={branches as Branch[]}
+            selectedBranchId={selectedBranchId}
+            onBranchChange={setSelectedBranchId}
+            branchStock={branchStock}
+            isStockLoading={isStockLoading}
+            services={services}
+            selectedServiceIds={selectedServiceIds}
+            onToggleService={handleToggleService}
+            isServiceLoading={isServiceLoading}
+            quantity={quantity}
+            onQuantityChange={setQuantity}
             onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+            selectedServices={selectedServices}
           />
         )}
       </div>

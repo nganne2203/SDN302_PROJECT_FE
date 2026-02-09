@@ -48,6 +48,13 @@ export const serviceProductApi = {
       { isActive }
     )
     return response.data
+  },
+
+  getServicesByProduct: async (productId: string): Promise<ApiResponse<ServiceProduct[]>> => {
+    const response = await apiClient.get<ApiResponse<ServiceProduct[]>>(
+      API_ENDPOINTS.SERVICE.BY_PRODUCT(productId)
+    )
+    return response.data
   }
 }
 
