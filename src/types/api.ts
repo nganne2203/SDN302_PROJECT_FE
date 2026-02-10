@@ -283,6 +283,42 @@ export interface BranchFilter {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface InventoryRecord {
+  _id: string;
+  product: Product;
+  quantity: number;
+  location?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoreInventoryRecord {
+  _id: string;
+  branch: Branch;
+  product: Product;
+  quantity: number;
+  minThreshold: number;
+  maxThreshold: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StockRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface StockRequestRecord {
+  _id: string;
+  branch: Branch;
+  product: Product;
+  quantity: number;
+  requester: BackendUser;
+  reason?: string;
+  status: StockRequestStatus;
+  admin?: BackendUser | null;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Cart Types
 export interface CartItem {
   id: string;

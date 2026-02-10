@@ -54,6 +54,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
         getItem('Tất cả người dùng', ROUTES.MANAGEMENT.USERS),
         getItem('Quản lý nhân viên', ROUTES.MANAGEMENT.STAFF)
       ]),
+      getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
       getItem('Khuyến mãi', ROUTES.MANAGEMENT.PROMOTIONS, <GiftOutlined />),
       getItem('Báo cáo', ROUTES.MANAGEMENT.ALL_REPORTS, <BarChartOutlined />),
@@ -117,26 +118,26 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
   }
 
   return (
-    <div className="h-full bg-white">
-      <div className="h-16 flex items-center justify-center border-b border-gray-200">
+    <div className='h-full bg-white'>
+      <div className='h-16 flex items-center justify-center border-b border-gray-200'>
         {collapsed ? (
-          <span className="text-2xl font-bold text-blue-600">PA</span>
+          <span className='text-2xl font-bold text-blue-600'>PA</span>
         ) : (
-          <div className="text-center">
-            <span className="text-xl font-bold text-blue-600">PhoneAcc</span>
-            <span className="block text-xs text-gray-500">{getRoleName(userRole)}</span>
+          <div className='text-center'>
+            <span className='text-xl font-bold text-blue-600'>PhoneAcc</span>
+            <span className='block text-xs text-gray-500'>{getRoleName(userRole)}</span>
           </div>
         )}
       </div>
 
       <Menu
-        mode="inline"
+        mode='inline'
         selectedKeys={[location.pathname]}
         defaultOpenKeys={['users-group', 'settings']}
         items={menuItems}
         onClick={handleMenuClick}
         inlineCollapsed={collapsed}
-        className="border-r-0"
+        className='border-r-0'
       />
     </div>
   )

@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
   },
   PRODUCT: {
     LIST: '/api/v1/products',
+    ALL: '/api/v1/products/all',
     CREATE: '/api/v1/products',
     DETAIL: (id: string) => `/api/v1/products/${id}`,
     UPDATE: (id: string) => `/api/v1/products/${id}`,
@@ -66,6 +67,7 @@ export const API_ENDPOINTS = {
   },
   BRANCH: {
     LIST: '/api/v1/branches',
+    ALL: '/api/v1/branches/all',
     CREATE: '/api/v1/branches',
     MANAGERS: '/api/v1/branches/managers',
     DETAIL: (id: string) => `/api/v1/branches/${id}`,
@@ -178,7 +180,12 @@ export const API_ENDPOINTS = {
     CREATE: '/api/v1/store-inventories',
     BY_BRANCH: (branchId: string) => `/api/v1/store-inventories/${branchId}`,
     OUT_OF_STOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/out-of-stock`,
-    BY_PRODUCT: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}`
+    LOW_STOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/low-stock`,
+    NEED_RESTOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/need-restock`,
+    OVERSTOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/overstock`,
+    UPDATE_THRESHOLDS: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}/thresholds`,
+    BY_PRODUCT: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}`,
+    DELETE: (inventoryId: string) => `/api/v1/store-inventories/${inventoryId}`
   },
   UPLOAD: {
     IMAGE: '/api/v1/uploads/images',
@@ -244,7 +251,8 @@ export const ROUTES = {
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
-    CUSTOMER_SUPPORT: '/management/customer-support'
+    CUSTOMER_SUPPORT: '/management/customer-support',
+    SERVICES: '/management/services'
   },
   ADMIN: {
     DASHBOARD: '/admin',
@@ -319,3 +327,14 @@ export const PAYMENT_METHOD_LABELS = {
   CREDIT_CARD: 'Thẻ tín dụng',
   E_WALLET: 'Ví điện tử'
 } as const
+
+export const SERVICE_PRODUCT_TYPE = [
+  { value: 'engraving', label: 'Khắc tên' },
+  { value: 'printing', label: 'In ảnh' },
+  { value: 'drilling', label: 'Đục lỗ' },
+  { value: 'cutting', label: 'Cắt' },
+  { value: 'embossing', label: 'Nổi chữ' },
+  { value: 'coating', label: 'Phủ' },
+  { value: 'lamination', label: 'Dán bìa' },
+  { value: 'other', label: 'Khác' }
+]

@@ -7,7 +7,9 @@ import type { RootState } from '@/apps/store'
 import type {
   Branch,
   BranchFilter,
+  BranchFilterAll,
   FetchBranchesPayload,
+  FetchBranchesAllPayload,
   CreateBranchPayload,
   UpdateBranchPayload
 } from './branchTypes'
@@ -40,6 +42,34 @@ export const fetchBranchesThunk = createAsyncThunk<
   try {
     const response = await branchApi.getBranches(filter)
     return { items: response.data, pagination: response.pagination }
+  } catch (e) {
+    return rejectWithValue(getErrorMessage(e, 'Không thể tải danh sách chi nhánh'))
+  }
+})
+
+export const fetchBranchesAllThunk = createAsyncThunk<
+  FetchBranchesAllPayload,
+  { filter?: BranchFilterAll; forceRefresh?: boolean } | undefined,
+  { rejectValue: string }
+>('branch/fetchBranchesAll', async (options, { rejectWithValue, getState }) => {
+  const filter = options?.filter
+  const forceRefresh = options?.forceRefresh || false
+
+  // Check cache
+  const state = getState() as RootState
+  const { cache, branches } = state.branch
+
+  if (
+    !forceRefresh &&
+    branches.length > 0 &&
+    isCacheValid(cache.lastFetched, CACHE_DURATION.MEDIUM)
+  ) {
+    return { items: branches }
+  }
+
+  try {
+    const response = await branchApi.getAllBranches(filter)
+    return { items: response.data }
   } catch (e) {
     return rejectWithValue(getErrorMessage(e, 'Không thể tải danh sách chi nhánh'))
   }

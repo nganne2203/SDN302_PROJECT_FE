@@ -25,6 +25,7 @@ const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
+const OrderHistory = lazy(() => import('@/pages/customer/OrderHistory'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -33,6 +34,8 @@ const ManagementLayout = lazy(
 const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
 // const ManagementProducts = lazy(() => import('@/pages/management/Product'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
+const ManagementInventory = lazy(() => import('@/pages/management/Inventory'))
+const ManagementStockRequests = lazy(() => import('@/pages/management/StockRequest'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
   () => import('@/pages/management/admin/Branch')
@@ -42,6 +45,7 @@ const CategoryManagement = lazy(
 )
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
+const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -49,7 +53,6 @@ const LoadingFallback = () => (
     <LoaderCommon />
   </div>
 )
-/* eslint-disable no-unused-vars */
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (
@@ -89,7 +92,6 @@ const isAuthenticated = (): boolean => {
 /**
  * Protected Route Wrapper - Requires authentication
  */
-// eslint-disable-next-line
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     console.log(isAuthenticated)
@@ -145,30 +147,6 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>
 }
 
-// eslint-disable-next-line
-const ManagerRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />
-  }
-  const user = getCurrentUser()
-  if (!user || user.role !== USER_ROLES.MANAGER) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
-  }
-  return <>{children}</>
-}
-
-// eslint-disable-next-line
-const StaffRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />
-  }
-  const user = getCurrentUser()
-  if (!user || user.role !== USER_ROLES.STAFF) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
-  }
-  return <>{children}</>
-}
-
 // Route configuration
 export const routes: RouteObject[] = [
   // ========================
@@ -189,6 +167,14 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.PRODUCT_DETAIL,
     element: withCustomerLayout(ProductDetailPage)
+  },
+  {
+    path: ROUTES.ORDERS,
+    element: (
+      <ProtectedRoute>
+        {withCustomerLayout(OrderHistory)}
+      </ProtectedRoute>
+    )
   },
 
   // ========================
@@ -253,8 +239,24 @@ export const routes: RouteObject[] = [
         element: withSuspense(ProductManagement)
       },
       {
+        path: ROUTES.MANAGEMENT.SERVICES,
+        element: withSuspense(ServiceProductManagement)
+      },
+      {
         path: 'orders',
         element: withSuspense(ManagementOrders)
+      },
+      {
+        path: 'inventory',
+        element: <AdminRoute>{withSuspense(ManagementInventory)}</AdminRoute>
+      },
+      {
+        path: 'branch-inventory',
+        element: withSuspense(ManagementInventory)
+      },
+      {
+        path: 'stock-requests',
+        element: withSuspense(ManagementStockRequests)
       },
       {
         path: 'categories',

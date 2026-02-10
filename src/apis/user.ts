@@ -1,6 +1,6 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse } from '@/types/api'
+import type { ApiResponse, UserInfo, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
 import uploadApi from './upload'
 
@@ -70,21 +70,6 @@ export const userApi = {
     const response = await apiClient.post<ApiResponse<null>>(
       API_ENDPOINTS.USER.CHANGE_PASSWORD,
       data
-    )
-    return response.data
-  },
-
-  getAddresses: async (): Promise<ApiResponse<ShippingAddress[]>> => {
-    const response = await apiClient.get<ApiResponse<ShippingAddress[]>>(
-      API_ENDPOINTS.USER.ADDRESSES
-    )
-    return response.data
-  },
-
-  addAddress: async (address: ShippingAddress): Promise<ApiResponse<ShippingAddress>> => {
-    const response = await apiClient.post<ApiResponse<ShippingAddress>>(
-      API_ENDPOINTS.USER.ADDRESSES,
-      address
     )
     return response.data
   }
