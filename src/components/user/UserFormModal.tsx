@@ -73,14 +73,14 @@ const UserFormModal = ({
 
   const [formData, setFormData] = useState<UserFormData>(getInitialFormData)
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData | string, string>>>({})
-  const { branches, fetchBranches } = useBranch()
+  const { branches, fetchBranchesAll } = useBranch()
 
   useEffect(() => {
     if (isOpen) {
       setFormData(getInitialFormData())
       setErrors({})
       // Fetch branches for dropdown
-      fetchBranches({ page: 1, limit: 100, isActive: true })
+      fetchBranchesAll({ isActive: true })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isEditMode, user?._id])
