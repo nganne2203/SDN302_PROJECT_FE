@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
   },
   PRODUCT: {
     LIST: '/api/v1/products',
+    ALL: '/api/v1/products/all',
     CREATE: '/api/v1/products',
     DETAIL: (id: string) => `/api/v1/products/${id}`,
     UPDATE: (id: string) => `/api/v1/products/${id}`,
@@ -66,6 +67,7 @@ export const API_ENDPOINTS = {
   },
   BRANCH: {
     LIST: '/api/v1/branches',
+    ALL: '/api/v1/branches/all',
     CREATE: '/api/v1/branches',
     MANAGERS: '/api/v1/branches/managers',
     DETAIL: (id: string) => `/api/v1/branches/${id}`,
@@ -178,7 +180,12 @@ export const API_ENDPOINTS = {
     CREATE: '/api/v1/store-inventories',
     BY_BRANCH: (branchId: string) => `/api/v1/store-inventories/${branchId}`,
     OUT_OF_STOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/out-of-stock`,
-    BY_PRODUCT: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}`
+    LOW_STOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/low-stock`,
+    NEED_RESTOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/need-restock`,
+    OVERSTOCK: (branchId: string) => `/api/v1/store-inventories/${branchId}/overstock`,
+    UPDATE_THRESHOLDS: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}/thresholds`,
+    BY_PRODUCT: (branchId: string, productId: string) => `/api/v1/store-inventories/${branchId}/${productId}`,
+    DELETE: (inventoryId: string) => `/api/v1/store-inventories/${inventoryId}`
   },
   UPLOAD: {
     IMAGE: '/api/v1/uploads/images',

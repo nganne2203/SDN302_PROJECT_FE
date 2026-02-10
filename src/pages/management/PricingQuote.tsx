@@ -31,7 +31,7 @@ const PricingQuote = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   // Sample pricing quote data (FE-08: Quantity-based discounts)
-  const [pricingQuotes, setPricingQuotes] = useState([
+  const [pricingQuotes, setPricingQuotes] = useState<PricingQuote[]>([
     {
       key: '1',
       quoteId: 'QT-001',
@@ -63,7 +63,7 @@ const PricingQuote = () => {
       quoteId: 'QT-003',
       product: 'iPhone 15 Pro',
       quantityFrom: 51,
-      quantityTo: null,
+      quantityTo: undefined,
       basePrice: 25000000,
       discountPercent: 10,
       finalPrice: 22500000,
@@ -89,7 +89,7 @@ const PricingQuote = () => {
       quoteId: 'QT-005',
       product: 'Samsung Galaxy S24',
       quantityFrom: 11,
-      quantityTo: null,
+      quantityTo: undefined,
       basePrice: 20000000,
       discountPercent: 7,
       finalPrice: 18600000,
@@ -139,33 +139,48 @@ const PricingQuote = () => {
     )
   }
 
-  const handleSubmit = (values: Partial<PricingQuote> & { basePrice: number; discountPercent: number }) => {
+  type PricingQuoteFormValues = {
+    product: string
+    quantityFrom: number
+    quantityTo?: number
+    basePrice: number
+    discountPercent: number
+  }
+
+  const handleSubmit = (values: PricingQuoteFormValues) => {
     // Calculate final price
     const finalPrice = values.basePrice * (1 - values.discountPercent / 100)
 
     if (editingId) {
       setPricingQuotes(
-        pricingQuotes.map((quote) =>
-          quote.key === editingId
-            ? {
-              ...quote,
-              ...values,
-              finalPrice,
-              createdDate: quote.createdDate,
-              createdBy: quote.createdBy
-            }
-            : quote
-        )
+        pricingQuotes.map((quote) => {
+          if (quote.key !== editingId) return quote
+          return {
+            ...quote,
+            product: values.product,
+            quantityFrom: values.quantityFrom,
+            quantityTo: values.quantityTo ?? undefined,
+            basePrice: values.basePrice,
+            discountPercent: values.discountPercent,
+            finalPrice,
+            createdDate: quote.createdDate,
+            createdBy: quote.createdBy
+          }
+        })
       )
     } else {
-      const newQuote = {
+      const newQuote: PricingQuote = {
         key: `${pricingQuotes.length + 1}`,
         quoteId: `QT-${String(pricingQuotes.length + 1).padStart(3, '0')}`,
-        ...values,
+        product: values.product,
+        quantityFrom: values.quantityFrom,
+        quantityTo: values.quantityTo ?? undefined,
+        basePrice: values.basePrice,
+        discountPercent: values.discountPercent,
         finalPrice,
         status: 'active',
         createdDate: new Date().toISOString().split('T')[0],
-        createdBy: user?.fullName
+        createdBy: user?.fullname || 'Unknown'
       }
       setPricingQuotes([newQuote, ...pricingQuotes])
     }

@@ -2,6 +2,7 @@ import type { Branch, BranchFilter, PaginationMeta } from '@/types/api'
 import type { CacheMetadata } from '@/utils/cacheHelper'
 
 export type { Branch, BranchFilter }
+export type BranchFilterAll = Omit<BranchFilter, 'page' | 'limit'>
 
 export interface BranchState {
   branches: Branch[]
@@ -16,6 +17,10 @@ export interface BranchState {
 export interface FetchBranchesPayload {
   items: Branch[]
   pagination: PaginationMeta
+}
+
+export interface FetchBranchesAllPayload {
+  items: Branch[]
 }
 
 export interface CreateBranchPayload {

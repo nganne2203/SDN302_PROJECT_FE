@@ -7,11 +7,36 @@ import type {
   CreateBranchPayload,
   UpdateBranchPayload
 } from '@/features/branch/branchTypes'
+import type { User } from '@/features/user/userTypes'
+
+type BranchFilterAll = Omit<BranchFilter, 'page' | 'limit'>
+
+type BranchManagerFilter = {
+  search?: string
+  sortBy?: 'name' | 'email'
+  sortOrder?: 'asc' | 'desc'
+}
 
 export const branchApi = {
   getBranches: async (filter?: BranchFilter): Promise<PaginatedResponse<Branch>> => {
     const response = await apiClient.get<PaginatedResponse<Branch>>(
       API_ENDPOINTS.BRANCH.LIST,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  getAllBranches: async (filter?: BranchFilterAll): Promise<ApiResponse<Branch[]>> => {
+    const response = await apiClient.get<ApiResponse<Branch[]>>(
+      API_ENDPOINTS.BRANCH.ALL,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  getBranchManagers: async (filter?: BranchManagerFilter): Promise<ApiResponse<User[]>> => {
+    const response = await apiClient.get<ApiResponse<User[]>>(
+      API_ENDPOINTS.BRANCH.MANAGERS,
       { params: filter }
     )
     return response.data

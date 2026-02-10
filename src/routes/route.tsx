@@ -34,6 +34,8 @@ const ManagementLayout = lazy(
 const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
 // const ManagementProducts = lazy(() => import('@/pages/management/Product'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
+const ManagementInventory = lazy(() => import('@/pages/management/Inventory'))
+const ManagementStockRequests = lazy(() => import('@/pages/management/StockRequest'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
   () => import('@/pages/management/admin/Branch')
@@ -51,7 +53,6 @@ const LoadingFallback = () => (
     <LoaderCommon />
   </div>
 )
-/* eslint-disable no-unused-vars */
 
 // HOC to wrap lazy components with Suspense
 const withSuspense = (Component: ComponentType): ReactNode => (
@@ -91,7 +92,6 @@ const isAuthenticated = (): boolean => {
 /**
  * Protected Route Wrapper - Requires authentication
  */
-// eslint-disable-next-line
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
     console.log(isAuthenticated)
@@ -144,30 +144,6 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
     return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
 
-  return <>{children}</>
-}
-
-// eslint-disable-next-line
-const ManagerRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />
-  }
-  const user = getCurrentUser()
-  if (!user || user.role !== USER_ROLES.MANAGER) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
-  }
-  return <>{children}</>
-}
-
-// eslint-disable-next-line
-const StaffRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to={ROUTES.LOGIN} replace />
-  }
-  const user = getCurrentUser()
-  if (!user || user.role !== USER_ROLES.STAFF) {
-    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
-  }
   return <>{children}</>
 }
 
@@ -269,6 +245,18 @@ export const routes: RouteObject[] = [
       {
         path: 'orders',
         element: withSuspense(ManagementOrders)
+      },
+      {
+        path: 'inventory',
+        element: <AdminRoute>{withSuspense(ManagementInventory)}</AdminRoute>
+      },
+      {
+        path: 'branch-inventory',
+        element: withSuspense(ManagementInventory)
+      },
+      {
+        path: 'stock-requests',
+        element: withSuspense(ManagementStockRequests)
       },
       {
         path: 'categories',
