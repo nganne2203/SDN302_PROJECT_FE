@@ -244,7 +244,8 @@ export const ROUTES = {
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
-    CUSTOMER_SUPPORT: '/management/customer-support'
+    CUSTOMER_SUPPORT: '/management/customer-support',
+    SERVICES: '/management/services'
   },
   ADMIN: {
     DASHBOARD: '/admin',
@@ -319,3 +320,14 @@ export const PAYMENT_METHOD_LABELS = {
   CREDIT_CARD: 'Thẻ tín dụng',
   E_WALLET: 'Ví điện tử'
 } as const
+
+export const SERVICE_PRODUCT_TYPE = [
+  { value: 'engraving', label: 'Khắc tên' },
+  { value: 'printing', label: 'In ảnh' },
+  { value: 'drilling', label: 'Đục lỗ' },
+  { value: 'cutting', label: 'Cắt' },
+  { value: 'embossing', label: 'Nổi chữ' },
+  { value: 'coating', label: 'Phủ' },
+  { value: 'lamination', label: 'Dán bìa' },
+  { value: 'other', label: 'Khác' }
+]

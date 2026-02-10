@@ -25,6 +25,7 @@ const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
+const OrderHistory = lazy(() => import('@/pages/customer/OrderHistory'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -42,6 +43,7 @@ const CategoryManagement = lazy(
 )
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
+const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -190,6 +192,14 @@ export const routes: RouteObject[] = [
     path: ROUTES.PRODUCT_DETAIL,
     element: withCustomerLayout(ProductDetailPage)
   },
+  {
+    path: ROUTES.ORDERS,
+    element: (
+      <ProtectedRoute>
+        {withCustomerLayout(OrderHistory)}
+      </ProtectedRoute>
+    )
+  },
 
   // ========================
   // Guest Routes (non-authenticated only)
@@ -251,6 +261,10 @@ export const routes: RouteObject[] = [
       {
         path: 'products',
         element: withSuspense(ProductManagement)
+      },
+      {
+        path: ROUTES.MANAGEMENT.SERVICES,
+        element: withSuspense(ServiceProductManagement)
       },
       {
         path: 'orders',

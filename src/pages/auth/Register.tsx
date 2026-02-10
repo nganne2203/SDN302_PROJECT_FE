@@ -148,6 +148,7 @@ const Register = () => {
                 placeholder="Nhập số điện thoại"
                 size="large"
                 error={error}
+                required
               />
             )}
           />
