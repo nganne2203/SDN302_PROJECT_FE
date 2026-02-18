@@ -7,6 +7,14 @@ import type {
   CreateOrderRequest
 } from '@/types/api'
 
+export interface CreateOfflineOrderRequest {
+  customerId?: string
+  branchId: string
+  items: { productId: string; quantity: number; services?: { serviceId: string }[] }[]
+  paymentMethod?: string
+  note?: string
+}
+
 export interface OrderFilter {
   page?: number
   limit?: number
@@ -62,9 +70,18 @@ export const orderApi = {
     return response.data
   },
 
+  // Create offline order (Staff/Manager - walk-in customer)
+  createOfflineOrder: async (data: CreateOfflineOrderRequest): Promise<ApiResponse<Order>> => {
+    const response = await apiClient.post<ApiResponse<Order>>(
+      API_ENDPOINTS.ORDER.OFFLINE,
+      data
+    )
+    return response.data
+  },
+
   // Update order status (Admin/Staff)
   updateOrderStatus: async (id: string, status: string): Promise<ApiResponse<Order>> => {
-    const response = await apiClient.put<ApiResponse<Order>>(
+    const response = await apiClient.patch<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.UPDATE_STATUS(id),
       { status }
     )
@@ -72,23 +89,35 @@ export const orderApi = {
   },
 
   // Cancel order
-  cancelOrder: async (id: string, reason?: string): Promise<ApiResponse<Order>> => {
-    const response = await apiClient.put<ApiResponse<Order>>(
+  cancelOrder: async (id: string, cancelReason?: string): Promise<ApiResponse<Order>> => {
+    const response = await apiClient.patch<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.CANCEL(id),
-      { reason }
+      { cancelReason }
     )
     return response.data
   },
 
   // Update delivery info
   updateDeliveryInfo: async (id: string, data: {
-    trackingNumber?: string
-    carrier?: string
-    estimatedDelivery?: string
+    providerName?: string
+    trackingCode?: string
+    status?: string
+    estimatedDeliveryDate?: string
+    deliveredAt?: string
+    recipientName?: string
   }): Promise<ApiResponse<Order>> => {
-    const response = await apiClient.put<ApiResponse<Order>>(
+    const response = await apiClient.patch<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.UPDATE_DELIVERY(id),
       data
+    )
+    return response.data
+  },
+
+  // Update shipping fee
+  updateShippingFee: async (id: string, shippingFee: number): Promise<ApiResponse<Order>> => {
+    const response = await apiClient.patch<ApiResponse<Order>>(
+      API_ENDPOINTS.ORDER.SHIPPING_FEE(id),
+      { shippingFee }
     )
     return response.data
   },

@@ -99,7 +99,7 @@ export const useCart = () => {
     }
 
     try {
-      await cartApi.updateCartItem(id, parsed.data)
+      await cartApi.updateCartItemQuantity(id, parsed.data)
       setCartItems((prev) =>
         prev.map((item) => (item.id === id ? { ...item, quantity: parsed.data } : item))
       )

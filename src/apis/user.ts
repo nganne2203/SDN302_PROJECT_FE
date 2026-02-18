@@ -15,6 +15,19 @@ export interface ChangePasswordRequest {
   newPassword: string
 }
 
+export interface ResetPasswordRequest {
+  email: string
+}
+
+export interface ConfirmResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
+export interface SetPasswordRequest {
+  password: string
+}
+
 const resolveUserAvatar = async (user: UserInfo): Promise<UserInfo> => {
   const publicId = user.avatarId || user.avatar
 
@@ -69,6 +82,30 @@ export const userApi = {
   changePassword: async (data: ChangePasswordRequest): Promise<ApiResponse<null>> => {
     const response = await apiClient.post<ApiResponse<null>>(
       API_ENDPOINTS.USER.CHANGE_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.RESET_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  setPassword: async (data: SetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.SET_PASSWORD,
       data
     )
     return response.data

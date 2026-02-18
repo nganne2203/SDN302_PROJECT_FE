@@ -25,7 +25,6 @@ const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
-const OrderHistory = lazy(() => import('@/pages/customer/OrderHistory'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -177,7 +176,7 @@ export const routes: RouteObject[] = [
     path: ROUTES.ORDERS,
     element: (
       <ProtectedRoute>
-        {withCustomerLayout(OrderHistory)}
+        {withCustomerLayout(lazy(() => import('@/pages/customer/OrderHistory')))}
       </ProtectedRoute>
     )
   },

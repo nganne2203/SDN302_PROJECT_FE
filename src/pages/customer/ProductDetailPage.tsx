@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useProduct } from '@/hooks/useProduct'
 import { useBranch } from '@/hooks/useBranch'
 import ProductDetail from '@/components/product/ProductDetail'
+import ReviewSection from '@/components/review/ReviewSection'
 import { ButtonCommon } from '@/components/common'
 import cartApi from '@/apis/cart'
 import pricingApi from '@/apis/pricing'
@@ -181,6 +182,14 @@ const ProductDetailPage = () => {
             onAddToCart={handleAddToCart}
             onBuyNow={handleBuyNow}
             selectedServices={selectedServices}
+          />
+        )}
+
+        {/* Reviews */}
+        {selectedProduct && (
+          <ReviewSection
+            productId={selectedProduct._id}
+            productName={selectedProduct.name}
           />
         )}
       </div>

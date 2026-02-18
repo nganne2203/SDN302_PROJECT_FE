@@ -129,6 +129,7 @@ export const API_ENDPOINTS = {
   },
   ORDER: {
     CREATE: '/api/v1/orders',
+    OFFLINE: '/api/v1/orders/offline',
     MY_ORDERS: '/api/v1/orders/my-orders',
     STATISTICS: '/api/v1/orders/statistics',
     ALL: '/api/v1/orders/all',
@@ -136,7 +137,8 @@ export const API_ENDPOINTS = {
     DETAIL: (orderId: string) => `/api/v1/orders/${orderId}`,
     UPDATE_STATUS: (orderId: string) => `/api/v1/orders/${orderId}/status`,
     CANCEL: (orderId: string) => `/api/v1/orders/${orderId}/cancel`,
-    UPDATE_DELIVERY: (orderId: string) => `/api/v1/orders/${orderId}/delivery`
+    UPDATE_DELIVERY: (orderId: string) => `/api/v1/orders/${orderId}/delivery`,
+    SHIPPING_FEE: (orderId: string) => `/api/v1/orders/${orderId}/shipping-fee`
   },
   PAYMENT: {
     BANKS: '/api/v1/payments/banks',
