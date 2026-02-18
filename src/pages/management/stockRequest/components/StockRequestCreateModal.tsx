@@ -15,10 +15,11 @@ const createSchema = z.object({
 
 export type StockRequestCreateValues = z.infer<typeof createSchema>
 
+/* eslint-disable no-unused-vars */
 interface StockRequestCreateModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (values: StockRequestCreateValues) => void | Promise<void>
+  onSubmit: (_values: StockRequestCreateValues) => void | Promise<void>
   products: Product[]
   isSubmitting?: boolean
 }

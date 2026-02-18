@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { productApi } from '@/apis/product'
+import { extractApiError } from '@/utils/apiError'
 import type {
   ProductFilter,
   Product,
@@ -8,8 +9,6 @@ import type {
   UpdateProductStatusRequest
 } from '@/types/api'
 import type { FetchProductsPayload } from './productTypes'
-import type { AxiosError } from 'axios'
-import type { ApiError } from '@/types/api'
 import { isCacheValid, CACHE_DURATION } from '@/utils/cacheHelper'
 import type { RootState } from '@/apps/store'
 
@@ -37,10 +36,7 @@ export const fetchProductsThunk = createAsyncThunk<
         pagination: response.pagination
       }
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải danh sách sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh sách sản phẩm'))
     }
   }
 )
@@ -67,10 +63,7 @@ export const fetchProductByIdThunk = createAsyncThunk<
       const response = await productApi.getProductById(id)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải thông tin sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải thông tin sản phẩm'))
     }
   }
 )
@@ -82,10 +75,7 @@ export const createProductThunk = createAsyncThunk<Product, CreateProductRequest
       const response = await productApi.createProduct(data)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tạo sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tạo sản phẩm'))
     }
   }
 )
@@ -97,10 +87,7 @@ export const updateProductThunk = createAsyncThunk<Product, { id: string; data: 
       const response = await productApi.updateProduct(id, data)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể cập nhật sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể cập nhật sản phẩm'))
     }
   }
 )
@@ -112,10 +99,7 @@ export const deleteProductThunk = createAsyncThunk<string, string>(
       await productApi.deleteProduct(id)
       return id
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể xóa sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể xóa sản phẩm'))
     }
   }
 )
@@ -130,10 +114,7 @@ export const updateProductStatusThunk = createAsyncThunk<
       const response = await productApi.updateProductStatus(id, data)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể cập nhật trạng thái sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái sản phẩm'))
     }
   }
 )
@@ -162,10 +143,7 @@ export const fetchCategoriesThunk = createAsyncThunk<
       const response = await productApi.getCategories()
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải danh mục'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh mục'))
     }
   }
 )
@@ -195,10 +173,7 @@ export const fetchFeaturedProductsThunk = createAsyncThunk<
       const response = await productApi.getFeaturedProducts(limit)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải sản phẩm nổi bật'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải sản phẩm nổi bật'))
     }
   }
 )
@@ -228,10 +203,7 @@ export const fetchNewArrivalsThunk = createAsyncThunk<
       const response = await productApi.getNewArrivals(limit)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải sản phẩm mới'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải sản phẩm mới'))
     }
   }
 )
@@ -243,10 +215,7 @@ export const fetchRelatedProductsThunk = createAsyncThunk<Product[], { id: strin
       const response = await productApi.getRelatedProducts(id, limit)
       return response.data
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tải sản phẩm liên quan'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tải sản phẩm liên quan'))
     }
   }
 )
@@ -264,10 +233,7 @@ export const searchProductsThunk = createAsyncThunk<
         pagination: response.pagination
       }
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Không thể tìm kiếm sản phẩm'
-      )
+      return rejectWithValue(extractApiError(error, 'Không thể tìm kiếm sản phẩm'))
     }
   }
 )

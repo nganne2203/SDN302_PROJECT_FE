@@ -314,7 +314,7 @@ const PricingQuote = () => {
               title="Tổng phiếu báo giá"
               value={totalQuotes}
               prefix={<CheckCircleOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -324,7 +324,7 @@ const PricingQuote = () => {
               title="Phiếu hoạt động"
               value={activeCount}
               prefix={<CheckCircleOutlined className="text-success" />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -334,7 +334,7 @@ const PricingQuote = () => {
               title="Giảm giá tối đa"
               value={10}
               prefix={<PercentageOutlined className="text-warning" />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>

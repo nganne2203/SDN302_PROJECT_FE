@@ -273,10 +273,15 @@ export const useProduct = () => {
     }
   }
 
-  // Delete product
-  const handleDelete = async (id: string) => {
+  // Delete product (only when inactive)
+  const handleDelete = async (product: Product) => {
+    if (product.isActive) {
+      toast.error('Chỉ được xóa sản phẩm đã ngừng hoạt động')
+      return
+    }
+
     try {
-      await dispatch(deleteProductThunk(id)).unwrap()
+      await dispatch(deleteProductThunk(product._id)).unwrap()
       toast.success('Xóa sản phẩm thành công')
       fetchProducts()
     } catch (error) {

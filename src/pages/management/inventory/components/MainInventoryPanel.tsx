@@ -6,14 +6,15 @@ import dayjs from 'dayjs'
 import type { InventoryRecord } from '@/types/api'
 import { InputField } from '@/components/common'
 
+/* eslint-disable no-unused-vars */
 interface MainInventoryPanelProps {
   data: InventoryRecord[]
   loading: boolean
   pagination: TablePaginationConfig
-  onPaginationChange: (pagination: TablePaginationConfig) => void
+  onPaginationChange: (_pagination: TablePaginationConfig) => void
   searchText: string
-  onSearchTextChange: (value: string) => void
-  onEdit: (record: InventoryRecord) => void
+  onSearchTextChange: (_value: string) => void
+  onEdit: (_record: InventoryRecord) => void
 }
 
 const MainInventoryPanel = ({

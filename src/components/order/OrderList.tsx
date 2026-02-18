@@ -1,5 +1,6 @@
 import { Eye, XCircle, CheckCircle } from 'lucide-react'
 import { TableCommon, ButtonCommon } from '@/components/common'
+import { Tooltip } from 'antd'
 import OrderStatusBadge from './OrderStatusBadge'
 import type { Order, PaginationMeta } from '@/types/api'
 import type { TableColumn } from '@/components/common/TableCommon'
@@ -152,33 +153,35 @@ const OrderList = ({
 
         return (
           <div className="flex items-center justify-center gap-2">
-            <ButtonCommon
-              variant="ghost"
-              size="sm"
-              onClick={() => onViewDetail(order)}
-            >
-              <Eye className="w-4 h-4" />
-            </ButtonCommon>
+            <Tooltip title="Xem chi tiết">
+              <ButtonCommon
+                variant="ghost"
+                size="sm"
+                onClick={() => onViewDetail(order)}
+                icon={<Eye className="w-4 h-4" />}
+              />
+            </Tooltip>
 
             {canUpdate && (
-              <ButtonCommon
-                variant="primary"
-                size="sm"
-                onClick={() => onUpdateStatus(order.id, nextStatus)}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                {getStatusActionLabel(nextStatus)}
-              </ButtonCommon>
+              <Tooltip title={getStatusActionLabel(nextStatus)}>
+                <ButtonCommon
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onUpdateStatus(order.id, nextStatus)}
+                  icon={<CheckCircle className="w-4 h-4" />}
+                />
+              </Tooltip>
             )}
 
             {canCancel && (
-              <ButtonCommon
-                variant="danger"
-                size="sm"
-                onClick={() => onCancelOrder(order.id)}
-              >
-                <XCircle className="w-4 h-4" />
-              </ButtonCommon>
+              <Tooltip title="Hủy đơn">
+                <ButtonCommon
+                  variant="danger"
+                  size="sm"
+                  onClick={() => onCancelOrder(order.id)}
+                  icon={<XCircle className="w-4 h-4" />}
+                />
+              </Tooltip>
             )}
           </div>
         )

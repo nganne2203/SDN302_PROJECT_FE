@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Tabs } from 'antd'
-import { Package, Clock, Truck, CheckCircle, XCircle, Eye } from 'lucide-react'
+import { Package, Clock, Truck, CheckCircle, XCircle, Eye, Star } from 'lucide-react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import OrderDetailModal from '@/components/order/OrderDetailModal'
+import ReviewModal from '@/components/review/ReviewModal'
 import useOrder from '@/hooks/useOrder'
 import { toast } from '@/utils/toast'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -22,6 +23,7 @@ const OrderHistory = () => {
   const [activeTab, setActiveTab] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [reviewTarget, setReviewTarget] = useState<{ productId: string; productName: string; orderId: string } | null>(null)
 
   // Build filter based on active tab
   const buildFilter = useCallback((): OrderFilter => {
@@ -68,6 +70,10 @@ const OrderHistory = () => {
     } else {
       toast.error('Không thể hủy đơn hàng')
     }
+  }
+
+  const handleOpenReview = (productId: string, productName: string, orderId: string) => {
+    setReviewTarget({ productId, productName, orderId })
   }
 
   const formatDate = (dateString: string) => {
@@ -174,7 +180,7 @@ const OrderHistory = () => {
               <p className="text-gray-500">
                 {activeTab === 'all'
                   ? 'Bạn chưa có đơn hàng nào'
-                  : `Không có đơn hàng nào ở trạng thái này`}
+                  : 'Không có đơn hàng nào ở trạng thái này'}
               </p>
             </div>
           ) : (
@@ -209,7 +215,9 @@ const OrderHistory = () => {
                   <div className="border-t border-gray-100 pt-4 mb-4">
                     <div className="space-y-2">
                       {order.items.slice(0, 2).map((item, index) => {
-                        const product = typeof item.productId === 'object' ? item.productId : { name: 'Unknown', images: [] }
+                        const product = typeof item.productId === 'object' ? item.productId : { name: 'Unknown', images: [], _id: '' }
+                        const productId = typeof item.productId === 'object' ? (item.productId as { _id?: string })._id ?? '' : item.productId
+                        const isDelivered = order.status.toLowerCase() === 'delivered'
                         return (
                           <div key={index} className="flex items-center gap-3">
                             <img
@@ -225,9 +233,20 @@ const OrderHistory = () => {
                                 Số lượng: {item.quantity}
                               </p>
                             </div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {formatCurrency(item.price)}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-gray-900">
+                                {formatCurrency(item.price)}
+                              </p>
+                              {isDelivered && productId && (
+                                <button
+                                  onClick={() => handleOpenReview(productId, product.name, order.id)}
+                                  className="flex items-center gap-1 text-xs px-2 py-1 bg-yellow-50 text-yellow-600 border border-yellow-200 rounded-full hover:bg-yellow-100 transition-colors"
+                                >
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  Đánh giá
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )
                       })}
@@ -249,11 +268,11 @@ const OrderHistory = () => {
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
                     </ButtonCommon>
-                    {order.status.toLowerCase() === 'pending' && (
+                    {order.status && order.status.toLowerCase() === 'pending' && (
                       <ButtonCommon
                         variant="danger"
                         size="md"
-                        onClick={() => handleCancelOrder(order.id)}
+                        onClick={() => handleCancelOrder(order._id)}
                       >
                         <XCircle className="w-4 h-4 mr-2" />
                         Hủy đơn
@@ -286,6 +305,18 @@ const OrderHistory = () => {
         onCancelOrder={handleCancelOrder}
         canManage={false}
       />
+
+      {/* Review Modal */}
+      {reviewTarget && (
+        <ReviewModal
+          isOpen={!!reviewTarget}
+          onClose={() => setReviewTarget(null)}
+          productId={reviewTarget.productId}
+          productName={reviewTarget.productName}
+          orderId={reviewTarget.orderId}
+          onSuccess={() => setReviewTarget(null)}
+        />
+      )}
     </div>
   )
 }

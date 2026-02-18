@@ -1,12 +1,14 @@
 import { FilterCommon } from '../common'
 import type { FilterField } from '@/components/common/FilterCommon'
+import type { ServiceProductFilter as FilterType } from '@/features/serviceProduct/serviceProductTypes'
 
+/* eslint-disable no-unused-vars */
 const ServiceProductFilter = ({
   filter,
   onFilterChange,
   onReset
 }: {
-  filter: any
+  filter: FilterType
   onFilterChange: (key: string, value: unknown) => void
   onReset: () => void
 }) => {

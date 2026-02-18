@@ -103,6 +103,9 @@ export const shippingAddressSchema = z.object({
   province: z.string().min(1, 'Tỉnh/Thành phố là bắt buộc'),
   district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
   ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
+  provinceCode: z.number().optional(),
+  districtCode: z.number().optional(),
+  wardCode: z.number().optional(),
   address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc')
 })
 
@@ -113,6 +116,9 @@ export const userAddressSchema = z.object({
   city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
   district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
   ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
+  provinceCode: z.number().optional(),
+  districtCode: z.number().optional(),
+  wardCode: z.number().optional(),
   isDefault: z.boolean().optional()
 })
 
@@ -128,7 +134,7 @@ export const updateServiceSchema = z.object({
   name: z.string().min(1, 'Vui lòng nhập tên dịch vụ').optional(),
   description: z.string().optional(),
   type: z.string().min(1, 'Vui lòng chọn loại dịch vụ').optional(),
-  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0').optional(),
+  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0').optional()
 })
 
 export const createServiceSchema = z.object({
@@ -136,7 +142,7 @@ export const createServiceSchema = z.object({
   name: z.string().min(1, 'Vui lòng nhập tên dịch vụ'),
   description: z.string().optional(),
   type: z.string().min(1, 'Vui lòng chọn loại dịch vụ'),
-  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0'),
+  price: z.number().min(0, 'Giá phải lớn hơn hoặc bằng 0')
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>;
@@ -150,3 +156,18 @@ export type ShippingAddressFormData = z.infer<typeof shippingAddressSchema>;
 export type ProfileFormData = z.infer<typeof userProfileSchema>;
 export type CreateServiceFormData = z.infer<typeof createServiceSchema>
 export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>
+
+export const createReviewSchema = z.object({
+  rating: z.number({ error: 'Vui lòng chọn số sao đánh giá' }).min(1, 'Vui lòng chọn ít nhất 1 sao').max(5),
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
+  imageUrls: z.string().optional()
+})
+
+export const updateReviewSchema = z.object({
+  rating: z.number().min(1, 'Vui lòng chọn ít nhất 1 sao').max(5).optional(),
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
+  imageUrls: z.string().optional()
+})
+
+export type CreateReviewFormData = z.infer<typeof createReviewSchema>
+export type UpdateReviewFormData = z.infer<typeof updateReviewSchema>

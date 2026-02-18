@@ -70,7 +70,7 @@ const ButtonCommon = ({
       htmlType={type}
       onClick={onClick}
       danger={variant === 'danger'}
-      ghost={variant === 'outline'}
+      ghost={false}
       className={className}
       icon={isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
       block={block}

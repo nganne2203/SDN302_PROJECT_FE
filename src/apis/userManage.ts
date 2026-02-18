@@ -10,10 +10,47 @@ import type {
 } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 
+export interface ResetPasswordRequest {
+  email: string
+}
+
+export interface ConfirmResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
+export interface SetPasswordRequest {
+  password: string
+}
+
 export const userManageApi = {
   getUsers: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
     const response = await apiClient.get<PaginatedResponse<User>>(
       API_ENDPOINTS.USER.ALL_USERS,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  getManagerUsers: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      API_ENDPOINTS.USER.GET_MANAGER,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  getCustomers: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      API_ENDPOINTS.USER.GET_CUSTOMERS,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  getStaff: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      API_ENDPOINTS.USER.GET_STAFF,
       { params: filter }
     )
     return response.data
@@ -48,7 +85,32 @@ export const userManageApi = {
       data
     )
     return response.data
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.RESET_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  setPassword: async (data: SetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.SET_PASSWORD,
+      data
+    )
+    return response.data
   }
 }
 
 export default userManageApi
+

@@ -24,24 +24,39 @@ export const cartApi = {
     return response.data
   },
 
-  updateCartItem: async (itemId: string, quantity: number): Promise<ApiResponse<CartItem>> => {
+  updateCartItemQuantity: async (productId: string, quantity: number): Promise<ApiResponse<CartItem>> => {
     const response = await apiClient.put<ApiResponse<CartItem>>(
       API_ENDPOINTS.CART.UPDATE_QUANTITY,
-      { itemId, quantity }
+      { productId, quantity }
     )
     return response.data
   },
 
-  removeFromCart: async (itemId: string): Promise<ApiResponse<null>> => {
+  updateCartItemServices: async (productId: string, services: CartServicePayload[]): Promise<ApiResponse<CartItem>> => {
+    const response = await apiClient.put<ApiResponse<CartItem>>(
+      API_ENDPOINTS.CART.UPDATE_SERVICES,
+      { productId, services }
+    )
+    return response.data
+  },
+
+  removeFromCart: async (productId: string): Promise<ApiResponse<null>> => {
     const response = await apiClient.delete<ApiResponse<null>>(
       API_ENDPOINTS.CART.REMOVE_ITEM,
-      { data: { itemId } }
+      { data: { productId } }
     )
     return response.data
   },
 
   clearCart: async (): Promise<ApiResponse<null>> => {
     const response = await apiClient.delete<ApiResponse<null>>(API_ENDPOINTS.CART.CLEAR)
+    return response.data
+  },
+
+  validateBeforeCheckout: async (): Promise<ApiResponse<unknown>> => {
+    const response = await apiClient.post<ApiResponse<unknown>>(
+      API_ENDPOINTS.CART.VALIDATE
+    )
     return response.data
   }
 }

@@ -29,6 +29,8 @@ export const API_ENDPOINTS = {
     ALL_USERS: '/api/v1/users',
     CREATE_USER: '/api/v1/users',
     GET_MANAGER: '/api/v1/users/manager',
+    GET_STAFF: '/api/v1/users/staff',
+    GET_CUSTOMERS: '/api/v1/users/customers',
     PROFILE: '/api/v1/users/profile',
     UPDATE_PROFILE: '/api/v1/users/me',
     DETAIL: (id: string) => `/api/v1/users/${id}`,
@@ -83,7 +85,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/api/v1/devices/${id}`,
     UPDATE: (id: string) => `/api/v1/devices/${id}`,
     DELETE: (id: string) => `/api/v1/devices/${id}`,
-    UPDATE_STATUS: (id: string) => `/api/v1/devices/${id}/status`
+    UPDATE_STATUS: (id: string) => `/api/v1/devices/${id}/status`,
+    ALL: '/api/v1/devices/all'
   },
   PRICING: {
     LIST: '/api/v1/pricings',
@@ -103,10 +106,13 @@ export const API_ENDPOINTS = {
     ORDERS: '/api/v1/statistics/orders',
     PRODUCTS: '/api/v1/statistics/products',
     BRANCHES: '/api/v1/statistics/branches',
+    BRANCH_PERFORMANCE: '/api/v1/statistics/branches/performance',
     CUSTOMERS: '/api/v1/statistics/customers',
     PAYMENTS: '/api/v1/statistics/payments',
     INVENTORY: '/api/v1/statistics/inventory',
-    COMPARISON: '/api/v1/statistics/comparison'
+    COMPARISON: '/api/v1/statistics/comparison',
+    RECENT_ORDERS: '/api/v1/statistics/recent-orders',
+    ORDER_STATUS_SUMMARY: '/api/v1/statistics/order-status-summary'
   },
   CART: {
     LIST: '/api/v1/carts',
@@ -127,6 +133,7 @@ export const API_ENDPOINTS = {
   },
   ORDER: {
     CREATE: '/api/v1/orders',
+    OFFLINE: '/api/v1/orders/offline',
     MY_ORDERS: '/api/v1/orders/my-orders',
     STATISTICS: '/api/v1/orders/statistics',
     ALL: '/api/v1/orders/all',
@@ -134,7 +141,8 @@ export const API_ENDPOINTS = {
     DETAIL: (orderId: string) => `/api/v1/orders/${orderId}`,
     UPDATE_STATUS: (orderId: string) => `/api/v1/orders/${orderId}/status`,
     CANCEL: (orderId: string) => `/api/v1/orders/${orderId}/cancel`,
-    UPDATE_DELIVERY: (orderId: string) => `/api/v1/orders/${orderId}/delivery`
+    UPDATE_DELIVERY: (orderId: string) => `/api/v1/orders/${orderId}/delivery`,
+    SHIPPING_FEE: (orderId: string) => `/api/v1/orders/${orderId}/shipping-fee`
   },
   PAYMENT: {
     BANKS: '/api/v1/payments/banks',
@@ -228,6 +236,7 @@ export const ROUTES = {
   PRODUCT_DETAIL: '/products/:id',
   CART: '/cart',
   CHECKOUT: '/checkout',
+  PAYMENT_RESULT: '/payment-result',
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',
@@ -245,14 +254,18 @@ export const ROUTES = {
     USERS: '/management/users',
     STAFF: '/management/staff',
     PRODUCTS: '/management/products',
+    PRICINGS: '/management/pricings',
     CATEGORIES: '/management/categories',
+    DEVICES: '/management/devices',
     ORDERS: '/management/orders',
     BRANCH_INVENTORY: '/management/branch-inventory',
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
     CUSTOMER_SUPPORT: '/management/customer-support',
-    SERVICES: '/management/services'
+    SERVICES: '/management/services',
+    MANAGER_USERS: '/management/manager-users',
+    STAFF_CUSTOMERS: '/management/staff-customers'
   },
   ADMIN: {
     DASHBOARD: '/admin',
