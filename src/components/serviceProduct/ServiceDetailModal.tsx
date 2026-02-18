@@ -9,6 +9,7 @@ import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTyp
 import { SERVICE_PRODUCT_TYPE } from '@/constants/constant'
 import { createServiceSchema, updateServiceSchema, type CreateServiceFormData, type UpdateServiceFormData } from '@/utils/validator'
 
+/* eslint-disable no-unused-vars */
 interface ServiceDetailModalProps {
   isOpen: boolean
   onClose: () => void

@@ -3,10 +3,11 @@ import { PlusOutlined } from '@ant-design/icons'
 import { SelectField } from '@/components/common'
 import type { StockRequestStatus } from '@/types/api'
 
+/* eslint-disable no-unused-vars */
 interface StockRequestFiltersProps {
   isManager: boolean
   statusFilter: StockRequestStatus | 'all'
-  onStatusChange: (value: StockRequestStatus | 'all') => void
+  onStatusChange: (_value: StockRequestStatus | 'all') => void
   onCreate: () => void
 }
 

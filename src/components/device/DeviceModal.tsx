@@ -1,25 +1,22 @@
-import { ModalCommon, ButtonCommon, InputField } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, ControlledField } from '@/components/common'
+import type { Control } from 'react-hook-form'
 import type { DeviceFormData } from '@/hooks/useDevice'
 
 interface DeviceModalProps {
   isOpen: boolean
   isEditMode: boolean
-  formData: DeviceFormData
-  formErrors: Record<string, string>
   isSubmitting: boolean
+  control: Control<DeviceFormData>
   onClose: () => void
-  onFormChange: (field: string, value: string) => void
   onSubmit: () => void
 }
 
 const DeviceModalComponent = ({
   isOpen,
   isEditMode,
-  formData,
-  formErrors,
   isSubmitting,
+  control,
   onClose,
-  onFormChange,
   onSubmit
 }: DeviceModalProps) => {
   return (
@@ -48,37 +45,65 @@ const DeviceModalComponent = ({
       }
     >
       <div className="space-y-4">
-        <InputField
-          label="Ten thiet bi"
-          placeholder="Nhap ten thiet bi..."
-          required
-          value={formData.name}
-          onChange={(e) => onFormChange('name', e.target.value)}
-          error={formErrors.name}
+        <ControlledField<DeviceFormData>
+          name="name"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <InputField
+              label="Ten thiet bi"
+              placeholder="Nhap ten thiet bi..."
+              required
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+            />
+          )}
         />
-        <InputField
-          label="Loai"
-          placeholder="Nhap loai thiet bi..."
-          required
-          value={formData.type}
-          onChange={(e) => onFormChange('type', e.target.value)}
-          error={formErrors.type}
+        <ControlledField<DeviceFormData>
+          name="type"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <InputField
+              label="Loai"
+              placeholder="Nhap loai thiet bi..."
+              required
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+            />
+          )}
         />
-        <InputField
-          label="Thuong hieu"
-          placeholder="Nhap thuong hieu..."
-          required
-          value={formData.brand}
-          onChange={(e) => onFormChange('brand', e.target.value)}
-          error={formErrors.brand}
+        <ControlledField<DeviceFormData>
+          name="brand"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <InputField
+              label="Thuong hieu"
+              placeholder="Nhap thuong hieu..."
+              required
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+            />
+          )}
         />
-        <InputField
-          label="Model"
-          placeholder="Nhap model..."
-          required
-          value={formData.model}
-          onChange={(e) => onFormChange('model', e.target.value)}
-          error={formErrors.model}
+        <ControlledField<DeviceFormData>
+          name="model"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <InputField
+              label="Model"
+              placeholder="Nhap model..."
+              required
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+            />
+          )}
         />
       </div>
     </ModalCommon>

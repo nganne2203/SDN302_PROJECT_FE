@@ -1,5 +1,5 @@
-import { Button, Space, Popconfirm } from 'antd'
-import { Edit, Trash2 } from 'lucide-react'
+import { Button, Space, Popconfirm, Tooltip } from 'antd'
+import { Edit, Trash2, Power } from 'lucide-react'
 import { TableCommon, LoaderCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Device } from '@/features/device/deviceTypes'
@@ -19,6 +19,7 @@ interface DeviceWithKey extends Record<string, unknown> {
   updatedAt?: string
 }
 
+/* eslint-disable no-unused-vars */
 interface DeviceListProps {
   devices: Device[]
   isLoading: boolean
@@ -27,10 +28,10 @@ interface DeviceListProps {
     limit: number
     total: number
   }
-  onEdit: (device: Device) => void
-  onDelete: (id: string) => void
-  onUpdateStatus: (id: string, isActive: boolean) => void
-  onPageChange: (page: number, pageSize: number) => void
+  onEdit: (_device: Device) => void
+  onDelete: (_id: string) => void
+  onUpdateStatus: (_id: string, _isActive: boolean) => void
+  onPageChange: (_page: number, _pageSize: number) => void
 }
 
 const DeviceListComponent = ({
@@ -105,21 +106,23 @@ const DeviceListComponent = ({
       width: 120,
       fixed: 'right',
       render: (_: unknown, record: DeviceWithKey) => (
-        <Space>
-          <Button
-            type="primary"
-            size="small"
-            icon={<Edit className="w-4 h-4" />}
-            onClick={() => onEdit(record as unknown as Device)}
-          >
-          </Button>
-          <Button
-            type="default"
-            size="small"
-            onClick={() => onUpdateStatus(record._id, !record.isActive)}
-          >
-            {record.isActive ? 'Vo hieu hoa' : 'Kich hoat'}
-          </Button>
+        <Space size="small">
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="primary"
+              size="small"
+              icon={<Edit className="w-4 h-4" />}
+              onClick={() => onEdit(record as unknown as Device)}
+            />
+          </Tooltip>
+          <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
+            <Button
+              size="small"
+              icon={<Power className="w-4 h-4" />}
+              style={{ color: record.isActive ? '#16a34a' : '#dc2626', borderColor: record.isActive ? '#16a34a' : '#dc2626' }}
+              onClick={() => onUpdateStatus(record._id, !record.isActive)}
+            />
+          </Tooltip>
           <Popconfirm
             title="Xac nhan xoa"
             description="Ban co chac chan muon xoa thiet bi nay?"
@@ -128,8 +131,9 @@ const DeviceListComponent = ({
             onConfirm={() => onDelete(record._id)}
             okButtonProps={{ danger: true }}
           >
-            <Button danger size="small" icon={<Trash2 className="w-4 h-4" />}>
-            </Button>
+            <Tooltip title="Xóa">
+              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       )

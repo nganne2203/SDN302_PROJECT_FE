@@ -1,14 +1,15 @@
-import { Space } from 'antd'
+import { Popconfirm, Space, Button, Tooltip } from 'antd'
 import { TableCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
-import { ButtonCommon } from '../common'
+import { Edit, Trash2, Power } from 'lucide-react'
 import dayjs from 'dayjs'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 
 interface ServiceProductWithKey extends ServiceProduct {
-  [key: string]: any
+  [key: string]: unknown
 }
 
+/* eslint-disable no-unused-vars */
 const ServiceProductList = ({
   data,
   loading,
@@ -40,8 +41,8 @@ const ServiceProductList = ({
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0'>
             {record.product.images?.[0] ? (
-              <img 
-                src={record.product.images[0]} 
+              <img
+                src={typeof record.product.images[0] === 'string' ? record.product.images[0] : record.product.images[0].imageUrl}
                 alt={record.product.name}
                 className='w-full h-full object-cover'
               />
@@ -108,12 +109,14 @@ const ServiceProductList = ({
       width: 140,
       render: (value) => (
         <div>
-           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            value 
-              ? 'bg-green-50 text-green-700 border border-green-200' 
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${value ? 'bg-green-600' : 'bg-red-600'}`}></span>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              value
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${value ? 'bg-green-600' : 'bg-red-600'}`} />
             {value ? 'Hoạt động' : 'Vô hiệu hóa'}
           </span>
         </div>
@@ -133,28 +136,35 @@ const ServiceProductList = ({
       width: 150,
       fixed: 'right',
       render: (_, record) => (
-        <Space>
-          <ButtonCommon
-            variant='secondary'
-            size='sm'
-            onClick={() => onEdit(record)}
+        <Space size="small">
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="primary"
+              size="small"
+              icon={<Edit className="w-4 h-4" />}
+              onClick={() => onEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
+            <Button
+              size="small"
+              icon={<Power className="w-4 h-4" />}
+              style={{ color: record.isActive ? '#16a34a' : '#dc2626', borderColor: record.isActive ? '#16a34a' : '#dc2626' }}
+              onClick={() => onStatusChange(record._id, !record.isActive)}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Xóa dịch vụ"
+            description={`Bạn có chắc muốn xóa dịch vụ "${record.name}"?`}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => onDelete(record)}
           >
-            Sửa
-          </ButtonCommon>
-           <ButtonCommon
-            variant={record.isActive ? 'secondary' : 'primary'}
-            size='sm'
-            onClick={() => onStatusChange(record._id, !record.isActive)}
-          >
-            {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
-          </ButtonCommon>
-          <ButtonCommon
-            variant='danger'
-            size='sm'
-            onClick={() => onDelete(record)}
-          >
-            Xóa
-          </ButtonCommon>
+            <Tooltip title="Xóa">
+              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+            </Tooltip>
+          </Popconfirm>
         </Space>
       )
     }

@@ -40,6 +40,14 @@ export const userManageApi = {
     return response.data
   },
 
+  getCustomers: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      API_ENDPOINTS.USER.GET_CUSTOMERS,
+      { params: filter }
+    )
+    return response.data
+  },
+
   getStaff: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
     const response = await apiClient.get<PaginatedResponse<User>>(
       API_ENDPOINTS.USER.GET_STAFF,

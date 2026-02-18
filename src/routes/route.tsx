@@ -58,6 +58,8 @@ const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
 const StaffManagement = lazy(() => import('@/pages/management/admin/Staff'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
 const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
+const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
+const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -325,6 +327,14 @@ export const routes: RouteObject[] = [
       {
         path: 'branches',
         element: <AdminRoute>{withSuspense(BranchesManagement)}</AdminRoute>
+      },
+      {
+        path: 'manager-users',
+        element: <AdminManagerRoute>{withSuspense(ManagerUsersManagement)}</AdminManagerRoute>
+      },
+      {
+        path: 'staff-customers',
+        element: <ManagementRoute>{withSuspense(StaffCustomerManagement)}</ManagementRoute>
       }
     ]
   },

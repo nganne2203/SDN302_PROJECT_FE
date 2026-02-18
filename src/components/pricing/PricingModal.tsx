@@ -6,6 +6,7 @@ interface ProductOption {
   value: string
 }
 
+/* eslint-disable no-unused-vars */
 interface PricingModalProps {
   isOpen: boolean
   isEditMode: boolean
@@ -14,7 +15,7 @@ interface PricingModalProps {
   isSubmitting: boolean
   productOptions: ProductOption[]
   onClose: () => void
-  onFormChange: (field: string, value: string | number | null) => void
+  onFormChange: (_field: string, _value: string | number | null) => void
   onSubmit: () => void
 }
 

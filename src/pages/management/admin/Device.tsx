@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useDevice, type DeviceFormData } from '@/hooks/useDevice'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useDevice, type DeviceFormData, deviceValidationSchema } from '@/hooks/useDevice'
 import { toast } from '@/utils/toast'
 import type { Device, DeviceFilter } from '@/features/device/deviceTypes'
 import DeviceHeader from '@/components/device/DeviceHeader'
@@ -22,22 +24,23 @@ const ManagementDevice = () => {
     createDevice,
     updateDevice,
     deleteDevice,
-    updateDeviceStatus,
-    validateDeviceForm
+    updateDeviceStatus
   } = useDevice()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<DeviceFormData>({
-    name: '',
-    type: '',
-    brand: '',
-    model: ''
-  })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const lastFetchParamsRef = useRef<string>('')
+
+  const {
+    control,
+    handleSubmit,
+    reset
+  } = useForm<DeviceFormData>({
+    resolver: zodResolver(deviceValidationSchema),
+    defaultValues: { name: '', type: '', brand: '', model: '' }
+  })
 
   useEffect(() => {
     const filterParams: DeviceFilter = {
@@ -63,7 +66,7 @@ const ManagementDevice = () => {
 
   const handleOpenModal = useCallback((device?: Device) => {
     if (device) {
-      setFormData({
+      reset({
         name: device.name,
         type: device.type,
         brand: device.brand,
@@ -73,61 +76,39 @@ const ManagementDevice = () => {
       handleSetSelectedDevice(device)
       setIsEditMode(true)
     } else {
-      setFormData({ name: '', type: '', brand: '', model: '' })
+      reset({ name: '', type: '', brand: '', model: '' })
       setSelectedDeviceId(null)
       handleSetSelectedDevice(null)
       setIsEditMode(false)
     }
-    setFormErrors({})
     setIsModalOpen(true)
-  }, [handleSetSelectedDevice])
+  }, [handleSetSelectedDevice, reset])
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    setFormData({ name: '', type: '', brand: '', model: '' })
-    setFormErrors({})
+    reset({ name: '', type: '', brand: '', model: '' })
     setIsEditMode(false)
     setSelectedDeviceId(null)
     handleSetSelectedDevice(null)
-  }, [handleSetSelectedDevice])
+  }, [handleSetSelectedDevice, reset])
 
-  const handleFormChange = useCallback((field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-    if (formErrors[field]) {
-      setFormErrors(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
-  }, [formErrors])
-
-  const handleSubmit = useCallback(async () => {
-    const validation = validateDeviceForm(formData)
-    if (!validation.valid) {
-      setFormErrors(validation.errors)
-      return
-    }
-
+  const handleSubmitForm = useCallback(async (values: DeviceFormData) => {
     setIsSubmitting(true)
     try {
       let result
       if (isEditMode && selectedDeviceId) {
         result = await updateDevice(selectedDeviceId, {
-          name: formData.name,
-          type: formData.type,
-          brand: formData.brand,
-          model: formData.model
+          name: values.name,
+          type: values.type,
+          brand: values.brand,
+          model: values.model
         })
       } else {
         result = await createDevice({
-          name: formData.name,
-          type: formData.type,
-          brand: formData.brand,
-          model: formData.model
+          name: values.name,
+          type: values.type,
+          brand: values.brand,
+          model: values.model
         })
       }
 
@@ -140,7 +121,7 @@ const ManagementDevice = () => {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, selectedDeviceId, validateDeviceForm, updateDevice, createDevice, handleCloseModal])
+  }, [isEditMode, selectedDeviceId, updateDevice, createDevice, handleCloseModal])
 
   const handleDelete = useCallback(async (id: string) => {
     const result = await deleteDevice(id)
@@ -190,12 +171,10 @@ const ManagementDevice = () => {
       <DeviceModalComponent
         isOpen={isModalOpen}
         isEditMode={isEditMode}
-        formData={formData}
-        formErrors={formErrors}
         isSubmitting={isSubmitting}
+        control={control}
         onClose={handleCloseModal}
-        onFormChange={handleFormChange}
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(handleSubmitForm)}
       />
     </div>
   )

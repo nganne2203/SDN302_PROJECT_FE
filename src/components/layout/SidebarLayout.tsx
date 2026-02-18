@@ -10,7 +10,7 @@ import {
   BankOutlined,
   InboxOutlined,
   BarChartOutlined,
-  TeamOutlined,
+  // TeamOutlined,
   CustomerServiceOutlined,
   FileTextOutlined,
   MobileOutlined,
@@ -68,7 +68,8 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
       getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-      getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
+      // getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
+      getItem('Người dùng chi nhánh', ROUTES.MANAGEMENT.MANAGER_USERS, <UserOutlined />),
       getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />)
     ]
@@ -77,7 +78,8 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
     return [
       ...commonItems,
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-      getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />)
+      getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
+      getItem('Khách hàng', ROUTES.MANAGEMENT.STAFF_CUSTOMERS, <UserOutlined />)
     ]
 
   default:

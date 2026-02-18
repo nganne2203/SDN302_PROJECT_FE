@@ -24,6 +24,38 @@ export const fetchUsersThunk = createAsyncThunk<FetchUsersPayload, UserManageFil
   }
 )
 
+// Fetch users for manager role (uses /api/v1/users/manager)
+export const fetchManagerUsersThunk = createAsyncThunk<FetchUsersPayload, UserManageFilter | undefined>(
+  'userManage/fetchManagerUsers',
+  async (filter, { rejectWithValue }) => {
+    try {
+      const response = await userManageApi.getManagerUsers(filter)
+      return {
+        items: response.data,
+        pagination: response.pagination
+      }
+    } catch (error) {
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh sách người dùng'))
+    }
+  }
+)
+
+// Fetch customers for staff role (uses /api/v1/users/customers)
+export const fetchCustomersThunk = createAsyncThunk<FetchUsersPayload, UserManageFilter | undefined>(
+  'userManage/fetchCustomers',
+  async (filter, { rejectWithValue }) => {
+    try {
+      const response = await userManageApi.getCustomers(filter)
+      return {
+        items: response.data,
+        pagination: response.pagination
+      }
+    } catch (error) {
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh sách khách hàng'))
+    }
+  }
+)
+
 // Create a new user
 export const createUserThunk = createAsyncThunk<User, CreateUserRequest>(
   'userManage/createUser',

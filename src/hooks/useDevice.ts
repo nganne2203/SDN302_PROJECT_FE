@@ -17,7 +17,7 @@ import {
 import type { Device, DeviceFilter, CreateDevicePayload } from '@/features/device/deviceTypes'
 import { z } from 'zod'
 
-const deviceValidationSchema = z.object({
+export const deviceValidationSchema = z.object({
   name: z.string().min(1, 'Ten thiet bi khong duoc de trong').max(100, 'Ten thiet bi khong duoc vuot qua 100 ky tu'),
   type: z.string().min(1, 'Loai thiet bi khong duoc de trong').max(50, 'Loai thiet bi khong duoc vuot qua 50 ky tu'),
   brand: z.string().min(1, 'Thuong hieu khong duoc de trong').max(100, 'Thuong hieu khong duoc vuot qua 100 ky tu'),

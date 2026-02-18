@@ -180,7 +180,7 @@ const OrderHistory = () => {
               <p className="text-gray-500">
                 {activeTab === 'all'
                   ? 'Bạn chưa có đơn hàng nào'
-                  : `Không có đơn hàng nào ở trạng thái này`}
+                  : 'Không có đơn hàng nào ở trạng thái này'}
               </p>
             </div>
           ) : (
@@ -247,6 +247,10 @@ const OrderHistory = () => {
                                 </button>
                               )}
                             </div>
+                          </div>
+                        )
+                      })}
+                      {order.items.length > 2 && (
                         <p className="text-sm text-gray-500">
                           Và {order.items.length - 2} sản phẩm khác...
                         </p>
@@ -264,11 +268,11 @@ const OrderHistory = () => {
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
                     </ButtonCommon>
-                    {order.status.toLowerCase() === 'pending' && (
+                    {order.status && order.status.toLowerCase() === 'pending' && (
                       <ButtonCommon
                         variant="danger"
                         size="md"
-                        onClick={() => handleCancelOrder(order.id)}
+                        onClick={() => handleCancelOrder(order._id)}
                       >
                         <XCircle className="w-4 h-4 mr-2" />
                         Hủy đơn

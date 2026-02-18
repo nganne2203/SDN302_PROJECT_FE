@@ -156,7 +156,8 @@ export const useInventory = () => {
         setBranchLoading(false)
       }
     },
-    [branchPagination.current, branchPagination.pageSize, branchQuery, branchView, getCached, selectedBranchId, setCached]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [branchPagination.current, branchPagination.pageSize, branchQuery, getCached, selectedBranchId, setCached]
   )
 
   const fetchMainInventory = useCallback(
@@ -196,6 +197,7 @@ export const useInventory = () => {
         setMainLoading(false)
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [getCached, isAdmin, mainPagination.current, mainPagination.pageSize, mainQuery, setCached]
   )
 

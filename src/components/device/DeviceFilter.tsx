@@ -2,6 +2,7 @@ import { FilterCommon } from '@/components/common'
 import type { FilterField } from '@/components/common/FilterCommon'
 import type { DeviceFilter } from '@/features/device/deviceTypes'
 
+/* eslint-disable no-unused-vars */
 interface DeviceFilterProps {
   searchValue: string
   onSearchChange: (value: string) => void

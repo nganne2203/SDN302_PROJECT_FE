@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
     CREATE_USER: '/api/v1/users',
     GET_MANAGER: '/api/v1/users/manager',
     GET_STAFF: '/api/v1/users/staff',
+    GET_CUSTOMERS: '/api/v1/users/customers',
     PROFILE: '/api/v1/users/profile',
     UPDATE_PROFILE: '/api/v1/users/me',
     DETAIL: (id: string) => `/api/v1/users/${id}`,
@@ -261,7 +262,9 @@ export const ROUTES = {
     BRANCH_REPORTS: '/management/branch-reports',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
     CUSTOMER_SUPPORT: '/management/customer-support',
-    SERVICES: '/management/services'
+    SERVICES: '/management/services',
+    MANAGER_USERS: '/management/manager-users',
+    STAFF_CUSTOMERS: '/management/staff-customers'
   },
   ADMIN: {
     DASHBOARD: '/admin',

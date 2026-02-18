@@ -18,11 +18,12 @@ const buildSchema = (action: StockRequestAction) => {
 
 export type StockRequestActionValues = z.infer<ReturnType<typeof buildSchema>>
 
+/* eslint-disable no-unused-vars */
 interface StockRequestActionModalProps {
   isOpen: boolean
   actionType: StockRequestAction
   onClose: () => void
-  onSubmit: (values: StockRequestActionValues) => void | Promise<void>
+  onSubmit: (_values: StockRequestActionValues) => void | Promise<void>
   isSubmitting?: boolean
 }
 

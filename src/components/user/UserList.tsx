@@ -1,10 +1,10 @@
-import { Button, Space } from 'antd'
+import { Button, Space, Tooltip } from 'antd'
 import { TableCommon, LoaderCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { User } from '@/features/user/userTypes'
 import dayjs from 'dayjs'
 import { ROLE_LABELS } from '@/constants/constant'
-import { Eye, Pencil } from 'lucide-react'
+import { Eye, Pencil, Power } from 'lucide-react'
 
 interface UserWithKey extends Record<string, unknown> {
   key: string
@@ -20,10 +20,11 @@ interface UserListProps {
     limit: number
     total: number
   }
-  onUpdateStatus: (id: string, isActive: boolean) => void
+  onUpdateStatus?: (id: string, isActive: boolean) => void
   onPageChange: (page: number, pageSize: number) => void
   onViewUser?: (user: User) => void
   onEditUser?: (user: User) => void
+  hideStatusToggle?: boolean
 }
 
 const UserListComponent = ({
@@ -33,7 +34,8 @@ const UserListComponent = ({
   onUpdateStatus,
   onPageChange,
   onViewUser,
-  onEditUser
+  onEditUser,
+  hideStatusToggle = false
 }: UserListProps) => {
   const usersWithKeys: UserWithKey[] = users.map(user => ({
     ...user,
@@ -98,35 +100,37 @@ const UserListComponent = ({
       width: 200,
       fixed: 'right',
       render: (_: unknown, record: UserWithKey) => (
-        <Space>
+        <Space size="small">
           {onViewUser && (
-            <Button
-              type="default"
-              size="small"
-              icon={<Eye className="w-4 h-4" />}
-              onClick={() => onViewUser(record as unknown as User)}
-            >
-              Xem
-            </Button>
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="default"
+                size="small"
+                icon={<Eye className="w-4 h-4" />}
+                onClick={() => onViewUser(record as unknown as User)}
+              />
+            </Tooltip>
           )}
           {onEditUser && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<Pencil className="w-4 h-4" />}
-              onClick={() => onEditUser(record as unknown as User)}
-            >
-              Sửa
-            </Button>
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="primary"
+                size="small"
+                icon={<Pencil className="w-4 h-4" />}
+                onClick={() => onEditUser(record as unknown as User)}
+              />
+            </Tooltip>
           )}
-          <Button
-            type={record.isActive ? 'default' : 'primary'}
-            size="small"
-            onClick={() => onUpdateStatus(record._id, !record.isActive)}
-            danger={record.isActive as boolean}
-          >
-            {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
-          </Button>
+          {!hideStatusToggle && onUpdateStatus && (
+            <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
+              <Button
+                size="small"
+                icon={<Power className="w-4 h-4" />}
+                style={{ color: record.isActive ? '#16a34a' : '#dc2626', borderColor: record.isActive ? '#16a34a' : '#dc2626' }}
+                onClick={() => onUpdateStatus(record._id, !record.isActive)}
+              />
+            </Tooltip>
+          )}
         </Space>
       )
     }

@@ -7,22 +7,23 @@ import type { BranchView } from '@/hooks/useInventory'
 import { InputField, SelectField } from '@/components/common'
 import { Button } from 'antd'
 
+/* eslint-disable no-unused-vars */
 interface BranchInventoryPanelProps {
   isAdmin: boolean
   canEditThresholds: boolean
   branches: Branch[]
   selectedBranchId: string | null
-  onBranchChange: (branchId: string) => void
+  onBranchChange: (_branchId: string) => void
   branchView: BranchView
-  onBranchViewChange: (view: BranchView) => void
+  onBranchViewChange: (_view: BranchView) => void
   branchInventory: StoreInventoryRecord[]
   branchStats: { lowStock: number; outOfStock: number; optimal: number }
   searchText: string
-  onSearchTextChange: (value: string) => void
+  onSearchTextChange: (_value: string) => void
   loading: boolean
   pagination: TablePaginationConfig
-  onPaginationChange: (pagination: TablePaginationConfig) => void
-  onEditThresholds: (record: StoreInventoryRecord) => void
+  onPaginationChange: (_pagination: TablePaginationConfig) => void
+  onEditThresholds: (_record: StoreInventoryRecord) => void
 }
 
 const BranchInventoryPanel = ({
