@@ -80,3 +80,15 @@ export const updateDeviceStatusThunk = createAsyncThunk<Device, { id: string; is
     }
   }
 )
+
+export const fetchAllDevicesThunk = createAsyncThunk<Device[], void>(
+  'device/fetchAllDevices',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await deviceApi.getAllDevices()
+      return response.data
+    } catch (error) {
+      return rejectWithValue(extractApiError(error, 'Khong the tai danh sach tat ca thiet bi'))
+    }
+  }
+)

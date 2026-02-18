@@ -1,10 +1,17 @@
 import type { PaginationMeta } from '@/types/api'
 import type { CacheMetadata } from '@/utils/cacheHelper'
 
+export const DEVICE_TYPES = {
+  SMARTPHONE: 'smartphone',
+  TABLET: 'tablet'
+} as const
+
+export type DeviceType = (typeof DEVICE_TYPES)[keyof typeof DEVICE_TYPES]
+
 export interface Device {
   _id: string
   name: string
-  type: string
+  type: DeviceType
   brand: string
   model: string
   isActive: boolean
@@ -35,7 +42,7 @@ export interface DeviceFilter {
 
 export interface CreateDevicePayload {
   name: string
-  type: string
+  type: DeviceType
   brand: string
   model: string
 }

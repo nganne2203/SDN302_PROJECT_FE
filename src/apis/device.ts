@@ -48,6 +48,13 @@ export const deviceApi = {
       { isActive }
     )
     return response.data
+  },
+
+  getAllDevices: async (): Promise<ApiResponse<Device[]>> => {
+    const response = await apiClient.get<ApiResponse<Device[]>>(
+      API_ENDPOINTS.DEVICE.ALL
+    )
+    return response.data
   }
 }
 

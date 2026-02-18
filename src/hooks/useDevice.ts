@@ -6,7 +6,8 @@ import {
   createDeviceThunk,
   updateDeviceThunk,
   deleteDeviceThunk,
-  updateDeviceStatusThunk
+  updateDeviceStatusThunk,
+  fetchAllDevicesThunk
 } from '@/features/device/deviceThunks'
 import {
   setFilter,
@@ -14,12 +15,17 @@ import {
   setSelectedDevice,
   clearError
 } from '@/features/device/deviceSlices'
+import { DEVICE_TYPES } from '@/features/device/deviceTypes'
 import type { Device, DeviceFilter, CreateDevicePayload } from '@/features/device/deviceTypes'
 import { z } from 'zod'
 
+const DEVICE_TYPE_VALUES = [DEVICE_TYPES.SMARTPHONE, DEVICE_TYPES.TABLET] as const
+
 export const deviceValidationSchema = z.object({
   name: z.string().min(1, 'Ten thiet bi khong duoc de trong').max(100, 'Ten thiet bi khong duoc vuot qua 100 ky tu'),
-  type: z.string().min(1, 'Loai thiet bi khong duoc de trong').max(50, 'Loai thiet bi khong duoc vuot qua 50 ky tu'),
+  type: z.enum(DEVICE_TYPE_VALUES, {
+    message: 'Loai thiet bi khong duoc de trong'
+  }),
   brand: z.string().min(1, 'Thuong hieu khong duoc de trong').max(100, 'Thuong hieu khong duoc vuot qua 100 ky tu'),
   model: z.string().min(1, 'Model khong duoc de trong').max(100, 'Model khong duoc vuot qua 100 ky tu')
 })
@@ -43,6 +49,13 @@ export const useDevice = () => {
   const fetchDevices = useCallback(
     async (filterData?: DeviceFilter) => {
       return dispatch(fetchDevicesThunk(filterData))
+    },
+    [dispatch]
+  )
+
+  const fetchAllDevices = useCallback(
+    async () => {
+      return dispatch(fetchAllDevicesThunk())
     },
     [dispatch]
   )
@@ -136,6 +149,7 @@ export const useDevice = () => {
     updateDeviceStatus,
 
     fetchDevices,
+    fetchAllDevices,
     fetchDeviceById,
     createDevice,
     updateDevice,

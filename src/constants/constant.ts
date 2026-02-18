@@ -85,7 +85,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/api/v1/devices/${id}`,
     UPDATE: (id: string) => `/api/v1/devices/${id}`,
     DELETE: (id: string) => `/api/v1/devices/${id}`,
-    UPDATE_STATUS: (id: string) => `/api/v1/devices/${id}/status`
+    UPDATE_STATUS: (id: string) => `/api/v1/devices/${id}/status`,
+    ALL: '/api/v1/devices/all'
   },
   PRICING: {
     LIST: '/api/v1/pricings',

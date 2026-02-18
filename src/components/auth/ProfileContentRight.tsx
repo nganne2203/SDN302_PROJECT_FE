@@ -5,10 +5,12 @@ import {
   type FieldArrayWithId,
   type UseFieldArrayAppend,
   type UseFieldArrayRemove,
-  type UseFormSetValue
+  type UseFormSetValue,
+  useWatch
 } from 'react-hook-form'
 import { MapPin, Plus, Trash2 } from 'lucide-react'
 import type { ProfileFormData } from '@/utils/validator'
+import { LocationSelectGroup } from '../common'
 
 interface ProfileContentRightProps {
   control: Control<ProfileFormData>;
@@ -27,6 +29,8 @@ const ProfileContentRight = ({
   setValue,
   disabled = false
 }: ProfileContentRightProps) => {
+  const watchedAddresses = useWatch({ control, name: 'addresses' }) || []
+
   return (
     <div className='lg:col-span-2'>
       <Card
@@ -61,7 +65,9 @@ const ProfileContentRight = ({
         // }
       >
         <div className='space-y-6'>
-          {fields.map((field, index) => (
+          {fields.map((field, index) => {
+            const address = watchedAddresses[index] || field
+            return (
             <div
               key={index}
               className='relative p-6 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all duration-300'
@@ -136,47 +142,52 @@ const ProfileContentRight = ({
                   />
                 </div>
 
-                <div className='grid grid-cols-3 gap-2 md:col-span-2'>
+                <div className='md:col-span-2'>
+                  <LocationSelectGroup
+                    provinceCode={address?.provinceCode}
+                    districtCode={address?.districtCode}
+                    wardCode={address?.wardCode}
+                    disabled={disabled}
+                    onChange={(changes) => {
+                      if ('province' in changes) {
+                        setValue(`addresses.${index}.city`, changes.province || '')
+                      }
+                      if ('district' in changes) {
+                        setValue(`addresses.${index}.district`, changes.district || '')
+                      }
+                      if ('ward' in changes) {
+                        setValue(`addresses.${index}.ward`, changes.ward || '')
+                      }
+                      if ('provinceCode' in changes) {
+                        setValue(`addresses.${index}.provinceCode`, changes.provinceCode)
+                      }
+                      if ('districtCode' in changes) {
+                        setValue(`addresses.${index}.districtCode`, changes.districtCode)
+                      }
+                      if ('wardCode' in changes) {
+                        setValue(`addresses.${index}.wardCode`, changes.wardCode)
+                      }
+                    }}
+                  />
                   <FieldCustom.Controlled
-                    name={`addresses.${index}.city`}
+                    name={`addresses.${index}.provinceCode`}
                     control={control}
-                    render={({ value, onChange, error }) => (
-                      <FieldCustom.Input
-                        placeholder='Tỉnh/Thành phố'
-                        value={value as string}
-                        onChange={onChange}
-                        error={error}
-                        disabled={disabled}
-                        className='mb-0'
-                      />
+                    render={({ value, onChange }) => (
+                      <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
                     )}
                   />
                   <FieldCustom.Controlled
-                    name={`addresses.${index}.district`}
+                    name={`addresses.${index}.districtCode`}
                     control={control}
-                    render={({ value, onChange, error }) => (
-                      <FieldCustom.Input
-                        placeholder='Quận/Huyện'
-                        value={value as string}
-                        onChange={onChange}
-                        error={error}
-                        disabled={disabled}
-                        className='mb-0'
-                      />
+                    render={({ value, onChange }) => (
+                      <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
                     )}
                   />
                   <FieldCustom.Controlled
-                    name={`addresses.${index}.ward`}
+                    name={`addresses.${index}.wardCode`}
                     control={control}
-                    render={({ value, onChange, error }) => (
-                      <FieldCustom.Input
-                        placeholder='Phường/Xã'
-                        value={value as string}
-                        onChange={onChange}
-                        error={error}
-                        disabled={disabled}
-                        className='mb-0'
-                      />
+                    render={({ value, onChange }) => (
+                      <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
                     )}
                   />
                 </div>
@@ -211,7 +222,7 @@ const ProfileContentRight = ({
                 />
               </div>
             </div>
-          ))}
+          )})}
 
           {fields.length > 0 && (
             <ButtonCommon

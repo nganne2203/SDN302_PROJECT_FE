@@ -6,6 +6,7 @@ export { default as FilterCommon } from './FilterCommon'
 export { default as TableCommon } from './TableCommon'
 export { default as CardCommon } from './CardCommon'
 export { default as PaginationCommon } from './PaginationCommon'
+export { default as LocationSelectGroup } from './LocationSelectGroup'
 
 export {
   InputField,

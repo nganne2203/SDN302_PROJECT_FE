@@ -30,6 +30,9 @@ export interface VnpayCreateRequest {
     city: string
     district: string
     ward: string
+    provinceCode?: number
+    districtCode?: number
+    wardCode?: number
   }
   message?: string
   branchId: string

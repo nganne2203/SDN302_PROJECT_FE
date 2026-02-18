@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useDevice, type DeviceFormData, deviceValidationSchema } from '@/hooks/useDevice'
 import { toast } from '@/utils/toast'
+import { DEVICE_TYPES } from '@/features/device/deviceTypes'
 import type { Device, DeviceFilter } from '@/features/device/deviceTypes'
 import DeviceHeader from '@/components/device/DeviceHeader'
 import DeviceFilterComponent from '@/components/device/DeviceFilter'
@@ -39,7 +40,7 @@ const ManagementDevice = () => {
     reset
   } = useForm<DeviceFormData>({
     resolver: zodResolver(deviceValidationSchema),
-    defaultValues: { name: '', type: '', brand: '', model: '' }
+    defaultValues: { name: '', type: DEVICE_TYPES.SMARTPHONE, brand: '', model: '' }
   })
 
   useEffect(() => {
@@ -76,7 +77,7 @@ const ManagementDevice = () => {
       handleSetSelectedDevice(device)
       setIsEditMode(true)
     } else {
-      reset({ name: '', type: '', brand: '', model: '' })
+      reset({ name: '', type: DEVICE_TYPES.SMARTPHONE, brand: '', model: '' })
       setSelectedDeviceId(null)
       handleSetSelectedDevice(null)
       setIsEditMode(false)
@@ -86,7 +87,7 @@ const ManagementDevice = () => {
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    reset({ name: '', type: '', brand: '', model: '' })
+    reset({ name: '', type: DEVICE_TYPES.SMARTPHONE, brand: '', model: '' })
     setIsEditMode(false)
     setSelectedDeviceId(null)
     handleSetSelectedDevice(null)

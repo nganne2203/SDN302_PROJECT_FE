@@ -7,7 +7,8 @@ import {
   createDeviceThunk,
   updateDeviceThunk,
   deleteDeviceThunk,
-  updateDeviceStatusThunk
+  updateDeviceStatusThunk,
+  fetchAllDevicesThunk
 } from './deviceThunks'
 
 const initialState: DeviceState = {
@@ -156,6 +157,21 @@ const deviceSlice = createSlice({
         }
       })
       .addCase(updateDeviceStatusThunk.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+      })
+
+    builder
+      .addCase(fetchAllDevicesThunk.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(fetchAllDevicesThunk.fulfilled, (state, action: PayloadAction<Device[]>) => {
+        state.isLoading = false
+        state.devices = action.payload
+        state.cache = updateCacheMetadata()
+      })
+      .addCase(fetchAllDevicesThunk.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload as string
       })

@@ -1,6 +1,7 @@
-import { ModalCommon, ButtonCommon, InputField, ControlledField } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, SelectField, ControlledField } from '@/components/common'
 import type { Control } from 'react-hook-form'
 import type { DeviceFormData } from '@/hooks/useDevice'
+import { DEVICE_TYPES } from '@/features/device/deviceTypes'
 
 interface DeviceModalProps {
   isOpen: boolean
@@ -19,6 +20,11 @@ const DeviceModalComponent = ({
   onClose,
   onSubmit
 }: DeviceModalProps) => {
+  const deviceTypeOptions = [
+    { value: DEVICE_TYPES.SMARTPHONE, label: 'Smartphone' },
+    { value: DEVICE_TYPES.TABLET, label: 'Tablet' }
+  ]
+
   return (
     <ModalCommon
       isOpen={isOpen}
@@ -64,14 +70,16 @@ const DeviceModalComponent = ({
           name="type"
           control={control}
           render={({ value, onChange, onBlur, error }) => (
-            <InputField
+            <SelectField
               label="Loai"
-              placeholder="Nhap loai thiet bi..."
+              placeholder="Chon loai thiet bi..."
               required
-              value={(value as string) || ''}
-              onChange={(e) => onChange(e.target.value)}
+              value={(value as string) || undefined}
+              options={deviceTypeOptions}
+              onChange={(val) => onChange(val)}
               onBlur={onBlur}
               error={error}
+              allowClear
             />
           )}
         />
