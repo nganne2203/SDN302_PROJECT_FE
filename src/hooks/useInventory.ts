@@ -91,24 +91,15 @@ export const useInventory = () => {
   )
 
   useEffect(() => {
-    let isMounted = true
     if (!isAdmin) return
+    fetchBranches().catch(() => undefined)
+  }, [fetchBranches, isAdmin])
 
-    fetchBranches()
-      .then(() => {
-        if (!isMounted) return
-        if (!selectedBranchId && branches.length > 0) {
-          setSelectedBranchId(branches[0]._id)
-        }
-      })
-      .catch(() => {
-        if (!isMounted) return
-      })
-
-    return () => {
-      isMounted = false
+  useEffect(() => {
+    if (isAdmin && !selectedBranchId && branches.length > 0) {
+      setSelectedBranchId(branches[0]._id)
     }
-  }, [branches, fetchBranches, isAdmin, selectedBranchId])
+  }, [isAdmin, branches, selectedBranchId])
 
   const fetchBranchInventory = useCallback(
     async (force = false) => {
@@ -165,7 +156,7 @@ export const useInventory = () => {
         setBranchLoading(false)
       }
     },
-    [branchPagination, branchQuery, branchView, getCached, selectedBranchId, setCached]
+    [branchPagination.current, branchPagination.pageSize, branchQuery, branchView, getCached, selectedBranchId, setCached]
   )
 
   const fetchMainInventory = useCallback(
@@ -205,7 +196,7 @@ export const useInventory = () => {
         setMainLoading(false)
       }
     },
-    [getCached, isAdmin, mainPagination, mainQuery, setCached]
+    [getCached, isAdmin, mainPagination.current, mainPagination.pageSize, mainQuery, setCached]
   )
 
   useEffect(() => {

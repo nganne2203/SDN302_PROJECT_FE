@@ -97,7 +97,7 @@ const ManagementLayout = () => {
           </div>
         </Header>
 
-        <Content className='m-4 p-6 bg-white rounded-lg min-h-[calc(100vh-96px)]'>
+        <Content className='m-4 p-6 bg-white rounded-lg flex-1 overflow-y-auto max-h-[calc(100vh-88px)]'>
           <Outlet />
         </Content>
       </Layout>

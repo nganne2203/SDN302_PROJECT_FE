@@ -35,8 +35,7 @@ const useManagerOrders = (initialFilter: ManagerOrdersFilter = { limit: 5, sortB
     activeRef.current = true
     fetchOrders(filter)
     return () => { activeRef.current = false }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filter)])
+  }, [filter, fetchOrders])
 
   const handleFilterChange = useCallback((changes: Partial<ManagerOrdersFilter>) => {
     setFilter(prev => ({ ...prev, ...changes }))

@@ -183,7 +183,7 @@ const BranchInventoryPanel = ({
               title="SKU hoat dong"
               value={branchInventory.length}
               prefix={<CheckCircleOutlined className="text-success" />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -193,7 +193,7 @@ const BranchInventoryPanel = ({
               title="San pham toi uu"
               value={branchStats.optimal}
               prefix={<CheckCircleOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -203,7 +203,7 @@ const BranchInventoryPanel = ({
               title="Sap het"
               value={branchStats.lowStock}
               prefix={<AlertOutlined className="text-red-600" />}
-              valueStyle={{ color: '#cf1322' }}
+              styles={{ content: { color: '#cf1322' } }}
             />
           </Card>
         </Col>
@@ -213,7 +213,7 @@ const BranchInventoryPanel = ({
               title="Het hang"
               value={branchStats.outOfStock}
               prefix={<ShoppingOutlined className="text-gray-500" />}
-              valueStyle={{ color: '#595959' }}
+              styles={{ content: { color: '#595959' } }}
             />
           </Card>
         </Col>

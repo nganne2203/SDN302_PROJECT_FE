@@ -181,7 +181,7 @@ const ManagerDashboard = () => {
               title="Tổng đơn hàng"
               value={totalOrders}
               prefix={<ShoppingCartOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -192,7 +192,7 @@ const ManagerDashboard = () => {
               title="Đơn chờ xử lý"
               value={orders.filter(o => (o as unknown as { status: string }).status === 'pending').length}
               prefix={<ClockCircleOutlined className="text-yellow-600" />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>
@@ -203,7 +203,7 @@ const ManagerDashboard = () => {
               title="Sản phẩm sắp hết"
               value={lowStockItems.length}
               prefix={<AlertOutlined className="text-red-600" />}
-              valueStyle={{ color: '#cf1322' }}
+              styles={{ content: { color: '#cf1322' } }}
             />
             <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
           </Card>
@@ -215,7 +215,7 @@ const ManagerDashboard = () => {
               title="Yêu cầu nhập kho"
               value={pendingStockCount}
               prefix={<TruckOutlined className="text-orange-600" />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' } }}
             />
             <p className="text-xs text-orange-500 mt-2">Chờ duyệt từ Admin</p>
           </Card>
@@ -230,7 +230,7 @@ const ManagerDashboard = () => {
               title="Đơn đã giao"
               value={orders.filter(o => (o as unknown as { status: string }).status === 'delivered').length}
               prefix={<CheckCircleOutlined className="text-green-600" />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -241,7 +241,7 @@ const ManagerDashboard = () => {
               title="Đơn đang giao"
               value={orders.filter(o => (o as unknown as { status: string }).status === 'shipped').length}
               prefix={<TruckOutlined className="text-cyan-600" />}
-              valueStyle={{ color: '#08979c' }}
+              styles={{ content: { color: '#08979c' } }}
             />
           </Card>
         </Col>
@@ -252,7 +252,7 @@ const ManagerDashboard = () => {
               title="Đơn đã hủy"
               value={orders.filter(o => (o as unknown as { status: string }).status === 'canceled').length}
               prefix={<StopOutlined className="text-red-400" />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -263,7 +263,7 @@ const ManagerDashboard = () => {
               title="Đơn đã xác nhận"
               value={orders.filter(o => (o as unknown as { status: string }).status === 'confirmed').length}
               prefix={<DollarOutlined className="text-purple-600" />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' } }}
             />
           </Card>
         </Col>

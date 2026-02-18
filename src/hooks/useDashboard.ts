@@ -27,14 +27,13 @@ export const useDashboard = (initialPeriod: DashboardPeriod = 'this_month') => {
         setLoading(false)
       }
     }
-  }, [filter])
+  }, [])
 
   useEffect(() => {
     activeRef.current = true
     fetchDashboard(filter)
     return () => { activeRef.current = false }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filter)])
+  }, [filter, fetchDashboard])
 
   const handleFilterChange = useCallback((newFilter: Partial<DashboardFilter>) => {
     setFilter(prev => ({ ...prev, ...newFilter }))

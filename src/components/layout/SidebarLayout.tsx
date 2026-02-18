@@ -48,7 +48,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Chi nhánh', ROUTES.MANAGEMENT.BRANCHES, <BankOutlined />),
       getItem('Kho tổng', ROUTES.MANAGEMENT.INVENTORY_TOTAL, <InboxOutlined />),
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
-      getItem('Bang gia', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
+      getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Danh mục', ROUTES.MANAGEMENT.CATEGORIES, <TagOutlined />),
       getItem('Thiết bị', ROUTES.MANAGEMENT.DEVICES, <MobileOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
@@ -66,9 +66,10 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       ...commonItems,
       getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
-      getItem('Bang gia', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
+      getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
       getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
+      getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />)
     ]
 
@@ -95,10 +96,13 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
 
   const menuItems = useMemo(() => getMenuItemsByRole(userRole), [userRole])
 
-  const [openKeys, setOpenKeys] = useState<string[]>(['users-group', 'settings'])
+  const [openKeys, setOpenKeys] = useState<string[]>(['users-group'])
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    navigate(e.key)
+    // Only navigate if the key is a valid route (starts with '/')
+    if (typeof e.key === 'string' && e.key.startsWith('/')) {
+      navigate(e.key)
+    }
   }
 
   const handleOpenChange = (keys: string[]) => {

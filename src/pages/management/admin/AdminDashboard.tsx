@@ -152,7 +152,7 @@ const AdminDashboard = () => {
                 title="Tổng doanh thu"
                 value={overview?.totalRevenue ?? 0}
                 prefix={<DollarOutlined className="text-green-600" />}
-                valueStyle={{ color: '#52c41a' }}
+                styles={{ content: { color: '#52c41a' } }}
                 formatter={(v) => formatCurrency(Number(v))}
               />
 
@@ -165,7 +165,7 @@ const AdminDashboard = () => {
                 title="Tổng đơn hàng"
                 value={overview?.totalOrders ?? 0}
                 prefix={<ShoppingCartOutlined className="text-blue-600" />}
-                valueStyle={{ color: '#1890ff' }}
+                styles={{ content: { color: '#1890ff' } }}
               />
 
             </Card>
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
                 title="Sản phẩm đã bán"
                 value={overview?.totalProductsSold ?? products?.totalSold ?? 0}
                 prefix={<ShoppingOutlined className="text-orange-600" />}
-                valueStyle={{ color: '#fa8c16' }}
+                styles={{ content: { color: '#fa8c16' } }}
               />
               <p className="text-xs text-orange-600 mt-2">
                 {products?.totalActive ?? 0} sản phẩm đang bán
@@ -191,7 +191,7 @@ const AdminDashboard = () => {
                 title="Khách hàng mới"
                 value={customers?.newCustomers ?? 0}
                 prefix={<UserOutlined className="text-purple-600" />}
-                valueStyle={{ color: '#722ed1' }}
+                styles={{ content: { color: '#722ed1' } }}
               />
 
             </Card>
@@ -206,7 +206,7 @@ const AdminDashboard = () => {
                 title="Đơn chờ xác nhận"
                 value={orders?.pending ?? 0}
                 prefix={<ClockCircleOutlined className="text-yellow-600" />}
-                valueStyle={{ color: '#faad14' }}
+                styles={{ content: { color: '#faad14' } }}
               />
             </Card>
           </Col>
@@ -217,7 +217,7 @@ const AdminDashboard = () => {
                 title="Đơn đã giao"
                 value={orders?.delivered ?? 0}
                 prefix={<CheckCircleOutlined className="text-green-600" />}
-                valueStyle={{ color: '#52c41a' }}
+                styles={{ content: { color: '#52c41a' } }}
               />
             </Card>
           </Col>
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
                 title="Sản phẩm sắp hết"
                 value={products?.lowStock ?? 0}
                 prefix={<AlertOutlined className="text-red-600" />}
-                valueStyle={{ color: '#cf1322' }}
+                styles={{ content: { color: '#cf1322' } }}
               />
               <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
             </Card>
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
                 title="Tỷ lệ hoàn thành"
                 value={performance?.completionRate ?? 0}
                 prefix={<PercentageOutlined className="text-green-600" />}
-                valueStyle={{ color: '#3f8600' }}
+                styles={{ content: { color: '#3f8600' } }}
                 suffix="%"
                 precision={1}
               />
@@ -256,7 +256,7 @@ const AdminDashboard = () => {
                 title="Đã xác nhận"
                 value={orders?.confirmed ?? 0}
                 prefix={<FileTextOutlined className="text-blue-500" />}
-                valueStyle={{ color: '#096dd9' }}
+                styles={{ content: { color: '#096dd9' } }}
               />
             </Card>
           </Col>
@@ -267,7 +267,7 @@ const AdminDashboard = () => {
                 title="Đang giao"
                 value={orders?.shipped ?? 0}
                 prefix={<TruckOutlined className="text-cyan-600" />}
-                valueStyle={{ color: '#08979c' }}
+                styles={{ content: { color: '#08979c' } }}
               />
             </Card>
           </Col>
@@ -278,7 +278,7 @@ const AdminDashboard = () => {
                 title="Đã hủy"
                 value={orders?.canceled ?? 0}
                 prefix={<StopOutlined className="text-red-400" />}
-                valueStyle={{ color: '#ff4d4f' }}
+                styles={{ content: { color: '#ff4d4f' } }}
               />
             </Card>
           </Col>
@@ -289,7 +289,7 @@ const AdminDashboard = () => {
                 title="Doanh thu TB / đơn"
                 value={overview?.averageOrderValue ?? 0}
                 prefix={<DollarOutlined className="text-teal-600" />}
-                valueStyle={{ color: '#13c2c2' }}
+                styles={{ content: { color: '#13c2c2' } }}
                 formatter={(v) => formatCurrency(Number(v))}
               />
             </Card>

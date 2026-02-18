@@ -9,7 +9,7 @@ export interface PaymentRecord {
   userId: string
   amount: number
   method: string
-  status: 'pending' | 'completed' | 'failed' | 'cancelled' | 'refunded'
+  status: 'pending' | 'success' | 'failed' | 'refunded' | 'canceled'
   transactionId?: string
   providerData?: Record<string, unknown>
   createdAt: string
@@ -17,15 +17,24 @@ export interface PaymentRecord {
 }
 
 export interface BankInfo {
-  bankCode: string
-  bankName: string
-  logoUrl?: string
+  code: string
+  name: string
+  logo?: string
 }
 
 export interface VnpayCreateRequest {
-  orderId: string
-  returnUrl?: string
+  shippingAddress: {
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+  }
+  message?: string
+  branchId: string
   bankCode?: string
+  locale?: 'vn' | 'en'
 }
 
 export interface PaymentFilter {
@@ -56,8 +65,20 @@ export const paymentApi = {
   },
 
   // Create VNPay payment URL
-  createVnpayPayment: async (data: VnpayCreateRequest): Promise<ApiResponse<{ paymentUrl: string }>> => {
-    const response = await apiClient.post<ApiResponse<{ paymentUrl: string }>>(
+  createVnpayPayment: async (data: VnpayCreateRequest): Promise<ApiResponse<{
+    paymentUrl: string
+    orderId: string
+    orderNumber: string
+    transactionId: string
+    amount: number
+  }>> => {
+    const response = await apiClient.post<ApiResponse<{
+      paymentUrl: string
+      orderId: string
+      orderNumber: string
+      transactionId: string
+      amount: number
+    }>>(
       API_ENDPOINTS.PAYMENT.VNPAY_CREATE,
       data
     )

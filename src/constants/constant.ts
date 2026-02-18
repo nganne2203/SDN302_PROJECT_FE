@@ -108,7 +108,9 @@ export const API_ENDPOINTS = {
     CUSTOMERS: '/api/v1/statistics/customers',
     PAYMENTS: '/api/v1/statistics/payments',
     INVENTORY: '/api/v1/statistics/inventory',
-    COMPARISON: '/api/v1/statistics/comparison'
+    COMPARISON: '/api/v1/statistics/comparison',
+    RECENT_ORDERS: '/api/v1/statistics/recent-orders',
+    ORDER_STATUS_SUMMARY: '/api/v1/statistics/order-status-summary'
   },
   CART: {
     LIST: '/api/v1/carts',
@@ -232,6 +234,7 @@ export const ROUTES = {
   PRODUCT_DETAIL: '/products/:id',
   CART: '/cart',
   CHECKOUT: '/checkout',
+  PAYMENT_RESULT: '/payment-result',
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',

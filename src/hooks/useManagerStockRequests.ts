@@ -39,8 +39,7 @@ const useManagerStockRequests = (
     activeRef.current = true
     fetchRequests(branchId, filter)
     return () => { activeRef.current = false }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchId, JSON.stringify(filter)])
+  }, [branchId, filter, fetchRequests])
 
   const handleFilterChange = useCallback((changes: Partial<ManagerStockRequestsFilter>) => {
     setFilter(prev => ({ ...prev, ...changes }))
