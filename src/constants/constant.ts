@@ -104,6 +104,7 @@ export const API_ENDPOINTS = {
     ORDERS: '/api/v1/statistics/orders',
     PRODUCTS: '/api/v1/statistics/products',
     BRANCHES: '/api/v1/statistics/branches',
+    BRANCH_PERFORMANCE: '/api/v1/statistics/branches/performance',
     CUSTOMERS: '/api/v1/statistics/customers',
     PAYMENTS: '/api/v1/statistics/payments',
     INVENTORY: '/api/v1/statistics/inventory',
