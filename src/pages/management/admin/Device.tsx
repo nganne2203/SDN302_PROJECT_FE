@@ -1,42 +1,46 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useCategory, type CategoryFormData } from '@/hooks/useCategory'
+import { useDevice, type DeviceFormData } from '@/hooks/useDevice'
 import { toast } from '@/utils/toast'
-import type { Category, CategoryFilter } from '@/features/category/categoryTypes'
-import CategoryHeader from '../../../components/category/CategoryHeader'
-import CategoryFilterComponent from '../../../components/category/CategoryFilter'
-import CategoryListComponent from '../../../components/category/CategoryList'
-import CategoryModalComponent from '../../../components/category/CategoryModal'
+import type { Device, DeviceFilter } from '@/features/device/deviceTypes'
+import DeviceHeader from '@/components/device/DeviceHeader'
+import DeviceFilterComponent from '@/components/device/DeviceFilter'
+import DeviceListComponent from '@/components/device/DeviceList'
+import DeviceModalComponent from '@/components/device/DeviceModal'
 
-const ManagementCategory = () => {
+const ManagementDevice = () => {
   const {
-    categories,
+    devices,
     pagination,
     filter,
     isLoading,
     error,
-    fetchCategories,
+    fetchDevices,
     handleSetFilter,
     handleClearFilter,
-    handleSetSelectedCategory,
+    handleSetSelectedDevice,
     handleClearError,
-    createCategory,
-    updateCategory,
-    deleteCategory,
-    updateCategoryStatus,
-    validateCategoryForm
-  } = useCategory()
+    createDevice,
+    updateDevice,
+    deleteDevice,
+    updateDeviceStatus,
+    validateDeviceForm
+  } = useDevice()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<CategoryFormData>({ name: '', description: '' })
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
+  const [formData, setFormData] = useState<DeviceFormData>({
+    name: '',
+    type: '',
+    brand: '',
+    model: ''
+  })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const lastFetchParamsRef = useRef<string>('')
 
-  // Fetch categories on mount and when filter changes
   useEffect(() => {
-    const filterParams: CategoryFilter = {
+    const filterParams: DeviceFilter = {
       page: (filter.page as number) || 1,
       limit: (filter.limit as number) || 10,
       search: (filter.search as string) || undefined,
@@ -45,47 +49,47 @@ const ManagementCategory = () => {
     }
     const paramsKey = JSON.stringify(filterParams)
 
-    // Avoid duplicate fetches (e.g., React Strict Mode double-invoking effects in dev)
     if (lastFetchParamsRef.current === paramsKey) return
 
     lastFetchParamsRef.current = paramsKey
-    fetchCategories(filterParams)
-  }, [filter, fetchCategories])
+    fetchDevices(filterParams)
+  }, [filter, fetchDevices])
 
-  // Clear error when modal closes
   useEffect(() => {
     if (!isModalOpen && error) {
       handleClearError()
     }
   }, [isModalOpen, error, handleClearError])
 
-  const handleOpenModal = useCallback((category?: Category) => {
-    if (category) {
+  const handleOpenModal = useCallback((device?: Device) => {
+    if (device) {
       setFormData({
-        name: category.name,
-        description: category.description || ''
+        name: device.name,
+        type: device.type,
+        brand: device.brand,
+        model: device.model
       })
-      setSelectedCategoryId(category._id)
-      handleSetSelectedCategory(category)
+      setSelectedDeviceId(device._id)
+      handleSetSelectedDevice(device)
       setIsEditMode(true)
     } else {
-      setFormData({ name: '', description: '' })
-      setSelectedCategoryId(null)
-      handleSetSelectedCategory(null)
+      setFormData({ name: '', type: '', brand: '', model: '' })
+      setSelectedDeviceId(null)
+      handleSetSelectedDevice(null)
       setIsEditMode(false)
     }
     setFormErrors({})
     setIsModalOpen(true)
-  }, [handleSetSelectedCategory])
+  }, [handleSetSelectedDevice])
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    setFormData({ name: '', description: '' })
+    setFormData({ name: '', type: '', brand: '', model: '' })
     setFormErrors({})
     setIsEditMode(false)
-    setSelectedCategoryId(null)
-    handleSetSelectedCategory(null)
-  }, [handleSetSelectedCategory])
+    setSelectedDeviceId(null)
+    handleSetSelectedDevice(null)
+  }, [handleSetSelectedDevice])
 
   const handleFormChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({
@@ -102,7 +106,7 @@ const ManagementCategory = () => {
   }, [formErrors])
 
   const handleSubmit = useCallback(async () => {
-    const validation = validateCategoryForm(formData)
+    const validation = validateDeviceForm(formData)
     if (!validation.valid) {
       setFormErrors(validation.errors)
       return
@@ -111,20 +115,24 @@ const ManagementCategory = () => {
     setIsSubmitting(true)
     try {
       let result
-      if (isEditMode && selectedCategoryId) {
-        result = await updateCategory(selectedCategoryId, {
+      if (isEditMode && selectedDeviceId) {
+        result = await updateDevice(selectedDeviceId, {
           name: formData.name,
-          description: formData.description || undefined
+          type: formData.type,
+          brand: formData.brand,
+          model: formData.model
         })
       } else {
-        result = await createCategory({
+        result = await createDevice({
           name: formData.name,
-          description: formData.description || undefined
+          type: formData.type,
+          brand: formData.brand,
+          model: formData.model
         })
       }
 
       if (result.type.includes('fulfilled')) {
-        toast.success(isEditMode ? 'Cập nhật danh mục thành công' : 'Tạo danh mục thành công')
+        toast.success(isEditMode ? 'Cap nhat thiet bi thanh cong' : 'Tao thiet bi thanh cong')
         handleCloseModal()
       } else if (result.payload) {
         toast.error(result.payload as string)
@@ -132,30 +140,31 @@ const ManagementCategory = () => {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, selectedCategoryId, validateCategoryForm, updateCategory, createCategory, handleCloseModal])
+  }, [formData, isEditMode, selectedDeviceId, validateDeviceForm, updateDevice, createDevice, handleCloseModal])
 
   const handleDelete = useCallback(async (id: string) => {
-    const result = await deleteCategory(id)
+    const result = await deleteDevice(id)
     if (result.type.includes('fulfilled')) {
-      toast.success('Xóa danh mục thành công')
+      toast.success('Xoa thiet bi thanh cong')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }
-  }, [deleteCategory])
+  }, [deleteDevice])
 
   const handleUpdateStatus = useCallback(async (id: string, isActive: boolean) => {
-    const result = await updateCategoryStatus(id, isActive)
+    const result = await updateDeviceStatus(id, isActive)
     if (result.type.includes('fulfilled')) {
-      toast.success('Cập nhật trạng thái danh mục thành công')
+      toast.success('Cap nhat trang thai thiet bi thanh cong')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }
-  }, [updateCategoryStatus])
-  return (
-    <div className='p-2'>
-      <CategoryHeader onAddClick={() => handleOpenModal()} />
+  }, [updateDeviceStatus])
 
-      <CategoryFilterComponent
+  return (
+    <div className="p-2">
+      <DeviceHeader onAddClick={() => handleOpenModal()} />
+
+      <DeviceFilterComponent
         searchValue={(filter.search as string) || ''}
         onSearchChange={(value) => handleSetFilter({ search: value, page: 1 })}
         filter={filter}
@@ -164,8 +173,8 @@ const ManagementCategory = () => {
         onReset={handleClearFilter}
       />
 
-      <CategoryListComponent
-        categories={categories}
+      <DeviceListComponent
+        devices={devices}
         isLoading={isLoading}
         pagination={{
           page: (filter.page as number) || 1,
@@ -178,7 +187,7 @@ const ManagementCategory = () => {
         onPageChange={(page, pageSize) => handleSetFilter({ page, limit: pageSize })}
       />
 
-      <CategoryModalComponent
+      <DeviceModalComponent
         isOpen={isModalOpen}
         isEditMode={isEditMode}
         formData={formData}
@@ -192,4 +201,4 @@ const ManagementCategory = () => {
   )
 }
 
-export default ManagementCategory
+export default ManagementDevice

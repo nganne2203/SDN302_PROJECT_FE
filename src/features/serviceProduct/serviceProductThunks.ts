@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { serviceProductApi } from '@/apis/serviceProduct'
-import type { PaginatedResponse, ApiError } from '@/types/api'
-import type { AxiosError } from 'axios'
+import { extractApiError } from '@/utils/apiError'
+import type { PaginatedResponse } from '@/types/api'
 import type { ServiceProduct, ServiceProductFilter, CreateServiceProductRequest, UpdateServiceProductRequest } from './serviceProductTypes'
 
 export const fetchServicesThunk = createAsyncThunk<
@@ -12,10 +12,7 @@ export const fetchServicesThunk = createAsyncThunk<
     const response = await serviceProductApi.getServices(filter)
     return response
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể tải danh sách dịch vụ'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể tải danh sách dịch vụ'))
   }
 })
 
@@ -27,10 +24,7 @@ export const createServiceThunk = createAsyncThunk<
     const response = await serviceProductApi.createService(data)
     return response.data
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể tạo dịch vụ'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể tạo dịch vụ'))
   }
 })
 
@@ -42,10 +36,7 @@ export const getServiceByIdThunk = createAsyncThunk<
     const response = await serviceProductApi.getServiceById(id)
     return response.data
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể tải thông tin dịch vụ'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể tải thông tin dịch vụ'))
   }
 })
 
@@ -57,10 +48,7 @@ export const updateServiceThunk = createAsyncThunk<
     const response = await serviceProductApi.updateService(id, data)
     return response.data
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể cập nhật dịch vụ'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể cập nhật dịch vụ'))
   }
 })
 
@@ -72,10 +60,7 @@ export const deleteServiceThunk = createAsyncThunk<
     await serviceProductApi.deleteService(id)
     return id
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể xóa dịch vụ'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể xóa dịch vụ'))
   }
 })
 
@@ -87,9 +72,6 @@ export const updateServiceStatusThunk = createAsyncThunk<
     const response = await serviceProductApi.updateServiceStatus(id, isActive)
     return response.data
   } catch (error) {
-    const axiosError = error as AxiosError<ApiError>
-    return rejectWithValue(
-      axiosError.response?.data?.message || 'Không thể cập nhật trạng thái'
-    )
+    return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái'))
   }
 })

@@ -217,12 +217,6 @@ const ManagementUser = () => {
     <div className="p-2">
       <UserHeader onCreateUser={handleCreateUser} />
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
-
       <UserFilterComponent
         searchValue={(filter.search as string) || ''}
         onSearchChange={handleSearchChange}

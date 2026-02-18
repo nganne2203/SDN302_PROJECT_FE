@@ -7,7 +7,6 @@ import {
   PercentageOutlined,
   ArrowUpOutlined,
   TeamOutlined,
-  GiftOutlined,
   TruckOutlined,
   AlertOutlined,
   ClockCircleOutlined
@@ -381,16 +380,6 @@ const ManagerDashboard = () => {
               icon={<FileTextOutlined />}
             >
               Báo cáo
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="dashed"
-              block
-              onClick={() => navigate('/management/promotions')}
-              icon={<GiftOutlined />}
-            >
-              Khuyến mãi
             </Button>
           </Col>
           <Col xs={24} sm={12} lg={6}>

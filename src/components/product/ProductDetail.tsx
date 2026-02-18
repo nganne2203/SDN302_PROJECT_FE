@@ -3,6 +3,7 @@ import { ButtonCommon, LoaderCommon } from '@/components/common'
 import type { Branch, Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
 interface ProductDetailProps {
   product: Product
@@ -23,6 +24,8 @@ interface ProductDetailProps {
   // eslint-disable-next-line no-unused-vars
   onQuantityChange: (nextQuantity: number) => void
   selectedServices: ServiceProduct[]
+  pricingData?: PricingCalculation | null
+  isPricingLoading?: boolean
   // eslint-disable-next-line no-unused-vars
   onAddToCart?: (productId: string, quantity: number, serviceIds: string[]) => void
   // eslint-disable-next-line no-unused-vars
@@ -45,6 +48,8 @@ const ProductDetail = ({
   quantity,
   onQuantityChange,
   selectedServices,
+  pricingData,
+  isPricingLoading = false,
   onAddToCart,
   onBuyNow
 }: ProductDetailProps) => {
@@ -61,7 +66,14 @@ const ProductDetail = ({
   const ratingAvg = product.ratingAvg || 0
   const ratingCount = product.ratingCount || 0
   const serviceTotal = selectedServices.reduce((sum, svc) => sum + (svc.price || 0), 0)
-  const totalPrice = (product.price + serviceTotal) * quantity
+  const pricingInfo = pricingData?.pricing
+  const unitPrice = pricingInfo?.pricePerUnit ?? product.price
+  const originalUnitPrice = pricingInfo?.originalTotal && quantity > 0
+    ? pricingInfo.originalTotal / quantity
+    : product.price
+  const discountPercent = pricingInfo?.discountPercentage ?? 0
+  const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
+  const totalPrice = productTotal + serviceTotal * quantity
   const maxQuantity = branchStock && branchStock > 0 ? branchStock : 99
   const selectedBranch = branches.find((branch) => branch._id === selectedBranchId)
 
@@ -180,16 +192,23 @@ const ProductDetail = ({
             <div className="py-4 border-y border-gray-200 space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-4xl font-bold text-blue-600">
-                  {formatCurrency(product.price)}
+                  {formatCurrency(unitPrice)}
                 </span>
-                <span className="text-sm text-gray-400 line-through">
-                  {formatCurrency(Math.round(product.price * 1.2))}
-                </span>
-                <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                  -20%
-                </span>
+                {discountPercent > 0 && originalUnitPrice > unitPrice && (
+                  <>
+                    <span className="text-sm text-gray-400 line-through">
+                      {formatCurrency(Math.round(originalUnitPrice))}
+                    </span>
+                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                      -{discountPercent}%
+                    </span>
+                  </>
+                )}
               </div>
               <p className="text-xs text-gray-500">Đã bao gồm VAT</p>
+              {isPricingLoading && (
+                <p className="text-xs text-gray-500">Dang tinh bang gia so luong...</p>
+              )}
             </div>
 
             <p className="text-gray-600 leading-relaxed">
@@ -331,8 +350,14 @@ const ProductDetail = ({
             <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Giá sản phẩm:</span>
-                <span>{formatCurrency(product.price)}</span>
+                <span>{formatCurrency(productTotal)}</span>
               </div>
+              {discountPercent > 0 && pricingInfo && (
+                <div className="flex justify-between text-xs text-green-600">
+                  <span>Tiet kiem:</span>
+                  <span>{formatCurrency(pricingInfo.savings)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Dịch vụ bổ sung:</span>
                 <span>{formatCurrency(serviceTotal)}</span>

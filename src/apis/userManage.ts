@@ -19,6 +19,14 @@ export const userManageApi = {
     return response.data
   },
 
+  getStaff: async (filter?: UserManageFilter): Promise<PaginatedResponse<User>> => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      API_ENDPOINTS.USER.GET_STAFF,
+      { params: filter }
+    )
+    return response.data
+  },
+
   createUser: async (data: CreateUserRequest): Promise<ApiResponse<User>> => {
     const response = await apiClient.post<ApiResponse<User>>(
       API_ENDPOINTS.USER.CREATE_USER,

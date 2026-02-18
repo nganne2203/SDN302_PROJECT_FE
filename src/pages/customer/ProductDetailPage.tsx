@@ -5,12 +5,14 @@ import { useBranch } from '@/hooks/useBranch'
 import ProductDetail from '@/components/product/ProductDetail'
 import { ButtonCommon } from '@/components/common'
 import cartApi from '@/apis/cart'
+import pricingApi from '@/apis/pricing'
 import { toast } from '@/utils/toast'
 import { API_ENDPOINTS, ROUTES } from '@/constants/constant'
 import apiClient from '@/services/apiClient'
 import type { Branch } from '@/types/api'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 import { serviceProductApi } from '@/apis/serviceProduct'
+import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -30,6 +32,8 @@ const ProductDetailPage = () => {
   const [isServiceLoading, setIsServiceLoading] = useState(false)
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
   const [quantity, setQuantity] = useState(1)
+  const [pricingData, setPricingData] = useState<PricingCalculation | null>(null)
+  const [isPricingLoading, setIsPricingLoading] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -72,6 +76,15 @@ const ProductDetailPage = () => {
       .catch(() => setBranchStock(null))
       .finally(() => setIsStockLoading(false))
   }, [id, selectedBranchId])
+
+  useEffect(() => {
+    if (!id) return
+    setIsPricingLoading(true)
+    pricingApi.calculatePrice(id, quantity)
+      .then((res) => setPricingData(res.data))
+      .catch(() => setPricingData(null))
+      .finally(() => setIsPricingLoading(false))
+  }, [id, quantity])
 
   useEffect(() => {
     if (branchStock && quantity > branchStock) {
@@ -163,6 +176,8 @@ const ProductDetailPage = () => {
             isServiceLoading={isServiceLoading}
             quantity={quantity}
             onQuantityChange={setQuantity}
+            pricingData={pricingData}
+            isPricingLoading={isPricingLoading}
             onAddToCart={handleAddToCart}
             onBuyNow={handleBuyNow}
             selectedServices={selectedServices}

@@ -36,6 +36,7 @@ const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
 const ManagementInventory = lazy(() => import('@/pages/management/Inventory'))
 const ManagementStockRequests = lazy(() => import('@/pages/management/StockRequest'))
+const ManagementPricing = lazy(() => import('@/pages/management/Pricing'))
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
   () => import('@/pages/management/admin/Branch')
@@ -43,7 +44,11 @@ const BranchesManagement = lazy(
 const CategoryManagement = lazy(
   () => import('@/pages/management/admin/Category')
 )
+const DeviceManagement = lazy(
+  () => import('@/pages/management/admin/Device')
+)
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
+const StaffManagement = lazy(() => import('@/pages/management/admin/Staff'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
 const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 
@@ -239,6 +244,10 @@ export const routes: RouteObject[] = [
         element: withSuspense(ProductManagement)
       },
       {
+        path: 'pricings',
+        element: withSuspense(ManagementPricing)
+      },
+      {
         path: ROUTES.MANAGEMENT.SERVICES,
         element: withSuspense(ServiceProductManagement)
       },
@@ -263,8 +272,16 @@ export const routes: RouteObject[] = [
         element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>
       },
       {
+        path: 'devices',
+        element: <AdminRoute>{withSuspense(DeviceManagement)}</AdminRoute>
+      },
+      {
         path: 'users',
         element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>
+      },
+      {
+        path: 'staff',
+        element: <AdminRoute>{withSuspense(StaffManagement)}</AdminRoute>
       },
       {
         path: 'branches',

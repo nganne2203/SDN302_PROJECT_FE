@@ -152,23 +152,17 @@ const ManagementServiceProduct = () => {
   return (
     <div className='p-4 max-w-[1600px] mx-auto'>
       <ServiceProductHeader onCreate={handleCreate} />
-      
-      {error && (
-        <div className='mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700'>
-          {error}
-        </div>
-      )}
 
       <div className='mb-6 bg-white p-4 rounded-lg border border-gray-100 shadow-sm'>
         <ServiceProductFilter 
           filter={filter} 
           onFilterChange={handleFilterChange} 
-          onReset={handleResetFilter} 
+          onReset={handleResetFilter}
         />
       </div>
-      
+
       <div className='bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden'>
-        <ServiceProductList 
+        <ServiceProductList
           data={services}
           loading={listLoading}
           pagination={{
