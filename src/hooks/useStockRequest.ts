@@ -96,6 +96,7 @@ export const useStockRequest = () => {
         setLoading(false)
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [getCached, isAdmin, isManager, pagination.current, pagination.pageSize, query, setCached, statusFilter, user?.branch]
   )
 

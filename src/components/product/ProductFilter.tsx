@@ -58,14 +58,14 @@ const ProductFilterComponent = ({
         <SelectField
           label="Danh mục"
           value={filter.categoryId || ''}
-          onChange={(e) => handleChange('categoryId', e.target.value)}
+          onChange={(value) => handleChange('categoryId', value as string)}
           options={categoryOptions}
         />
 
         <SelectField
           label="Trạng thái"
           value={filter.isActive !== undefined ? String(filter.isActive) : ''}
-          onChange={(e) => handleChange('isActive', e.target.value ? e.target.value === 'true' : undefined)}
+          onChange={(value) => handleChange('isActive', value ? (value as string) === 'true' : undefined)}
           options={statusOptions}
         />
 
@@ -87,14 +87,14 @@ const ProductFilterComponent = ({
         <SelectField
           label="Sắp xếp theo"
           value={filter.sortBy || ''}
-          onChange={(e) => handleChange('sortBy', e.target.value)}
+          onChange={(value) => handleChange('sortBy', value as string)}
           options={sortByOptions}
         />
 
         <SelectField
           label="Thứ tự"
           value={filter.sortOrder || 'desc'}
-          onChange={(e) => handleChange('sortOrder', e.target.value)}
+          onChange={(value) => handleChange('sortOrder', value as string)}
           options={sortOrderOptions}
         />
       </div>

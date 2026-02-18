@@ -15,7 +15,7 @@ const StockRequestStats = ({ pendingCount, approvedCount }: StockRequestStatsPro
             title="Cho duyet"
             value={pendingCount}
             prefix={<ClockCircleOutlined className="text-warning" />}
-            valueStyle={{ color: '#faad14' }}
+            styles={{ content: { color: '#faad14' } }}
           />
         </Card>
       </Col>
@@ -25,7 +25,7 @@ const StockRequestStats = ({ pendingCount, approvedCount }: StockRequestStatsPro
             title="Da duyet"
             value={approvedCount}
             prefix={<CheckCircleOutlined className="text-success" />}
-            valueStyle={{ color: '#52c41a' }}
+            styles={{ content: { color: '#52c41a' } }}
           />
         </Card>
       </Col>

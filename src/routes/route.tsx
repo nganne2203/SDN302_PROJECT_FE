@@ -25,7 +25,11 @@ const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
-const OrderHistory = lazy(() => import('@/pages/customer/OrderHistory'))
+const Checkout = lazy(() => import('@/pages/customer/Checkout'))
+const PaymentResult = lazy(() => import('@/pages/customer/PaymentResult'))
+const OrderHistory = lazy(() =>
+  import('@/pages/customer/OrderHistory') as Promise<{ default: ComponentType }>
+)
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -36,6 +40,10 @@ const ManagementDashboard = lazy(() => import('@/pages/management/Dashboard'))
 const ManagementOrders = lazy(() => import('@/pages/management/Order'))
 const ManagementInventory = lazy(() => import('@/pages/management/Inventory'))
 const ManagementStockRequests = lazy(() => import('@/pages/management/StockRequest'))
+const ManagementPricing = lazy(() => import('@/pages/management/Pricing'))
+const ManagementReports = lazy(() =>
+  import('@/pages/management/Reports') as Promise<{ default: ComponentType }>
+)
 const LoaderCommon = lazy(() => import('@/components/common/LoaderCommon'))
 const BranchesManagement = lazy(
   () => import('@/pages/management/admin/Branch')
@@ -43,9 +51,15 @@ const BranchesManagement = lazy(
 const CategoryManagement = lazy(
   () => import('@/pages/management/admin/Category')
 )
+const DeviceManagement = lazy(
+  () => import('@/pages/management/admin/Device')
+)
 const UsersManagement = lazy(() => import('@/pages/management/admin/User'))
+const StaffManagement = lazy(() => import('@/pages/management/admin/Staff'))
 const ProductManagement = lazy(() => import('@/pages/management/ProductManagement'))
 const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
+const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
+const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
 
 /* eslint-disable no-console */
 const LoadingFallback = () => (
@@ -147,6 +161,22 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>
 }
 
+/**
+ * Admin + Manager Route Wrapper
+ */
+const AdminManagerRoute = ({ children }: { children: ReactNode }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to={ROUTES.LOGIN} replace />
+  }
+
+  const user = getCurrentUser()
+  if (!user || (user.role !== USER_ROLES.ADMIN && user.role !== USER_ROLES.MANAGER)) {
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
+  }
+
+  return <>{children}</>
+}
+
 // Route configuration
 export const routes: RouteObject[] = [
   // ========================
@@ -167,6 +197,18 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.PRODUCT_DETAIL,
     element: withCustomerLayout(ProductDetailPage)
+  },
+  {
+    path: ROUTES.CHECKOUT,
+    element: (
+      <ProtectedRoute>
+        {withCustomerLayout(Checkout)}
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: ROUTES.PAYMENT_RESULT,
+    element: withCustomerLayout(PaymentResult)
   },
   {
     path: ROUTES.ORDERS,
@@ -239,8 +281,12 @@ export const routes: RouteObject[] = [
         element: withSuspense(ProductManagement)
       },
       {
+        path: 'pricings',
+        element: <AdminManagerRoute>{withSuspense(ManagementPricing)}</AdminManagerRoute>
+      },
+      {
         path: ROUTES.MANAGEMENT.SERVICES,
-        element: withSuspense(ServiceProductManagement)
+        element: <AdminManagerRoute>{withSuspense(ServiceProductManagement)}</AdminManagerRoute>
       },
       {
         path: 'orders',
@@ -256,19 +302,39 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'stock-requests',
-        element: withSuspense(ManagementStockRequests)
+        element: <AdminManagerRoute>{withSuspense(ManagementStockRequests)}</AdminManagerRoute>
+      },
+      {
+        path: 'reports',
+        element: <AdminRoute>{withSuspense(ManagementReports)}</AdminRoute>
       },
       {
         path: 'categories',
         element: <AdminRoute>{withSuspense(CategoryManagement)}</AdminRoute>
       },
       {
+        path: 'devices',
+        element: <AdminRoute>{withSuspense(DeviceManagement)}</AdminRoute>
+      },
+      {
         path: 'users',
         element: <AdminRoute>{withSuspense(UsersManagement)}</AdminRoute>
       },
       {
+        path: 'staff',
+        element: <AdminRoute>{withSuspense(StaffManagement)}</AdminRoute>
+      },
+      {
         path: 'branches',
-        element: withSuspense(BranchesManagement)
+        element: <AdminRoute>{withSuspense(BranchesManagement)}</AdminRoute>
+      },
+      {
+        path: 'manager-users',
+        element: <AdminManagerRoute>{withSuspense(ManagerUsersManagement)}</AdminManagerRoute>
+      },
+      {
+        path: 'staff-customers',
+        element: <ManagementRoute>{withSuspense(StaffCustomerManagement)}</ManagementRoute>
       }
     ]
   },

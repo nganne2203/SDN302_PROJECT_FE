@@ -247,12 +247,6 @@ const BranchesManagement = () => {
     <div className="p-2">
       <BranchHeader onAddClick={() => handleOpenModal()} canManage={canManage} />
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
-
       <BranchFilterComponent
         searchValue={(filter.search as string) || ''}
         onSearchChange={handleSearchChange}

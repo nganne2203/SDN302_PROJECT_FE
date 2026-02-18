@@ -8,13 +8,13 @@ import useServiceProduct from '@/hooks/useServiceProduct'
 import type { ServiceProduct, ServiceProductFilter as FilterType, CreateServiceProductRequest, UpdateServiceProductRequest } from '@/features/serviceProduct/serviceProductTypes'
 
 const ManagementServiceProduct = () => {
-  const { 
-    services, 
+  const {
+    services,
     listLoading,
     actionLoading,
-    pagination, 
-    filter, 
-    fetchServices, 
+    pagination,
+    filter,
+    fetchServices,
     createService,
     updateService,
     deleteService,
@@ -107,7 +107,6 @@ const ManagementServiceProduct = () => {
       toast.success('Tạo dịch vụ thành công')
       handleModalClose()
     } catch (error) {
-      console.error(error)
       const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi tạo dịch vụ'
       toast.error(typeof error === 'string' ? error : errorMessage)
     }
@@ -121,7 +120,6 @@ const ManagementServiceProduct = () => {
       toast.success('Cập nhật dịch vụ thành công')
       handleModalClose()
     } catch (error) {
-      console.error(error)
       const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi cập nhật dịch vụ'
       toast.error(typeof error === 'string' ? error : errorMessage)
     }
@@ -133,8 +131,8 @@ const ManagementServiceProduct = () => {
         await deleteService(item._id)
         toast.success('Xóa dịch vụ thành công')
       } catch (error) {
-         const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi xóa dịch vụ'
-         toast.error(typeof error === 'string' ? error : errorMessage)
+        const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi xóa dịch vụ'
+        toast.error(typeof error === 'string' ? error : errorMessage)
       }
     }
   }, [deleteService])
@@ -152,23 +150,17 @@ const ManagementServiceProduct = () => {
   return (
     <div className='p-4 max-w-[1600px] mx-auto'>
       <ServiceProductHeader onCreate={handleCreate} />
-      
-      {error && (
-        <div className='mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700'>
-          {error}
-        </div>
-      )}
 
       <div className='mb-6 bg-white p-4 rounded-lg border border-gray-100 shadow-sm'>
-        <ServiceProductFilter 
-          filter={filter} 
-          onFilterChange={handleFilterChange} 
-          onReset={handleResetFilter} 
+        <ServiceProductFilter
+          filter={filter}
+          onFilterChange={handleFilterChange}
+          onReset={handleResetFilter}
         />
       </div>
-      
+
       <div className='bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden'>
-        <ServiceProductList 
+        <ServiceProductList
           data={services}
           loading={listLoading}
           pagination={{

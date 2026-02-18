@@ -49,46 +49,41 @@ const ProductManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <ProductHeader onCreateClick={openCreateModal} />
+    <div className="p-2">
+      {/* Header */}
+      <ProductHeader onCreateClick={openCreateModal} />
 
-        {/* Filters */}
-        <ProductFilter
-          filter={filter}
-          categories={categories}
-          onFilterChange={updateFilter}
-          onClearFilter={resetFilter}
-        />
+      {/* Filters */}
+      <ProductFilter
+        filter={filter}
+        categories={categories}
+        onFilterChange={updateFilter}
+        onClearFilter={resetFilter}
+      />
 
-        {/* Product List */}
-        <div className="mt-6">
-          <ProductList
-            products={products}
-            pagination={pagination}
-            isLoading={isLoading}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
-            onToggleStatus={handleToggleStatus}
-            onPageChange={handlePageChange}
-          />
-        </div>
+      <ProductList
+        products={products}
+        pagination={pagination}
+        isLoading={isLoading}
+        onEdit={openEditModal}
+        onDelete={handleDelete}
+        onToggleStatus={handleToggleStatus}
+        onPageChange={handlePageChange}
+      />
 
-        {/* Product Modal */}
-        <ProductModal
-          isOpen={isModalOpen}
-          isEditMode={isEditMode}
-          formData={formData}
-          formErrors={formErrors}
-          isSubmitting={isSubmitting}
-          isUploadingImages={isUploadingImages}
-          categories={categories}
-          onClose={closeModal}
-          onFormChange={handleFormChange}
-          onSubmit={handleSubmit}
-        />
-      </div>
+      {/* Product Modal */}
+      <ProductModal
+        isOpen={isModalOpen}
+        isEditMode={isEditMode}
+        formData={formData}
+        formErrors={formErrors}
+        isSubmitting={isSubmitting}
+        isUploadingImages={isUploadingImages}
+        categories={categories}
+        onClose={closeModal}
+        onFormChange={handleFormChange}
+        onSubmit={handleSubmit}
+      />
     </div>
   )
 }

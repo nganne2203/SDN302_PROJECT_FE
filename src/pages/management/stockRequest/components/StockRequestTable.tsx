@@ -1,17 +1,18 @@
-import { Card, Table, Tag, Space, Button } from 'antd'
+import { Card, Table, Tag, Space, Button, Tooltip } from 'antd'
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import type { TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { StockRequestRecord, StockRequestStatus } from '@/types/api'
 
+/* eslint-disable no-unused-vars */
 interface StockRequestTableProps {
   data: StockRequestRecord[]
   loading: boolean
   pagination: TablePaginationConfig
-  onPaginationChange: (pagination: TablePaginationConfig) => void
+  onPaginationChange: (_pagination: TablePaginationConfig) => void
   isAdmin: boolean
-  onApprove: (record: StockRequestRecord) => void
-  onReject: (record: StockRequestRecord) => void
+  onApprove: (_record: StockRequestRecord) => void
+  onReject: (_record: StockRequestRecord) => void
 }
 
 const StockRequestTable = ({
@@ -101,22 +102,22 @@ const StockRequestTable = ({
             <Space size="small">
               {record.status === 'pending' && (
                 <>
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<CheckOutlined />}
-                    onClick={() => onApprove(record)}
-                  >
-                    Duyet
-                  </Button>
-                  <Button
-                    danger
-                    size="small"
-                    icon={<CloseOutlined />}
-                    onClick={() => onReject(record)}
-                  >
-                    Tu choi
-                  </Button>
+                  <Tooltip title="Duyệt">
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<CheckOutlined />}
+                      onClick={() => onApprove(record)}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Từ chối">
+                    <Button
+                      danger
+                      size="small"
+                      icon={<CloseOutlined />}
+                      onClick={() => onReject(record)}
+                    />
+                  </Tooltip>
                 </>
               )}
             </Space>

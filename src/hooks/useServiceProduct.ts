@@ -14,24 +14,24 @@ import {
   setSelectedService,
   clearError
 } from '@/features/serviceProduct/serviceProductSlice'
-import type { 
-  ServiceProduct, 
-  ServiceProductFilter, 
-  CreateServiceProductRequest, 
+import type {
+  ServiceProduct,
+  ServiceProductFilter,
+  CreateServiceProductRequest,
   UpdateServiceProductRequest
 } from '@/features/serviceProduct/serviceProductTypes'
 
 export const useServiceProduct = () => {
   const dispatch = useAppDispatch()
-  const { 
-    services, 
-    pagination, 
-    listLoading, 
-    actionLoading, 
-    filter, 
-    error, 
-    selectedService 
-  } = useAppSelector((state: any) => state.serviceProduct) 
+  const {
+    services,
+    pagination,
+    listLoading,
+    actionLoading,
+    filter,
+    error,
+    selectedService
+  } = useAppSelector((state) => state.serviceProduct)
 
   const fetchServices = useCallback((filterData?: ServiceProductFilter) => {
     const newFilter = { ...filter, ...filterData }
@@ -59,8 +59,8 @@ export const useServiceProduct = () => {
   const updateService = useCallback(async (id: string, data: UpdateServiceProductRequest) => {
     const result = await dispatch(updateServiceThunk({ id, data }))
     if (updateServiceThunk.fulfilled.match(result)) {
-        dispatch(fetchServicesThunk(filter))
-        return result.payload
+      dispatch(fetchServicesThunk(filter))
+      return result.payload
     }
     throw result.payload
   }, [dispatch, filter])
@@ -68,7 +68,7 @@ export const useServiceProduct = () => {
   const updateServiceStatus = useCallback(async (id: string, isActive: boolean) => {
     const result = await dispatch(updateServiceStatusThunk({ id, isActive }))
     if (updateServiceStatusThunk.fulfilled.match(result)) {
-       return result.payload
+      return result.payload
     }
     throw result.payload
   }, [dispatch])
@@ -82,12 +82,12 @@ export const useServiceProduct = () => {
     throw result.payload
   }, [dispatch, filter])
 
-  const handleSetFilter = useCallback((newFilter: ServiceProductFilter | ((prev: ServiceProductFilter) => ServiceProductFilter)) => {
+  const handleSetFilter = useCallback((newFilter: ServiceProductFilter | ((_prev: ServiceProductFilter) => ServiceProductFilter)) => {
     if (typeof newFilter === 'function') {
-        const updatedFilter = newFilter(filter)
-        dispatch(setFilter(updatedFilter))
+      const updatedFilter = newFilter(filter)
+      dispatch(setFilter(updatedFilter))
     } else {
-        dispatch(setFilter(newFilter))
+      dispatch(setFilter(newFilter))
     }
   }, [dispatch, filter])
 

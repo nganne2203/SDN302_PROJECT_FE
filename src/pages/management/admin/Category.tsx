@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useCategory, type CategoryFormData } from '@/hooks/useCategory'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useCategory, type CategoryFormData, categoryValidationSchema } from '@/hooks/useCategory'
 import { toast } from '@/utils/toast'
 import type { Category, CategoryFilter } from '@/features/category/categoryTypes'
 import CategoryHeader from '../../../components/category/CategoryHeader'
@@ -22,17 +24,23 @@ const ManagementCategory = () => {
     createCategory,
     updateCategory,
     deleteCategory,
-    updateCategoryStatus,
-    validateCategoryForm
+    updateCategoryStatus
   } = useCategory()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<CategoryFormData>({ name: '', description: '' })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const lastFetchParamsRef = useRef<string>('')
+
+  const {
+    control,
+    handleSubmit,
+    reset
+  } = useForm<CategoryFormData>({
+    resolver: zodResolver(categoryValidationSchema),
+    defaultValues: { name: '', description: '' }
+  })
 
   // Fetch categories on mount and when filter changes
   useEffect(() => {
@@ -61,7 +69,7 @@ const ManagementCategory = () => {
 
   const handleOpenModal = useCallback((category?: Category) => {
     if (category) {
-      setFormData({
+      reset({
         name: category.name,
         description: category.description || ''
       })
@@ -69,57 +77,35 @@ const ManagementCategory = () => {
       handleSetSelectedCategory(category)
       setIsEditMode(true)
     } else {
-      setFormData({ name: '', description: '' })
+      reset({ name: '', description: '' })
       setSelectedCategoryId(null)
       handleSetSelectedCategory(null)
       setIsEditMode(false)
     }
-    setFormErrors({})
     setIsModalOpen(true)
-  }, [handleSetSelectedCategory])
+  }, [handleSetSelectedCategory, reset])
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    setFormData({ name: '', description: '' })
-    setFormErrors({})
+    reset({ name: '', description: '' })
     setIsEditMode(false)
     setSelectedCategoryId(null)
     handleSetSelectedCategory(null)
-  }, [handleSetSelectedCategory])
+  }, [handleSetSelectedCategory, reset])
 
-  const handleFormChange = useCallback((field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-    if (formErrors[field]) {
-      setFormErrors(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
-  }, [formErrors])
-
-  const handleSubmit = useCallback(async () => {
-    const validation = validateCategoryForm(formData)
-    if (!validation.valid) {
-      setFormErrors(validation.errors)
-      return
-    }
-
+  const handleSubmitForm = useCallback(async (values: CategoryFormData) => {
     setIsSubmitting(true)
     try {
       let result
       if (isEditMode && selectedCategoryId) {
         result = await updateCategory(selectedCategoryId, {
-          name: formData.name,
-          description: formData.description || undefined
+          name: values.name,
+          description: values.description || undefined
         })
       } else {
         result = await createCategory({
-          name: formData.name,
-          description: formData.description || undefined
+          name: values.name,
+          description: values.description || undefined
         })
       }
 
@@ -132,7 +118,7 @@ const ManagementCategory = () => {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, selectedCategoryId, validateCategoryForm, updateCategory, createCategory, handleCloseModal])
+  }, [isEditMode, selectedCategoryId, updateCategory, createCategory, handleCloseModal])
 
   const handleDelete = useCallback(async (id: string) => {
     const result = await deleteCategory(id)
@@ -154,12 +140,6 @@ const ManagementCategory = () => {
   return (
     <div className='p-2'>
       <CategoryHeader onAddClick={() => handleOpenModal()} />
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
 
       <CategoryFilterComponent
         searchValue={(filter.search as string) || ''}
@@ -187,12 +167,10 @@ const ManagementCategory = () => {
       <CategoryModalComponent
         isOpen={isModalOpen}
         isEditMode={isEditMode}
-        formData={formData}
-        formErrors={formErrors}
         isSubmitting={isSubmitting}
+        control={control}
         onClose={handleCloseModal}
-        onFormChange={handleFormChange}
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(handleSubmitForm)}
       />
     </div>
   )

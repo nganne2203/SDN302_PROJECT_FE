@@ -1,4 +1,4 @@
-import type { PaginationMeta, Product } from '@/types/api';
+import type { PaginationMeta, Product } from '@/types/api'
 
 export interface ServiceProductState {
   services: ServiceProduct[];

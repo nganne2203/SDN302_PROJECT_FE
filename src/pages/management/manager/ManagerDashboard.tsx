@@ -1,169 +1,154 @@
-import { Card, Row, Col, Statistic, Table, Button, Tag, Progress, Space, Alert } from 'antd'
+import { Card, Row, Col, Statistic, Table, Button, Tag, Progress, Space, Alert, Spin } from 'antd'
 import {
   ShoppingCartOutlined,
   DollarOutlined,
   ShoppingOutlined,
   FileTextOutlined,
   PercentageOutlined,
-  ArrowUpOutlined,
   TeamOutlined,
-  GiftOutlined,
   TruckOutlined,
   AlertOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
+  ReloadOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '@/hooks/useAuth'
+import useManagerOrders from '@/hooks/useManagerOrders'
+import useManagerStockRequests from '@/hooks/useManagerStockRequests'
+import useManagerLowStock from '@/hooks/useManagerLowStock'
+import type { StockRequestRecord, StoreInventoryRecord } from '@/types/api'
+import { ROUTES } from '@/constants/constant'
+import dayjs from 'dayjs'
+
+const ORDER_STATUS_COLOR: Record<string, string> = {
+  pending: 'warning',
+  confirmed: 'processing',
+  shipped: 'blue',
+  delivered: 'success',
+  canceled: 'error'
+}
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  pending: 'Chờ xử lý',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đang vận chuyển',
+  delivered: 'Đã giao',
+  canceled: 'Đã hủy'
+}
+const STOCK_STATUS_COLOR: Record<string, string> = {
+  pending: 'warning',
+  approved: 'success',
+  rejected: 'error'
+}
+const STOCK_STATUS_LABEL: Record<string, string> = {
+  pending: 'Chờ duyệt',
+  approved: 'Đã duyệt',
+  rejected: 'Từ chối'
+}
+const formatCurrency = (v: number) => v.toLocaleString('vi-VN') + ' ₫'
 
 const ManagerDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const branchId = user?.branch ?? null
 
-  // Branch information (mock - would come from context/Redux)
-  const branchInfo = {
-    id: '1',
-    name: 'Chi nhánh Hà Nội',
-    location: 'Quận Ba Đình',
-    totalInventory: 450,
-    lowStockCount: 5
-  }
+  const {
+    data: ordersData,
+    loading: ordersLoading,
+    error: ordersError
+  } = useManagerOrders({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
 
-  const recentOrders = [
-    {
-      key: '1',
-      orderNumber: 'ORD-001',
-      customer: 'Nguyễn Văn A',
-      total: 2500000,
-      status: 'pending',
-      date: '2024-01-30',
-      shipStatus: 'Chờ xác nhận'
-    },
-    {
-      key: '2',
-      orderNumber: 'ORD-002',
-      customer: 'Trần Thị B',
-      total: 1800000,
-      status: 'completed',
-      date: '2024-01-29',
-      shipStatus: 'Đã giao'
-    },
-    {
-      key: '3',
-      orderNumber: 'ORD-003',
-      customer: 'Lê Minh C',
-      total: 3200000,
-      status: 'processing',
-      date: '2024-01-28',
-      shipStatus: 'Đang vận chuyển'
-    }
-  ]
+  const {
+    data: stockRequestsData,
+    loading: stockRequestsLoading,
+    error: stockRequestsError
+  } = useManagerStockRequests(branchId, { limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
 
-  // Stock requests awaiting approval (FE-10)
-  const pendingStockRequests = [
-    {
-      key: '1',
-      requestId: 'REQ-001',
-      productName: 'iPhone 15 Pro',
-      quantity: 50,
-      status: 'pending',
-      requestDate: '2024-01-30'
-    },
-    {
-      key: '2',
-      requestId: 'REQ-002',
-      productName: 'Samsung Galaxy S24',
-      quantity: 30,
-      status: 'pending',
-      requestDate: '2024-01-29'
-    }
-  ]
+  const {
+    data: lowStockData,
+    loading: lowStockLoading,
+    refresh: refreshLowStock
+  } = useManagerLowStock(branchId, 5)
 
-  // Low stock items
-  const lowStockItems = [
-    { id: '1', name: 'iPhone 15 Pro', current: 5, minimum: 20 },
-    { id: '2', name: 'Samsung Galaxy A15', current: 8, minimum: 15 }
-  ]
+  const orders = ordersData?.data ?? []
+  const totalOrders = ordersData?.pagination?.totalItems ?? 0
+  const stockRequests = stockRequestsData?.data ?? []
+  const pendingStockCount = stockRequests.filter(r => r.status === 'pending').length
+  const lowStockItems = lowStockData?.data ?? []
 
   const orderColumns = [
     {
       title: 'Mã đơn hàng',
       dataIndex: 'orderNumber',
-      key: 'orderNumber'
+      key: 'orderNumber',
+      render: (v: string) => <span className="font-mono text-xs">{v}</span>
     },
     {
       title: 'Khách hàng',
-      dataIndex: 'customer',
-      key: 'customer'
+      key: 'customer',
+      render: (_: unknown, record: Record<string, unknown>) => {
+        const customer = record.customer as { fullname?: string; email?: string } | undefined
+        return customer?.fullname ?? customer?.email ?? '—'
+      }
     },
     {
       title: 'Tổng tiền',
-      dataIndex: 'total',
-      key: 'total',
-      render: (value: number) => `${value.toLocaleString('vi-VN')} ₫`
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+      render: (v: number) => formatCurrency(v)
     },
     {
       title: 'Trạng thái đơn',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
-        const statusMap: Record<string, string> = {
-          pending: 'warning',
-          processing: 'processing',
-          completed: 'success',
-          canceled: 'error'
-        }
-        const labelMap: Record<string, string> = {
-          pending: 'Chờ xử lý',
-          processing: 'Đang xử lý',
-          completed: 'Hoàn thành',
-          canceled: 'Đã hủy'
-        }
-        return <Tag color={statusMap[status]}>{labelMap[status]}</Tag>
-      }
-    },
-    {
-      title: 'Trạng thái vận chuyển',
-      dataIndex: 'shipStatus',
-      key: 'shipStatus'
+      render: (status: string) => (
+        <Tag color={ORDER_STATUS_COLOR[status] ?? 'default'}>
+          {ORDER_STATUS_LABEL[status] ?? status}
+        </Tag>
+      )
     },
     {
       title: 'Ngày',
-      dataIndex: 'date',
-      key: 'date'
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (v: string) => dayjs(v).format('DD/MM/YYYY')
     }
   ]
 
   const stockRequestColumns = [
     {
       title: 'Mã yêu cầu',
-      dataIndex: 'requestId',
-      key: 'requestId'
+      dataIndex: '_id',
+      key: '_id',
+      render: (v: string) => <span className="font-mono text-xs">{v.slice(-8).toUpperCase()}</span>
     },
     {
       title: 'Sản phẩm',
-      dataIndex: 'productName',
-      key: 'productName'
+      key: 'product',
+      render: (_: unknown, record: StockRequestRecord) => record.product?.name ?? '—'
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       key: 'quantity',
-      render: (value: number) => `${value} cái`
+      render: (v: number) => `${v} cái`
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => (
-        <Tag color={status === 'pending' ? 'warning' : 'success'}>
-          {status === 'pending' ? 'Chờ duyệt' : 'Đã duyệt'}
+        <Tag color={STOCK_STATUS_COLOR[status] ?? 'default'}>
+          {STOCK_STATUS_LABEL[status] ?? status}
         </Tag>
       )
     },
     {
       title: 'Ngày yêu cầu',
-      dataIndex: 'requestDate',
-      key: 'requestDate'
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (v: string) => dayjs(v).format('DD/MM/YYYY')
     }
   ]
 
@@ -172,11 +157,11 @@ const ManagerDashboard = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Dashboard Quản Lý Chi Nhánh</h1>
         <p className="text-gray-500">
-          Xin chào, {user?.fullname}! Bạn đang quản lý: <strong>{branchInfo.name}</strong>
+          Xin chào, {user?.fullname}! Bạn đang quản lý: <strong>{user?.branch ? 'Chi nhánh' : '—'}</strong>
         </p>
       </div>
 
-      {/* Alert for low stock */}
+      {/* Low stock alert */}
       {lowStockItems.length > 0 && (
         <Alert
           message={`⚠️ Cảnh báo: ${lowStockItems.length} sản phẩm sắp hết hàng`}
@@ -193,68 +178,34 @@ const ManagerDashboard = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Doanh thu chi nhánh"
-              value={25800000}
-              prefix={<DollarOutlined className="text-green-600" />}
-              valueStyle={{ color: '#52c41a' }}
-              suffix="₫"
-            />
-            <p className="text-xs text-green-600 mt-2">
-              <ArrowUpOutlined /> 10% so với tháng trước
-            </p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn hàng chi nhánh"
-              value={156}
+              title="Tổng đơn hàng"
+              value={totalOrders}
               prefix={<ShoppingCartOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
-            <p className="text-xs text-blue-600 mt-2">
-              <ArrowUpOutlined /> 5% so với tháng trước
-            </p>
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Tồn kho chi nhánh"
-              value={450}
-              prefix={<ShoppingOutlined className="text-orange-600" />}
-              valueStyle={{ color: '#fa8c16' }}
-            />
-            <p className="text-xs text-orange-600 mt-2">
-              {lowStockItems.length} sản phẩm sắp hết
-            </p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Nhân viên"
-              value={12}
-              prefix={<TeamOutlined className="text-purple-600" />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Secondary Metrics */}
-      <Row gutter={[16, 16]} className="mt-6">
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn hàng chờ xử lý"
-              value={8}
+              title="Đơn chờ xử lý"
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'pending').length}
               prefix={<ClockCircleOutlined className="text-yellow-600" />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12} lg={6}>
+          <Card hoverable>
+            <Statistic
+              title="Sản phẩm sắp hết"
+              value={lowStockItems.length}
+              prefix={<AlertOutlined className="text-red-600" />}
+              styles={{ content: { color: '#cf1322' } }}
+            />
+            <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
           </Card>
         </Col>
 
@@ -262,21 +213,35 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Yêu cầu nhập kho"
-              value={pendingStockRequests.length}
-              prefix={<AlertOutlined className="text-red-600" />}
-              valueStyle={{ color: '#cf1322' }}
+              value={pendingStockCount}
+              prefix={<TruckOutlined className="text-orange-600" />}
+              styles={{ content: { color: '#fa8c16' } }}
             />
-            <p className="text-xs text-red-600 mt-2">Chờ duyệt từ Admin</p>
+            <p className="text-xs text-orange-500 mt-2">Chờ duyệt từ Admin</p>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Secondary Metrics */}
+      <Row gutter={[16, 16]} className="mt-4">
+        <Col xs={24} sm={12} lg={6}>
+          <Card hoverable>
+            <Statistic
+              title="Đơn đã giao"
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'delivered').length}
+              prefix={<CheckCircleOutlined className="text-green-600" />}
+              styles={{ content: { color: '#52c41a' } }}
+            />
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Sản phẩm bán chạy"
-              value={45}
-              prefix={<ShoppingOutlined className="text-cyan-600" />}
-              valueStyle={{ color: '#13c2c2' }}
+              title="Đơn đang giao"
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'shipped').length}
+              prefix={<TruckOutlined className="text-cyan-600" />}
+              styles={{ content: { color: '#08979c' } }}
             />
           </Card>
         </Col>
@@ -284,125 +249,121 @@ const ManagerDashboard = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Tỷ lệ hoàn thành"
-              value={96.8}
-              prefix={<PercentageOutlined className="text-green-600" />}
-              valueStyle={{ color: '#3f8600' }}
-              suffix="%"
+              title="Đơn đã hủy"
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'canceled').length}
+              prefix={<StopOutlined className="text-red-400" />}
+              styles={{ content: { color: '#ff4d4f' } }}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12} lg={6}>
+          <Card hoverable>
+            <Statistic
+              title="Đơn đã xác nhận"
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'confirmed').length}
+              prefix={<DollarOutlined className="text-purple-600" />}
+              styles={{ content: { color: '#722ed1' } }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Low Stock Items Alert */}
-      {lowStockItems.length > 0 && (
-        <Card className="mt-6" title="⚠️ Sản phẩm sắp hết hàng" type="inner">
-          <Space direction="vertical" style={{ width: '100%' }}>
-            {lowStockItems.map((item) => (
-              <div key={item.id} style={{ marginBottom: '16px' }}>
-                <div style={{ marginBottom: '8px' }}>
-                  <strong>{item.name}</strong>
-                  <span style={{ marginLeft: '12px', color: '#cf1322' }}>
-                    Hiện có: {item.current}/{item.minimum}
-                  </span>
-                </div>
-                <Progress
-                  percent={(item.current / item.minimum) * 100}
-                  strokeColor={item.current < item.minimum * 0.5 ? '#cf1322' : '#faad14'}
-                  size="small"
-                />
-              </div>
-            ))}
-            <Button type="primary" onClick={() => navigate('/management/stock-requests')}>
-              Tạo yêu cầu nhập kho
-            </Button>
-          </Space>
-        </Card>
-      )}
+      {/* Low Stock Items */}
+      <Card
+        className="mt-6"
+        title="⚠️ Sản phẩm sắp hết hàng"
+        extra={
+          <Button size="small" icon={<ReloadOutlined />} onClick={refreshLowStock} loading={lowStockLoading}>
+            Làm mới
+          </Button>
+        }
+      >
+        <Spin spinning={lowStockLoading}>
+          {lowStockItems.length === 0 ? (
+            <p className="text-gray-400 text-sm">Không có sản phẩm nào sắp hết hàng</p>
+          ) : (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {lowStockItems.map((item: StoreInventoryRecord) => {
+                const pct = item.minThreshold > 0
+                  ? Math.round((item.quantity / item.minThreshold) * 100)
+                  : 100
+                return (
+                  <div key={item._id} style={{ marginBottom: '12px' }}>
+                    <div style={{ marginBottom: '6px' }}>
+                      <strong>{item.product?.name ?? '—'}</strong>
+                      <span style={{ marginLeft: '12px', color: '#cf1322' }}>
+                        Hiện có: {item.quantity}/{item.minThreshold}
+                      </span>
+                    </div>
+                    <Progress
+                      percent={Math.min(pct, 100)}
+                      strokeColor={pct < 50 ? '#cf1322' : '#faad14'}
+                      size="small"
+                    />
+                  </div>
+                )
+              })}
+              <Button
+                type="primary"
+                onClick={() => navigate(ROUTES.MANAGEMENT.STOCK_REQUESTS)}
+              >
+                Tạo yêu cầu nhập kho
+              </Button>
+            </Space>
+          )}
+        </Spin>
+      </Card>
 
-      {/* Pending Stock Requests */}
-      <Card className="mt-6" title="📦 Yêu cầu nhập kho (FE-10)">
-        <Table
-          columns={stockRequestColumns}
-          dataSource={pendingStockRequests}
-          pagination={{ pageSize: 5 }}
-          size="small"
-        />
+      {/* Stock Requests */}
+      <Card className="mt-6" title="📦 Yêu cầu nhập kho">
+        {stockRequestsError && (
+          <Alert message={stockRequestsError} type="error" showIcon className="mb-3" />
+        )}
+        <Spin spinning={stockRequestsLoading}>
+          <Table<StockRequestRecord>
+            columns={stockRequestColumns}
+            dataSource={stockRequests.map(r => ({ ...r, key: r._id }))}
+            pagination={{ pageSize: 5, showSizeChanger: false }}
+            size="small"
+            locale={{ emptyText: stockRequestsLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
+          />
+        </Spin>
       </Card>
 
       {/* Recent Orders */}
       <Card className="mt-6" title="📋 Đơn hàng gần đây">
-        <Table
-          columns={orderColumns}
-          dataSource={recentOrders}
-          pagination={{ pageSize: 5 }}
-          size="small"
-        />
+        {ordersError && (
+          <Alert message={ordersError} type="error" showIcon className="mb-3" />
+        )}
+        <Spin spinning={ordersLoading}>
+          <Table
+            columns={orderColumns}
+            dataSource={orders.map((o, i) => ({ ...o, key: (o as unknown as { _id?: string })._id ?? i }))}
+            pagination={{ pageSize: 5, showSizeChanger: false }}
+            size="small"
+            locale={{ emptyText: ordersLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
+          />
+        </Spin>
       </Card>
 
       {/* Quick Actions */}
-      <Card className="mt-6" title="🚀 Quản lý nhanh">
+      <Card className="mt-6" title="Quản lý nhanh">
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="primary"
-              block
-              onClick={() => navigate('/management/orders')}
-              icon={<ShoppingCartOutlined />}
-            >
-              Đơn hàng
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-              onClick={() => navigate('/management/inventory')}
-              icon={<ShoppingOutlined />}
-            >
-              Tồn kho
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-              onClick={() => navigate('/management/stock-requests')}
-              icon={<TruckOutlined />}
-            >
-              Nhập kho
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-              onClick={() => navigate('/management/reports')}
-              icon={<FileTextOutlined />}
-            >
-              Báo cáo
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="dashed"
-              block
-              onClick={() => navigate('/management/promotions')}
-              icon={<GiftOutlined />}
-            >
-              Khuyến mãi
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="dashed"
-              block
-              onClick={() => navigate('/management/staff')}
-              icon={<TeamOutlined />}
-            >
-              Nhân viên
-            </Button>
-          </Col>
+          {[
+            { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
+            { label: 'Tồn kho', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <ShoppingOutlined /> },
+            { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> },
+            { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <FileTextOutlined /> },
+            { label: 'Nhân viên', path: ROUTES.MANAGEMENT.STAFF, icon: <TeamOutlined /> },
+            { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <PercentageOutlined /> }
+          ].map(({ label, path, icon }) => (
+            <Col xs={12} sm={8} lg={4} key={path}>
+              <Button block icon={icon} onClick={() => navigate(path)}>
+                {label}
+              </Button>
+            </Col>
+          ))}
         </Row>
       </Card>
     </div>

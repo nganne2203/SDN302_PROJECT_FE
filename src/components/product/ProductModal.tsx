@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ModalCommon,
   ButtonCommon,
@@ -8,6 +8,8 @@ import {
   NumberField
 } from '@/components/common'
 import type { ProductFormData } from '@/hooks/useProduct'
+import { useDevice } from '@/hooks/useDevice'
+import type { Device } from '@/features/device/deviceTypes'
 
 interface ProductModalProps {
   isOpen: boolean
@@ -36,6 +38,13 @@ const ProductModal = ({
   onSubmit
 }: ProductModalProps) => {
   const [previewImages, setPreviewImages] = useState<string[]>([])
+  const { devices, fetchAllDevices } = useDevice()
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAllDevices() // Fetch all devices using the /api/v1/devices/all endpoint
+    }
+  }, [isOpen, fetchAllDevices])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -63,10 +72,12 @@ const ProductModal = ({
     onFormChange('imageFiles', newFiles)
   }
 
-  const categoryOptions = [
-    { value: '', label: 'Chọn danh mục' },
-    ...categories.map(cat => ({ value: cat._id, label: cat.name }))
-  ]
+  const categoryOptions = categories.map(cat => ({ value: cat._id, label: cat.name }))
+
+  const deviceOptions = devices.map((device: Device) => ({
+    value: device._id,
+    label: `${device.name} - ${device.brand} ${device.model}`
+  }))
 
   return (
     <ModalCommon
@@ -119,11 +130,13 @@ const ProductModal = ({
         <div className="grid grid-cols-2 gap-4">
           <SelectField
             label="Danh mục"
+            placeholder="Chọn danh mục..."
             required
-            value={formData.categoryId}
-            onChange={(e) => onFormChange('categoryId', e.target.value)}
+            value={formData.categoryId || undefined}
+            onChange={(value) => onFormChange('categoryId', value as string)}
             options={categoryOptions}
             error={formErrors.categoryId}
+            getPopupContainer={(trigger) => trigger.parentElement || document.body}
           />
 
           <NumberField
@@ -146,24 +159,21 @@ const ProductModal = ({
         />
 
         {/* Compatibility */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Thiết bị tương thích
-          </label>
-          <input
-            type="text"
-            placeholder="Nhập ID thiết bị, cách nhau bởi dấu phẩy..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={formData.compatibility?.join(', ') || ''}
-            onChange={(e) => {
-              const values = e.target.value.split(',').map(v => v.trim()).filter(Boolean)
-              onFormChange('compatibility', values)
-            }}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Nhập các ID thiết bị, phân cách bằng dấu phẩy
-          </p>
-        </div>
+        <SelectField
+          label="Thiết bị tương thích"
+          placeholder="Chọn thiết bị tương thích..."
+          mode="multiple"
+          value={formData.compatibility || []}
+          onChange={(value) => onFormChange('compatibility', value)}
+          options={deviceOptions}
+          error={formErrors.compatibility}
+          helpText="Chọn các thiết bị tương thích với sản phẩm này"
+          showSearch
+          filterOption={(input, option) =>
+            String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          getPopupContainer={(trigger) => trigger.parentElement || document.body}
+        />
 
         {/* Image Upload */}
         <div>
@@ -176,24 +186,27 @@ const ProductModal = ({
             <div className="mb-3">
               <p className="text-xs text-gray-600 mb-2">Hình ảnh hiện tại:</p>
               <div className="grid grid-cols-4 gap-3">
-                {formData.images.map((image, index) => (
-                  <div key={`existing-${index}`} className="relative group">
-                    <img
-                      src={image}
-                      alt={`Product ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExistingImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                {formData.images.map((image, index) => {
+                  const imageUrl = typeof image === 'string' ? image : image.imageUrl
+                  return (
+                    <div key={`existing-${index}`} className="relative group">
+                      <img
+                        src={imageUrl}
+                        alt={`Product ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

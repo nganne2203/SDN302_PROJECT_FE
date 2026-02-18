@@ -1,5 +1,5 @@
-import { Button, Space, Popconfirm } from 'antd'
-import { Edit, Trash2 } from 'lucide-react'
+import { Button, Space, Popconfirm, Tooltip } from 'antd'
+import { Edit, Trash2, Power } from 'lucide-react'
 import { TableCommon, LoaderCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Category } from '@/features/category/categoryTypes'
@@ -99,21 +99,23 @@ const CategoryListComponent = ({
       width: 100,
       fixed: 'right',
       render: (_: unknown, record: CategoryWithKey) => (
-        <Space>
-          <Button
-            type="primary"
-            size="small"
-            icon={<Edit className="w-4 h-4" />}
-            onClick={() => onEdit(record as unknown as Category)}
-          >
-          </Button>
-          <Button
-            type="default"
-            size="small"
-            onClick={() => onUpdateStatus(record._id, !record.isActive)}
-          >
-            {record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
-          </Button>
+        <Space size="small">
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="primary"
+              size="small"
+              icon={<Edit className="w-4 h-4" />}
+              onClick={() => onEdit(record as unknown as Category)}
+            />
+          </Tooltip>
+          <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
+            <Button
+              size="small"
+              icon={<Power className="w-4 h-4" />}
+              style={{ color: record.isActive ? '#16a34a' : '#dc2626', borderColor: record.isActive ? '#16a34a' : '#dc2626' }}
+              onClick={() => onUpdateStatus(record._id, !record.isActive)}
+            />
+          </Tooltip>
           <Popconfirm
             title="Xác nhận xóa"
             description="Bạn có chắc chắn muốn xóa danh mục này?"
@@ -122,8 +124,9 @@ const CategoryListComponent = ({
             onConfirm={() => onDelete(record._id as string)}
             okButtonProps={{ danger: true }}
           >
-            <Button danger size="small" icon={<Trash2 className="w-4 h-4" />}>
-            </Button>
+            <Tooltip title="Xóa">
+              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       )

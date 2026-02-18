@@ -65,6 +65,9 @@ export interface RegisterRequest {
     city: string;
     district: string;
     ward: string;
+    provinceCode?: number;
+    districtCode?: number;
+    wardCode?: number;
     isDefault: boolean;
   }>;
   avatar?: string;
@@ -377,6 +380,9 @@ export interface ShippingAddress {
   province: string;
   district: string;
   ward: string;
+  provinceCode?: number;
+  districtCode?: number;
+  wardCode?: number;
   address: string;
 }
 
@@ -402,6 +408,9 @@ export interface CreateUserRequest {
     city: string;
     district: string;
     ward: string;
+    provinceCode?: number;
+    districtCode?: number;
+    wardCode?: number;
     isDefault: boolean;
   }>;
   avatar?: string;

@@ -19,6 +19,17 @@ axiosRetry(apiClient, {
   retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
+    const url = error.config?.url || ''
+    const isAuthEndpoint = url.includes(API_ENDPOINTS.AUTH.LOGIN)
+      || url.includes(API_ENDPOINTS.AUTH.REGISTER)
+      || url.includes(API_ENDPOINTS.AUTH.REFRESH_TOKEN)
+      || url.includes(API_ENDPOINTS.AUTH.VERIFY_OTP)
+      || url.includes(API_ENDPOINTS.AUTH.RESEND_OTP)
+      || url.includes(API_ENDPOINTS.AUTH.GOOGLE_LOGIN)
+      || url.includes(API_ENDPOINTS.AUTH.GOOGLE_CALLBACK)
+
+    if (isAuthEndpoint) return false
+
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
   }
 })
