@@ -129,10 +129,7 @@ export interface UploadedImage {
   createdAt?: string;
 }
 
-export interface UploadMultipleImagesResponse {
-  images: UploadedImage[];
-  publicIds: string[];
-}
+export type UploadMultipleImagesResponse = UploadedImage[]
 
 export interface VerifyOTPResponse {
   accessToken?: string;

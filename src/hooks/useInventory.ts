@@ -3,7 +3,7 @@ import type { TablePaginationConfig } from 'antd/es/table'
 import useAuth from '@/hooks/useAuth'
 import { USER_ROLES } from '@/constants/constant'
 import { branchApi } from '@/apis/branch'
-import storeInventoryApi, { type StoreInventoryQuery } from '@/apis/storeInventory'
+import storeInventoryApi, { type StoreInventoryQuery, type CreateStoreInventoryPayload } from '@/apis/storeInventory'
 import inventoryApi, { type InventoryQuery } from '@/apis/inventory'
 import type { Branch, InventoryRecord, StoreInventoryRecord } from '@/types/api'
 
@@ -249,6 +249,34 @@ export const useInventory = () => {
     [setCached]
   )
 
+  const createStoreInventory = useCallback(
+    async (data: CreateStoreInventoryPayload) => {
+      const response = await storeInventoryApi.createStoreInventory(data)
+      // Invalidate branch caches and refetch
+      cacheRef.current.forEach((_value, key) => {
+        if (key.startsWith(`branch:${data.branch}`)) {
+          cacheRef.current.delete(key)
+        }
+      })
+      await fetchBranchInventory(true)
+      return response.data
+    },
+    [fetchBranchInventory]
+  )
+
+  const deleteStoreInventory = useCallback(
+    async (inventoryId: string, branchId: string) => {
+      await storeInventoryApi.deleteStoreInventory(inventoryId)
+      setBranchInventory((prev) => prev.filter((item) => item._id !== inventoryId))
+      cacheRef.current.forEach((_value, key) => {
+        if (key.startsWith(`branch:${branchId}`)) {
+          cacheRef.current.delete(key)
+        }
+      })
+    },
+    []
+  )
+
   const updateMainInventory = useCallback(
     async (inventoryId: string, data: { quantity?: number; location?: string }) => {
       const response = await inventoryApi.updateInventory(inventoryId, data)
@@ -257,6 +285,37 @@ export const useInventory = () => {
         if (key.startsWith('main')) {
           const cached = value.data as { data: InventoryRecord[]; pagination: TablePaginationConfig }
           const updated = cached.data.map((item) => (item._id === response.data._id ? response.data : item))
+          setCached(key, { ...cached, data: updated })
+        }
+      })
+      return response.data
+    },
+    [setCached]
+  )
+
+  const createMainInventory = useCallback(
+    async (data: { product: string; quantity?: number; location?: string }) => {
+      const response = await inventoryApi.createInventory(data)
+      // Invalidate all main caches and refetch
+      cacheRef.current.forEach((_value, key) => {
+        if (key.startsWith('main')) {
+          cacheRef.current.delete(key)
+        }
+      })
+      await fetchMainInventory(true)
+      return response.data
+    },
+    [fetchMainInventory]
+  )
+
+  const adjustMainInventory = useCallback(
+    async (productId: string, quantity: number) => {
+      const response = await inventoryApi.adjustInventory(productId, quantity)
+      setMainInventory((prev) => prev.map((item) => (item.product?._id === productId ? response.data : item)))
+      cacheRef.current.forEach((value, key) => {
+        if (key.startsWith('main')) {
+          const cached = value.data as { data: InventoryRecord[]; pagination: TablePaginationConfig }
+          const updated = cached.data.map((item) => (item.product?._id === productId ? response.data : item))
           setCached(key, { ...cached, data: updated })
         }
       })
@@ -290,7 +349,11 @@ export const useInventory = () => {
     fetchBranchInventory,
     fetchMainInventory,
     updateThresholds,
-    updateMainInventory
+    createStoreInventory,
+    deleteStoreInventory,
+    updateMainInventory,
+    createMainInventory,
+    adjustMainInventory
   }
 }
 

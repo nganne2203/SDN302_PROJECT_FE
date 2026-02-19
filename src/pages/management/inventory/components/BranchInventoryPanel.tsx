@@ -1,5 +1,5 @@
-import { Card, Table, Tag, Row, Col, Statistic, Alert, Progress, Tooltip, Space, Tabs } from 'antd'
-import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined } from '@ant-design/icons'
+import { Card, Table, Tag, Row, Col, Statistic, Alert, Progress, Tooltip, Space, Tabs, Popconfirm } from 'antd'
+import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { Branch, StoreInventoryRecord } from '@/types/api'
@@ -11,6 +11,8 @@ import { Button } from 'antd'
 interface BranchInventoryPanelProps {
   isAdmin: boolean
   canEditThresholds: boolean
+  canCreate: boolean
+  canDelete: boolean
   branches: Branch[]
   selectedBranchId: string | null
   onBranchChange: (_branchId: string) => void
@@ -24,11 +26,15 @@ interface BranchInventoryPanelProps {
   pagination: TablePaginationConfig
   onPaginationChange: (_pagination: TablePaginationConfig) => void
   onEditThresholds: (_record: StoreInventoryRecord) => void
+  onCreate: () => void
+  onDelete: (_record: StoreInventoryRecord) => void
 }
 
 const BranchInventoryPanel = ({
   isAdmin,
   canEditThresholds,
+  canCreate,
+  canDelete,
   branches,
   selectedBranchId,
   onBranchChange,
@@ -41,7 +47,9 @@ const BranchInventoryPanel = ({
   loading,
   pagination,
   onPaginationChange,
-  onEditThresholds
+  onEditThresholds,
+  onCreate,
+  onDelete
 }: BranchInventoryPanelProps) => {
   const getBranchStatus = (record: StoreInventoryRecord) => {
     if (record.quantity <= 0) return 'out_of_stock'
@@ -127,20 +135,43 @@ const BranchInventoryPanel = ({
       key: 'updatedAt',
       render: (value: string) => dayjs(value).format('DD/MM/YYYY')
     },
-    ...(canEditThresholds
+    ...((canEditThresholds || canDelete)
       ? [
         {
           title: 'Hanh dong',
           key: 'action',
           render: (_: unknown, record: StoreInventoryRecord) => (
-            <Button
-              type="default"
-              size="small"
-              icon={<EditOutlined />}
-              onClick={() => onEditThresholds(record)}
-            >
-              Nguong
-            </Button>
+            <Space size="small">
+              {canEditThresholds && (
+                <Button
+                  type="default"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => onEditThresholds(record)}
+                >
+                  Nguong
+                </Button>
+              )}
+              {canDelete && (
+                <Popconfirm
+                  title="Xoa ton kho"
+                  description="Ban co chac chan muon xoa ban ghi ton kho nay?"
+                  onConfirm={() => onDelete(record)}
+                  okText="Xoa"
+                  cancelText="Huy"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button
+                    type="default"
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                  >
+                    Xoa
+                  </Button>
+                </Popconfirm>
+              )}
+            </Space>
           )
         }
       ]
@@ -247,7 +278,16 @@ const BranchInventoryPanel = ({
         onChange={(key) => onBranchViewChange(key as BranchView)}
       />
 
-      <Card title="Danh sach ton kho chi nhanh">
+      <Card
+        title="Danh sach ton kho chi nhanh"
+        extra={
+          canCreate && selectedBranchId ? (
+            <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+              Tao moi
+            </Button>
+          ) : null
+        }
+      >
         <Table
           columns={branchColumns}
           dataSource={branchInventory}

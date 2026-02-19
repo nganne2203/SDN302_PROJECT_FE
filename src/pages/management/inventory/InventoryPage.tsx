@@ -6,6 +6,12 @@ import BranchInventoryPanel from './components/BranchInventoryPanel'
 import MainInventoryPanel from './components/MainInventoryPanel'
 import ThresholdModal from './components/ThresholdModal'
 import MainInventoryModal from './components/MainInventoryModal'
+import CreateInventoryModal from './components/CreateInventoryModal'
+import AdjustInventoryModal from './components/AdjustInventoryModal'
+import CreateStoreInventoryModal from './components/CreateStoreInventoryModal'
+import type { CreateInventoryFormValues } from './components/CreateInventoryModal'
+import type { AdjustInventoryFormValues } from './components/AdjustInventoryModal'
+import type { CreateStoreInventoryFormValues } from './components/CreateStoreInventoryModal'
 
 const InventoryPage = () => {
   const {
@@ -28,15 +34,26 @@ const InventoryPage = () => {
     mainPagination,
     setMainPagination,
     updateThresholds,
-    updateMainInventory
+    createStoreInventory,
+    deleteStoreInventory,
+    updateMainInventory,
+    createMainInventory,
+    adjustMainInventory
   } = useInventory()
 
   const [selectedStoreInventory, setSelectedStoreInventory] = useState<StoreInventoryRecord | null>(null)
   const [selectedMainInventory, setSelectedMainInventory] = useState<InventoryRecord | null>(null)
   const [thresholdModalOpen, setThresholdModalOpen] = useState(false)
   const [mainModalOpen, setMainModalOpen] = useState(false)
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false)
+  const [adjustInventory, setAdjustInventory] = useState<InventoryRecord | null>(null)
   const [thresholdSaving, setThresholdSaving] = useState(false)
   const [mainSaving, setMainSaving] = useState(false)
+  const [createSaving, setCreateSaving] = useState(false)
+  const [adjustSaving, setAdjustSaving] = useState(false)
+  const [storeCreateModalOpen, setStoreCreateModalOpen] = useState(false)
+  const [storeCreateSaving, setStoreCreateSaving] = useState(false)
 
   const headerTitle = useMemo(
     () => (isAdmin ? 'Quan ly ton kho' : 'Quan ly ton kho chi nhanh'),
@@ -58,6 +75,80 @@ const InventoryPage = () => {
   const handleMainEdit = (record: InventoryRecord) => {
     setSelectedMainInventory(record)
     setMainModalOpen(true)
+  }
+
+  const handleCreate = () => {
+    setCreateModalOpen(true)
+  }
+
+  const handleAdjustOpen = (record: InventoryRecord) => {
+    setAdjustInventory(record)
+    setAdjustModalOpen(true)
+  }
+
+  const handleCreateSubmit = async (values: CreateInventoryFormValues) => {
+    try {
+      setCreateSaving(true)
+      await createMainInventory({
+        product: values.product,
+        quantity: values.quantity,
+        location: values.location
+      })
+      message.success('Tao ton kho moi thanh cong')
+      setCreateModalOpen(false)
+    } catch {
+      message.error('Khong the tao ton kho moi')
+    } finally {
+      setCreateSaving(false)
+    }
+  }
+
+  const handleAdjustSubmit = async (values: AdjustInventoryFormValues) => {
+    if (!adjustInventory) return
+    try {
+      setAdjustSaving(true)
+      await adjustMainInventory(adjustInventory.product._id, values.quantity)
+      message.success('Dieu chinh ton kho thanh cong')
+      setAdjustModalOpen(false)
+      setAdjustInventory(null)
+    } catch {
+      message.error('Khong the dieu chinh ton kho')
+    } finally {
+      setAdjustSaving(false)
+    }
+  }
+
+  const handleStoreCreate = () => {
+    setStoreCreateModalOpen(true)
+  }
+
+  const handleStoreCreateSubmit = async (values: CreateStoreInventoryFormValues) => {
+    try {
+      setStoreCreateSaving(true)
+      await createStoreInventory({
+        branch: values.branch,
+        product: values.product,
+        quantity: values.quantity,
+        minThreshold: values.minThreshold,
+        maxThreshold: values.maxThreshold
+      })
+      message.success('Tao ton kho chi nhanh thanh cong')
+      setStoreCreateModalOpen(false)
+    } catch {
+      message.error('Khong the tao ton kho chi nhanh')
+    } finally {
+      setStoreCreateSaving(false)
+    }
+  }
+
+  const handleStoreDelete = async (record: StoreInventoryRecord) => {
+    if (!selectedBranchId) return
+    try {
+      await deleteStoreInventory(record._id, selectedBranchId)
+      message.success('Xoa ton kho chi nhanh thanh cong')
+    } catch {
+      message.error('Khong the xoa ton kho chi nhanh')
+    }
   }
 
   const handleThresholdSubmit = async (values: { minThreshold?: number; maxThreshold?: number }) => {
@@ -113,6 +204,8 @@ const InventoryPage = () => {
                   searchText={searchText}
                   onSearchTextChange={setSearchText}
                   onEdit={handleMainEdit}
+                  onCreate={handleCreate}
+                  onAdjust={handleAdjustOpen}
                 />
               )
             },
@@ -123,6 +216,8 @@ const InventoryPage = () => {
                 <BranchInventoryPanel
                   isAdmin={isAdmin}
                   canEditThresholds={isAdmin || isManager}
+                  canCreate={isAdmin || isManager}
+                  canDelete={isAdmin}
                   branches={branches}
                   selectedBranchId={selectedBranchId}
                   onBranchChange={(value) => {
@@ -142,6 +237,8 @@ const InventoryPage = () => {
                   pagination={branchPagination}
                   onPaginationChange={setBranchPagination}
                   onEditThresholds={handleThresholdEdit}
+                  onCreate={handleStoreCreate}
+                  onDelete={handleStoreDelete}
                 />
               )
             }
@@ -151,6 +248,8 @@ const InventoryPage = () => {
         <BranchInventoryPanel
           isAdmin={false}
           canEditThresholds={isManager}
+          canCreate={isManager}
+          canDelete={false}
           branches={branches}
           selectedBranchId={selectedBranchId}
           onBranchChange={(value) => setSelectedBranchId(value)}
@@ -164,6 +263,8 @@ const InventoryPage = () => {
           pagination={branchPagination}
           onPaginationChange={setBranchPagination}
           onEditThresholds={handleThresholdEdit}
+          onCreate={handleStoreCreate}
+          onDelete={handleStoreDelete}
         />
       )}
 
@@ -192,6 +293,37 @@ const InventoryPage = () => {
           isSubmitting={mainSaving}
         />
       )}
+
+      <CreateInventoryModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSubmit={handleCreateSubmit}
+        isSubmitting={createSaving}
+      />
+
+      {adjustInventory && (
+        <AdjustInventoryModal
+          isOpen={adjustModalOpen}
+          onClose={() => {
+            setAdjustModalOpen(false)
+            setAdjustInventory(null)
+          }}
+          productName={adjustInventory.product?.name || ''}
+          currentQuantity={adjustInventory.quantity}
+          onSubmit={handleAdjustSubmit}
+          isSubmitting={adjustSaving}
+        />
+      )}
+
+      <CreateStoreInventoryModal
+        isOpen={storeCreateModalOpen}
+        onClose={() => setStoreCreateModalOpen(false)}
+        onSubmit={handleStoreCreateSubmit}
+        isSubmitting={storeCreateSaving}
+        isAdmin={isAdmin}
+        branches={branches}
+        fixedBranchId={selectedBranchId}
+      />
     </div>
   )
 }

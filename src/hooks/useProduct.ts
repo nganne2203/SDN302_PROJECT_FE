@@ -20,28 +20,34 @@ import {
   clearError,
   clearProducts
 } from '@/features/product/productSlices'
-import type { ProductFilter, Product, CreateProductRequest, UpdateProductRequest, Image } from '@/types/api'
+import type { ProductFilter, Product, CreateProductRequest, UpdateProductRequest, Image, UploadedImage } from '@/types/api'
 import { uploadApi } from '@/apis/upload'
 import { toast } from '@/utils/toast'
+import { z } from 'zod'
 
-export interface ProductFormData {
-  name: string
-  description: string
-  categoryId: string
-  price: number
-  images: Image[]| string[]
+// Zod validation schema for product form
+export const productValidationSchema = z.object({
+  name: z.string().min(1, 'Tên sản phẩm không được để trống').max(200, 'Tên sản phẩm không được vượt quá 200 ký tự'),
+  description: z.string().min(1, 'Mô tả không được để trống'),
+  categoryId: z.string().min(1, 'Vui lòng chọn danh mục'),
+  price: z.number({ error: 'Giá phải là số' }).min(1, 'Giá phải lớn hơn 0'),
+  material: z.string().optional(),
+  compatibility: z.array(z.string()).optional()
+})
+
+export type ProductFormData = z.infer<typeof productValidationSchema>
+
+// Extended form data that includes image fields (not validated by Zod since they are File objects)
+export interface ProductFormDataWithImages extends ProductFormData {
+  images: (Image | string)[]
   imageFiles: File[]
-  material?: string
-  compatibility?: string[]
 }
 
-const initialFormData: ProductFormData = {
+export const initialProductFormValues: ProductFormData = {
   name: '',
   description: '',
   categoryId: '',
   price: 0,
-  images: [],
-  imageFiles: [],
   material: '',
   compatibility: []
 }
@@ -62,10 +68,6 @@ export const useProduct = () => {
     error
   } = useAppSelector((state) => state.product)
 
-  const [formData, setFormData] = useState<ProductFormData>(initialFormData)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
   const [isUploadingImages, setIsUploadingImages] = useState(false)
 
   // Fetch products
@@ -135,34 +137,6 @@ export const useProduct = () => {
     dispatch(clearProducts())
   }, [dispatch])
 
-  // Validate form
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {}
-
-    if (!formData.name.trim()) {
-      errors.name = 'Tên sản phẩm không được để trống'
-    }
-
-    if (!formData.description.trim()) {
-      errors.description = 'Mô tả không được để trống'
-    }
-
-    if (!formData.categoryId) {
-      errors.categoryId = 'Vui lòng chọn danh mục'
-    }
-
-    if (formData.price <= 0) {
-      errors.price = 'Giá phải lớn hơn 0'
-    }
-
-    if (formData.images.length === 0 && formData.imageFiles.length === 0) {
-      errors.images = 'Vui lòng tải lên ít nhất một hình ảnh'
-    }
-
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
   // Upload images
   const uploadImages = async (files: File[]): Promise<string[]> => {
     if (files.length === 0) return []
@@ -170,108 +144,30 @@ export const useProduct = () => {
     setIsUploadingImages(true)
     try {
       const response = await uploadApi.uploadMultipleImages(files)
-      return response.data.publicIds
-    } catch (error) {
-      toast.error('Không thể tải lên hình ảnh')
-      throw error
+      return response.data.map((img: UploadedImage) => img.publicId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      throw new Error(error.response.data?.message || 'Không thể tải lên hình ảnh')
     } finally {
       setIsUploadingImages(false)
     }
   }
 
-  // Handle form change
-  const handleFormChange = (field: keyof ProductFormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (formErrors[field]) {
-      setFormErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
-  }
+  // Create product
+  const createProduct = useCallback(
+    async (data: CreateProductRequest) => {
+      return dispatch(createProductThunk(data)).unwrap()
+    },
+    [dispatch]
+  )
 
-  // Open create modal
-  const openCreateModal = () => {
-    setFormData(initialFormData)
-    setFormErrors({})
-    setIsEditMode(false)
-    setIsModalOpen(true)
-  }
-
-  // Open edit modal
-  const openEditModal = (product: Product) => {
-    setFormData({
-      name: product.name,
-      description: product.description,
-      categoryId: product.category._id,
-      price: product.price,
-      images: product.images,
-      imageFiles: [],
-      material: product.material || '',
-      compatibility: product.compatibility || []
-    })
-    setFormErrors({})
-    setIsEditMode(true)
-    setIsModalOpen(true)
-    dispatch(setSelectedProduct(product))
-  }
-
-  // Close modal
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setFormData(initialFormData)
-    setFormErrors({})
-    dispatch(setSelectedProduct(null))
-  }
-
-  // Handle submit (create or update)
-  const handleSubmit = async () => {
-    if (!validateForm()) return
-
-    try {
-      // Upload new images if any
-      let uploadedImageIds: string[] = []
-      if (formData.imageFiles.length > 0) {
-        uploadedImageIds = await uploadImages(formData.imageFiles)
-      }
-
-      // Combine existing and new images
-      const existingImageIds = formData.images.map(img =>
-        typeof img === 'string' ? img : img.publicId
-      )
-      const allImages = [...existingImageIds, ...uploadedImageIds]
-
-      const productData: CreateProductRequest | UpdateProductRequest = {
-        name: formData.name,
-        description: formData.description,
-        categoryId: formData.categoryId,
-        price: formData.price,
-        images: allImages,
-        material: formData.material,
-        compatibility: formData.compatibility && formData.compatibility.length > 0
-          ? formData.compatibility
-          : undefined
-      }
-
-      if (isEditMode && selectedProduct) {
-        await dispatch(updateProductThunk({
-          id: selectedProduct._id,
-          data: productData
-        })).unwrap()
-        toast.success('Cập nhật sản phẩm thành công')
-      } else {
-        await dispatch(createProductThunk(productData as CreateProductRequest)).unwrap()
-        toast.success('Tạo sản phẩm thành công')
-      }
-
-      closeModal()
-      fetchProducts()
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra'
-      toast.error(errorMessage)
-    }
-  }
+  // Update product
+  const updateProduct = useCallback(
+    async (id: string, data: UpdateProductRequest) => {
+      return dispatch(updateProductThunk({ id, data })).unwrap()
+    },
+    [dispatch]
+  )
 
   // Delete product (only when inactive)
   const handleDelete = async (product: Product) => {
@@ -322,10 +218,6 @@ export const useProduct = () => {
     isLoading,
     isSubmitting,
     error,
-    formData,
-    formErrors,
-    isModalOpen,
-    isEditMode,
     isUploadingImages,
 
     // Actions
@@ -340,11 +232,8 @@ export const useProduct = () => {
     resetFilter,
     selectProduct,
     clearProductsList,
-    handleFormChange,
-    openCreateModal,
-    openEditModal,
-    closeModal,
-    handleSubmit,
+    createProduct,
+    updateProduct,
     handleDelete,
     handleToggleStatus,
     handleClearError,
