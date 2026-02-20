@@ -5,6 +5,7 @@ import type { Branch, BranchFilter } from '@/types/api'
 import type { CreateBranchPayload, UpdateBranchPayload } from '@/features/branch/branchTypes'
 import {
   fetchBranchesThunk,
+  fetchBranchesAllThunk,
   fetchBranchByIdThunk,
   createBranchThunk,
   updateBranchThunk,
@@ -37,7 +38,14 @@ export const useBranch = () => {
   } = branchState || {}
 
   const fetchBranches = useCallback(
-    async (filterData?: BranchFilter) => dispatch(fetchBranchesThunk(filterData)),
+    async (filterData?: BranchFilter, forceRefresh = false) =>
+      dispatch(fetchBranchesThunk({ filter: filterData, forceRefresh })),
+    [dispatch]
+  )
+
+  const fetchBranchesAll = useCallback(
+    async (filterData?: Omit<BranchFilter, 'page' | 'limit'>, forceRefresh = false) =>
+      dispatch(fetchBranchesAllThunk({ filter: filterData, forceRefresh })),
     [dispatch]
   )
 
@@ -123,6 +131,7 @@ export const useBranch = () => {
     isLoading,
     error,
     fetchBranches,
+    fetchBranchesAll,
     fetchBranchById,
     createBranch,
     updateBranch,

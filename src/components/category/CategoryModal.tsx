@@ -1,26 +1,22 @@
-import { ModalCommon, ButtonCommon, InputField, TextAreaField } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, TextAreaField, ControlledField } from '@/components/common'
+import type { Control } from 'react-hook-form'
 import type { CategoryFormData } from '@/hooks/useCategory'
 
-/* eslint-disable no-unused-vars */
 interface CategoryModalProps {
   isOpen: boolean
   isEditMode: boolean
-  formData: CategoryFormData
-  formErrors: Record<string, string>
   isSubmitting: boolean
+  control: Control<CategoryFormData>
   onClose: () => void
-  onFormChange: (field: string, value: string) => void
   onSubmit: () => void
 }
 
 const CategoryModalComponent = ({
   isOpen,
   isEditMode,
-  formData,
-  formErrors,
   isSubmitting,
+  control,
   onClose,
-  onFormChange,
   onSubmit
 }: CategoryModalProps) => {
   return (
@@ -49,21 +45,36 @@ const CategoryModalComponent = ({
       }
     >
       <div className="space-y-4">
-        <InputField
-          label="Tên danh mục"
-          placeholder="Nhập tên danh mục..."
-          required
-          value={formData.name}
-          onChange={(e) => onFormChange('name', e.target.value)}
-          error={formErrors.name}
+        <ControlledField<CategoryFormData>
+          name="name"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <InputField
+              label="Tên danh mục"
+              placeholder="Nhập tên danh mục..."
+              required
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+            />
+          )}
         />
-        <TextAreaField
-          label="Mô tả"
-          placeholder="Nhập mô tả danh mục..."
-          value={formData.description}
-          onChange={(e) => onFormChange('description', e.target.value)}
-          error={formErrors.description}
-          rows={4}
+
+        <ControlledField<CategoryFormData>
+          name="description"
+          control={control}
+          render={({ value, onChange, onBlur, error }) => (
+            <TextAreaField
+              label="Mô tả"
+              placeholder="Nhập mô tả danh mục..."
+              value={(value as string) || ''}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={onBlur}
+              error={error}
+              rows={4}
+            />
+          )}
         />
       </div>
     </ModalCommon>

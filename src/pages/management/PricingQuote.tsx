@@ -1,14 +1,28 @@
-import { Card, Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Row, Col, Space, Statistic, Alert, Divider } from 'antd'
+import { Card, Table, Button, Modal, Form, InputNumber, Select, Tag, Row, Col, Space, Statistic, Divider } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   CheckCircleOutlined,
-  PercentageOutlined,
-  DollarOutlined
+  PercentageOutlined
 } from '@ant-design/icons'
 import { useState } from 'react'
 import useAuth from '@/hooks/useAuth'
+import type { ColumnsType } from 'antd/es/table'
+
+interface PricingQuote {
+  key: string
+  quoteId: string
+  product: string
+  quantityFrom: number
+  quantityTo?: number
+  basePrice: number
+  discountPercent: number
+  finalPrice: number
+  status: string
+  createdDate: string
+  createdBy: string
+}
 
 const PricingQuote = () => {
   const { user } = useAuth()
@@ -17,7 +31,7 @@ const PricingQuote = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   // Sample pricing quote data (FE-08: Quantity-based discounts)
-  const [pricingQuotes, setPricingQuotes] = useState([
+  const [pricingQuotes, setPricingQuotes] = useState<PricingQuote[]>([
     {
       key: '1',
       quoteId: 'QT-001',
@@ -49,7 +63,7 @@ const PricingQuote = () => {
       quoteId: 'QT-003',
       product: 'iPhone 15 Pro',
       quantityFrom: 51,
-      quantityTo: null,
+      quantityTo: undefined,
       basePrice: 25000000,
       discountPercent: 10,
       finalPrice: 22500000,
@@ -75,7 +89,7 @@ const PricingQuote = () => {
       quoteId: 'QT-005',
       product: 'Samsung Galaxy S24',
       quantityFrom: 11,
-      quantityTo: null,
+      quantityTo: undefined,
       basePrice: 20000000,
       discountPercent: 7,
       finalPrice: 18600000,
@@ -91,7 +105,7 @@ const PricingQuote = () => {
     setIsModalVisible(true)
   }
 
-  const handleEditQuote = (record: any) => {
+  const handleEditQuote = (record: PricingQuote) => {
     setEditingId(record.key)
     form.setFieldsValue(record)
     setIsModalVisible(true)
@@ -125,33 +139,48 @@ const PricingQuote = () => {
     )
   }
 
-  const handleSubmit = (values: any) => {
+  type PricingQuoteFormValues = {
+    product: string
+    quantityFrom: number
+    quantityTo?: number
+    basePrice: number
+    discountPercent: number
+  }
+
+  const handleSubmit = (values: PricingQuoteFormValues) => {
     // Calculate final price
     const finalPrice = values.basePrice * (1 - values.discountPercent / 100)
 
     if (editingId) {
       setPricingQuotes(
-        pricingQuotes.map((quote) =>
-          quote.key === editingId
-            ? {
-                ...quote,
-                ...values,
-                finalPrice,
-                createdDate: quote.createdDate,
-                createdBy: quote.createdBy
-              }
-            : quote
-        )
+        pricingQuotes.map((quote) => {
+          if (quote.key !== editingId) return quote
+          return {
+            ...quote,
+            product: values.product,
+            quantityFrom: values.quantityFrom,
+            quantityTo: values.quantityTo ?? undefined,
+            basePrice: values.basePrice,
+            discountPercent: values.discountPercent,
+            finalPrice,
+            createdDate: quote.createdDate,
+            createdBy: quote.createdBy
+          }
+        })
       )
     } else {
-      const newQuote = {
+      const newQuote: PricingQuote = {
         key: `${pricingQuotes.length + 1}`,
         quoteId: `QT-${String(pricingQuotes.length + 1).padStart(3, '0')}`,
-        ...values,
+        product: values.product,
+        quantityFrom: values.quantityFrom,
+        quantityTo: values.quantityTo ?? undefined,
+        basePrice: values.basePrice,
+        discountPercent: values.discountPercent,
         finalPrice,
         status: 'active',
         createdDate: new Date().toISOString().split('T')[0],
-        createdBy: user?.fullName
+        createdBy: user?.fullname || 'Unknown'
       }
       setPricingQuotes([newQuote, ...pricingQuotes])
     }
@@ -179,7 +208,7 @@ const PricingQuote = () => {
       title: 'Khoảng số lượng',
       key: 'quantityRange',
       width: 130,
-      render: (_: any, record: any) => {
+      render: (_: unknown, record: PricingQuote) => {
         const to = record.quantityTo || '∞'
         return `${record.quantityFrom} - ${to}`
       }
@@ -228,7 +257,7 @@ const PricingQuote = () => {
       title: 'Hành động',
       key: 'action',
       width: 200,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: PricingQuote) => (
         <Space size="small">
           <Button
             type="default"
@@ -285,7 +314,7 @@ const PricingQuote = () => {
               title="Tổng phiếu báo giá"
               value={totalQuotes}
               prefix={<CheckCircleOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -295,7 +324,7 @@ const PricingQuote = () => {
               title="Phiếu hoạt động"
               value={activeCount}
               prefix={<CheckCircleOutlined className="text-success" />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -305,7 +334,7 @@ const PricingQuote = () => {
               title="Giảm giá tối đa"
               value={10}
               prefix={<PercentageOutlined className="text-warning" />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
           </Card>
         </Col>
@@ -350,8 +379,8 @@ const PricingQuote = () => {
 
       {/* Pricing Quotes Table */}
       <Card title="📋 Danh sách phiếu báo giá">
-        <Table
-          columns={columns as any}
+        <Table<PricingQuote>
+          columns={columns as ColumnsType<PricingQuote>}
           dataSource={pricingQuotes}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 1200 }}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField, LocationSelectGroup } from '@/components/common'
 import { Button, Divider } from 'antd'
 import { Plus, Trash2, MapPin } from 'lucide-react'
 import type { User, Address } from '@/features/user/userTypes'
@@ -35,6 +35,9 @@ const emptyAddress: Address = {
   city: '',
   district: '',
   ward: '',
+  provinceCode: undefined,
+  districtCode: undefined,
+  wardCode: undefined,
   isDefault: false
 }
 
@@ -73,14 +76,14 @@ const UserFormModal = ({
 
   const [formData, setFormData] = useState<UserFormData>(getInitialFormData)
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData | string, string>>>({})
-  const { branches, fetchBranches } = useBranch()
+  const { branches, fetchBranchesAll } = useBranch()
 
   useEffect(() => {
     if (isOpen) {
       setFormData(getInitialFormData())
       setErrors({})
       // Fetch branches for dropdown
-      fetchBranches({ page: 1, limit: 100, isActive: true })
+      fetchBranchesAll({ isActive: true })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isEditMode, user?._id])
@@ -92,7 +95,7 @@ const UserFormModal = ({
     }
   }
 
-  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean) => {
+  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean | number | undefined) => {
     const newAddresses = [...formData.addresses]
     newAddresses[index] = { ...newAddresses[index], [field]: value }
 
@@ -369,29 +372,31 @@ const UserFormModal = ({
                       className='mb-0'
                     />
 
-                    <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
-                      <InputField
-                        label='Thành phố'
-                        placeholder='Thành phố...'
-                        value={address.city}
-                        onChange={(e) => handleAddressChange(index, 'city', e.target.value)}
-                        className='mb-0'
-                      />
-                      <InputField
-                        label='Quận/Huyện'
-                        placeholder='Quận/Huyện...'
-                        value={address.district}
-                        onChange={(e) => handleAddressChange(index, 'district', e.target.value)}
-                        className='mb-0'
-                      />
-                      <InputField
-                        label='Phường/Xã'
-                        placeholder='Phường/Xã...'
-                        value={address.ward}
-                        onChange={(e) => handleAddressChange(index, 'ward', e.target.value)}
-                        className='mb-0'
-                      />
-                    </div>
+                    <LocationSelectGroup
+                      provinceCode={address.provinceCode}
+                      districtCode={address.districtCode}
+                      wardCode={address.wardCode}
+                      onChange={(changes) => {
+                        if ('province' in changes) {
+                          handleAddressChange(index, 'city', changes.province || '')
+                        }
+                        if ('district' in changes) {
+                          handleAddressChange(index, 'district', changes.district || '')
+                        }
+                        if ('ward' in changes) {
+                          handleAddressChange(index, 'ward', changes.ward || '')
+                        }
+                        if ('provinceCode' in changes) {
+                          handleAddressChange(index, 'provinceCode', changes.provinceCode)
+                        }
+                        if ('districtCode' in changes) {
+                          handleAddressChange(index, 'districtCode', changes.districtCode)
+                        }
+                        if ('wardCode' in changes) {
+                          handleAddressChange(index, 'wardCode', changes.wardCode)
+                        }
+                      }}
+                    />
 
                     <CheckboxField
                       label='Đặt làm địa chỉ mặc định'

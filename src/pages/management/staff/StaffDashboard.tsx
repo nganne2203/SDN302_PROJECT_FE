@@ -4,8 +4,7 @@ import {
   CheckCircleOutlined,
   FileTextOutlined,
   PercentageOutlined,
-  ArrowUpOutlined,
-  ClockCircleOutlined
+  ArrowUpOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import useAuth from '@/hooks/useAuth'
@@ -112,7 +111,7 @@ const StaffDashboard = () => {
               title="Công việc hôm nay"
               value={5}
               prefix={<FileTextOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
             <p className="text-xs text-blue-600 mt-2">
               2 công việc chưa hoàn thành
@@ -126,7 +125,7 @@ const StaffDashboard = () => {
               title="Công việc hoàn thành"
               value={42}
               prefix={<CheckCircleOutlined className="text-green-600" />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
             <p className="text-xs text-green-600 mt-2">
               <ArrowUpOutlined /> Tuần này
@@ -140,7 +139,7 @@ const StaffDashboard = () => {
               title="Đơn hàng được xử lý"
               value={23}
               prefix={<ShoppingCartOutlined className="text-orange-600" />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' } }}
             />
             <p className="text-xs text-orange-600 mt-2">
               Tháng này
@@ -154,7 +153,7 @@ const StaffDashboard = () => {
               title="Hiệu suất"
               value={94}
               prefix={<PercentageOutlined className="text-green-600" />}
-              valueStyle={{ color: '#3f8600' }}
+              styles={{ content: { color: '#3f8600' } }}
               suffix="%"
             />
             <p className="text-xs text-green-600 mt-2">

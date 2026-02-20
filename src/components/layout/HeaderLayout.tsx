@@ -99,6 +99,12 @@ const HeaderLayout = () => {
             </Link>
             {isAuthenticated ? (
               <>
+                <Link
+                  to={ROUTES.ORDERS}
+                  className="block text-gray-600 hover:text-blue-600"
+                >
+                  Đơn hàng
+                </Link>
                 {user?.role && MANAGEMENT_ROLES.includes(user.role) && (
                   <Link
                     to={ROUTES.MANAGEMENT.DASHBOARD}

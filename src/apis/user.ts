@@ -1,6 +1,6 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { ApiResponse, UserInfo, ShippingAddress, ProfileResponse } from '@/types/api'
+import type { ApiResponse, UserInfo, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
 import uploadApi from './upload'
 
@@ -13,6 +13,19 @@ export interface UpdateProfileRequest {
 export interface ChangePasswordRequest {
   currentPassword: string
   newPassword: string
+}
+
+export interface ResetPasswordRequest {
+  email: string
+}
+
+export interface ConfirmResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
+export interface SetPasswordRequest {
+  password: string
 }
 
 const resolveUserAvatar = async (user: UserInfo): Promise<UserInfo> => {
@@ -74,17 +87,26 @@ export const userApi = {
     return response.data
   },
 
-  getAddresses: async (): Promise<ApiResponse<ShippingAddress[]>> => {
-    const response = await apiClient.get<ApiResponse<ShippingAddress[]>>(
-      API_ENDPOINTS.USER.ADDRESSES
+  resetPassword: async (data: ResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.RESET_PASSWORD,
+      data
     )
     return response.data
   },
 
-  addAddress: async (address: ShippingAddress): Promise<ApiResponse<ShippingAddress>> => {
-    const response = await apiClient.post<ApiResponse<ShippingAddress>>(
-      API_ENDPOINTS.USER.ADDRESSES,
-      address
+  confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
+      data
+    )
+    return response.data
+  },
+
+  setPassword: async (data: SetPasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post<ApiResponse<null>>(
+      API_ENDPOINTS.USER.SET_PASSWORD,
+      data
     )
     return response.data
   }

@@ -65,6 +65,9 @@ export interface RegisterRequest {
     city: string;
     district: string;
     ward: string;
+    provinceCode?: number;
+    districtCode?: number;
+    wardCode?: number;
     isDefault: boolean;
   }>;
   avatar?: string;
@@ -204,7 +207,7 @@ export interface Product {
     slug: string;
   };
   price: number;
-  images: string[];
+  images: Image[];
   material?: string;
   compatibility?: string[];
   ratingAvg: number;
@@ -212,6 +215,11 @@ export interface Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Image {
+  imageUrl: string;
+  publicId: string;
 }
 
 export interface ProductFilter {
@@ -278,6 +286,42 @@ export interface BranchFilter {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface InventoryRecord {
+  _id: string;
+  product: Product;
+  quantity: number;
+  location?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoreInventoryRecord {
+  _id: string;
+  branch: Branch;
+  product: Product;
+  quantity: number;
+  minThreshold: number;
+  maxThreshold: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StockRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface StockRequestRecord {
+  _id: string;
+  branch: Branch;
+  product: Product;
+  quantity: number;
+  requester: BackendUser;
+  reason?: string;
+  status: StockRequestStatus;
+  admin?: BackendUser | null;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Cart Types
 export interface CartItem {
   id: string;
@@ -336,6 +380,9 @@ export interface ShippingAddress {
   province: string;
   district: string;
   ward: string;
+  provinceCode?: number;
+  districtCode?: number;
+  wardCode?: number;
   address: string;
 }
 
@@ -361,6 +408,9 @@ export interface CreateUserRequest {
     city: string;
     district: string;
     ward: string;
+    provinceCode?: number;
+    districtCode?: number;
+    wardCode?: number;
     isDefault: boolean;
   }>;
   avatar?: string;

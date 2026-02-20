@@ -11,11 +11,22 @@ import type {
   ProductWithStock
 } from '@/types/api'
 
+type ProductFilterAll = Omit<ProductFilter, 'page' | 'limit'>
+
 export const productApi = {
   // Get all products with filtering
   getProducts: async (filter?: ProductFilter): Promise<PaginatedResponse<Product>> => {
     const response = await apiClient.get<PaginatedResponse<Product>>(
       API_ENDPOINTS.PRODUCT.LIST,
+      { params: filter }
+    )
+    return response.data
+  },
+
+  // Get all products without pagination
+  getAllProducts: async (filter?: ProductFilterAll): Promise<ApiResponse<Product[]>> => {
+    const response = await apiClient.get<ApiResponse<Product[]>>(
+      API_ENDPOINTS.PRODUCT.ALL,
       { params: filter }
     )
     return response.data

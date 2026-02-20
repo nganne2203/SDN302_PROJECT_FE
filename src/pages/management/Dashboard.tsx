@@ -61,7 +61,7 @@ const ManagementDashboard = () => {
               title="Đơn hàng mới"
               value={stats.pendingOrders}
               prefix={<ShoppingCartOutlined className="text-blue-500" />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -73,7 +73,7 @@ const ManagementDashboard = () => {
                 title="Doanh thu"
                 value={stats.totalRevenue}
                 prefix={<DollarOutlined className="text-green-500" />}
-                valueStyle={{ color: '#52c41a' }}
+                styles={{ content: { color: '#52c41a' } }}
                 suffix="₫"
               />
             </Card>
@@ -87,7 +87,7 @@ const ManagementDashboard = () => {
                 title="Tổng người dùng"
                 value={stats.totalUsers}
                 prefix={<UserOutlined className="text-purple-500" />}
-                valueStyle={{ color: '#722ed1' }}
+                styles={{ content: { color: '#722ed1' } }}
               />
             </Card>
           </Col>
@@ -99,7 +99,7 @@ const ManagementDashboard = () => {
               title="Tổng sản phẩm"
               value={stats.totalProducts}
               prefix={<ShoppingOutlined className="text-orange-500" />}
-              valueStyle={{ color: '#fa8c16' }}
+              styles={{ content: { color: '#fa8c16' } }}
             />
           </Card>
         </Col>
@@ -113,7 +113,7 @@ const ManagementDashboard = () => {
                 title="Tổng đơn hàng"
                 value={stats.totalOrders}
                 prefix={<FileTextOutlined className="text-blue-600" />}
-                valueStyle={{ color: '#0960bd' }}
+                styles={{ content: { color: '#0960bd' } }}
               />
             </Card>
           </Col>
@@ -126,7 +126,7 @@ const ManagementDashboard = () => {
                 title="Đơn hàng bị hủy"
                 value={stats.canceledOrders}
                 prefix={<ArrowUpOutlined className="text-red-600" />}
-                valueStyle={{ color: '#cf1322' }}
+                styles={{ content: { color: '#cf1322' } }}
               />
             </Card>
           </Col>
@@ -138,7 +138,7 @@ const ManagementDashboard = () => {
               title="Tỷ lệ hoàn thành"
               value={98.5}
               prefix={<PercentageOutlined className="text-green-600" />}
-              valueStyle={{ color: '#3f8600' }}
+              styles={{ content: { color: '#3f8600' } }}
               suffix="%"
             />
           </Card>

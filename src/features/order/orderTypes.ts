@@ -14,3 +14,24 @@ export interface FetchOrdersPayload {
 }
 
 export type CreateOrderPayload = CreateOrderRequest
+
+export interface OrderFilter {
+  page?: number
+  limit?: number
+  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'
+  sortBy?: 'createdAt' | 'totalAmount' | 'orderNumber'
+  sortOrder?: 'asc' | 'desc'
+  search?: string
+  startDate?: string
+  endDate?: string
+}
+
+export interface UpdateOrderStatusPayload {
+  orderId: string
+  status: string
+}
+
+export interface CancelOrderPayload {
+  orderId: string
+  reason?: string
+}

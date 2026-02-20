@@ -7,6 +7,7 @@ import UserFilterComponent from '@/components/user/UserFilter'
 import UserListComponent from '@/components/user/UserList'
 import UserFormModal from '@/components/user/UserFormModal'
 import UserDetailModal from '@/components/user/UserDetailModal'
+import { stripLocationCodesFromList } from '@/utils/address'
 import type { UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 
@@ -153,6 +154,9 @@ const ManagementUser = () => {
     }>
   }) => {
     try {
+      const sanitizedAddresses = formData.addresses.length > 0
+        ? stripLocationCodesFromList(formData.addresses)
+        : undefined
       if (isEditMode && selectedUser) {
         const result = await updateUser(selectedUser._id, {
           fullname: formData.fullname,
@@ -161,7 +165,7 @@ const ManagementUser = () => {
           role: formData.role,
           branch: formData.branch || undefined,
           avatar: formData.avatar || undefined,
-          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
+          addresses: sanitizedAddresses
         })
 
         if (result.type.includes('fulfilled')) {
@@ -181,7 +185,7 @@ const ManagementUser = () => {
           role: formData.role,
           branch: formData.branch || undefined,
           avatar: formData.avatar || undefined,
-          addresses: formData.addresses.length > 0 ? formData.addresses : undefined
+          addresses: sanitizedAddresses
         })
 
         if (result.type.includes('fulfilled')) {
@@ -216,12 +220,6 @@ const ManagementUser = () => {
   return (
     <div className="p-2">
       <UserHeader onCreateUser={handleCreateUser} />
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
 
       <UserFilterComponent
         searchValue={(filter.search as string) || ''}

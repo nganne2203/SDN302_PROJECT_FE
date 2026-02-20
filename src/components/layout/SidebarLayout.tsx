@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Menu } from 'antd'
 import type { MenuProps } from 'antd'
 import {
@@ -7,14 +7,14 @@ import {
   UserOutlined,
   ShoppingCartOutlined,
   TagOutlined,
-  SettingOutlined,
   BankOutlined,
   InboxOutlined,
-  GiftOutlined,
   BarChartOutlined,
-  TeamOutlined,
+  // TeamOutlined,
   CustomerServiceOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  MobileOutlined,
+  PercentageOutlined
 } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ROUTES, USER_ROLES } from '@/constants/constant'
@@ -48,19 +48,17 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Chi nhánh', ROUTES.MANAGEMENT.BRANCHES, <BankOutlined />),
       getItem('Kho tổng', ROUTES.MANAGEMENT.INVENTORY_TOTAL, <InboxOutlined />),
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
+      getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Danh mục', ROUTES.MANAGEMENT.CATEGORIES, <TagOutlined />),
+      getItem('Thiết bị', ROUTES.MANAGEMENT.DEVICES, <MobileOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
       getItem('Quản lý người dùng', 'users-group', <UserOutlined />, [
         getItem('Tất cả người dùng', ROUTES.MANAGEMENT.USERS),
         getItem('Quản lý nhân viên', ROUTES.MANAGEMENT.STAFF)
       ]),
+      getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
-      getItem('Khuyến mãi', ROUTES.MANAGEMENT.PROMOTIONS, <GiftOutlined />),
-      getItem('Báo cáo', ROUTES.MANAGEMENT.ALL_REPORTS, <BarChartOutlined />),
-      getItem('Cài đặt', 'settings', <SettingOutlined />, [
-        getItem('Thanh toán', ROUTES.MANAGEMENT.PAYMENT_SETTINGS),
-        getItem('Vận chuyển', ROUTES.MANAGEMENT.DELIVERY_SETTINGS)
-      ])
+      getItem('Báo cáo', ROUTES.MANAGEMENT.ALL_REPORTS, <BarChartOutlined />)
     ]
 
   case USER_ROLES.MANAGER:
@@ -68,11 +66,12 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       ...commonItems,
       getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
+      getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-      getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
-      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
-      getItem('Khuyến mãi chi nhánh', ROUTES.MANAGEMENT.BRANCH_PROMOTIONS, <GiftOutlined />),
-      getItem('Báo cáo chi nhánh', ROUTES.MANAGEMENT.BRANCH_REPORTS, <BarChartOutlined />)
+      // getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
+      getItem('Người dùng chi nhánh', ROUTES.MANAGEMENT.MANAGER_USERS, <UserOutlined />),
+      getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
+      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />)
     ]
 
   case USER_ROLES.STAFF:
@@ -80,7 +79,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       ...commonItems,
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
       getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
-      getItem('Hỗ trợ khách hàng', ROUTES.MANAGEMENT.CUSTOMER_SUPPORT, <CustomerServiceOutlined />)
+      getItem('Khách hàng', ROUTES.MANAGEMENT.STAFF_CUSTOMERS, <UserOutlined />)
     ]
 
   default:
@@ -99,8 +98,17 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
 
   const menuItems = useMemo(() => getMenuItemsByRole(userRole), [userRole])
 
+  const [openKeys, setOpenKeys] = useState<string[]>(['users-group'])
+
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    navigate(e.key)
+    // Only navigate if the key is a valid route (starts with '/')
+    if (typeof e.key === 'string' && e.key.startsWith('/')) {
+      navigate(e.key)
+    }
+  }
+
+  const handleOpenChange = (keys: string[]) => {
+    setOpenKeys(keys)
   }
 
   const getRoleName = (role: UserRole): string => {
@@ -117,26 +125,27 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
   }
 
   return (
-    <div className="h-full bg-white">
-      <div className="h-16 flex items-center justify-center border-b border-gray-200">
+    <div className='h-full bg-white'>
+      <div className='h-16 flex items-center justify-center border-b border-gray-200'>
         {collapsed ? (
-          <span className="text-2xl font-bold text-blue-600">PA</span>
+          <span className='text-2xl font-bold text-blue-600'>PA</span>
         ) : (
-          <div className="text-center">
-            <span className="text-xl font-bold text-blue-600">PhoneAcc</span>
-            <span className="block text-xs text-gray-500">{getRoleName(userRole)}</span>
+          <div className='text-center'>
+            <span className='text-xl font-bold text-blue-600'>PhoneAcc</span>
+            <span className='block text-xs text-gray-500'>{getRoleName(userRole)}</span>
           </div>
         )}
       </div>
 
       <Menu
-        mode="inline"
+        mode='inline'
         selectedKeys={[location.pathname]}
-        defaultOpenKeys={['users-group', 'settings']}
+        openKeys={openKeys}
+        onOpenChange={handleOpenChange}
         items={menuItems}
         onClick={handleMenuClick}
         inlineCollapsed={collapsed}
-        className="border-r-0"
+        className='border-r-0'
       />
     </div>
   )

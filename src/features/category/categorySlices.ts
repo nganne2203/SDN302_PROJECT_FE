@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { CategoryState, FetchCategoriesPayload, Category } from './categoryTypes'
+import { initialCacheMetadata, updateCacheMetadata, markCacheAsStale } from '@/utils/cacheHelper'
 import {
   fetchCategoriesThunk,
   fetchCategoryByIdThunk,
@@ -15,7 +16,8 @@ const initialState: CategoryState = {
   pagination: null,
   filter: {},
   isLoading: false,
-  error: null
+  error: null,
+  cache: initialCacheMetadata()
 }
 
 const categorySlice = createSlice({
@@ -40,6 +42,9 @@ const categorySlice = createSlice({
       state.pagination = null
       state.filter = {}
       state.error = null
+    },
+    invalidateCategoryCache: (state) => {
+      state.cache = markCacheAsStale()
     }
   },
   extraReducers: (builder) => {
@@ -53,6 +58,7 @@ const categorySlice = createSlice({
         state.isLoading = false
         state.categories = action.payload.items
         state.pagination = action.payload.pagination
+        state.cache = updateCacheMetadata()
       })
       .addCase(fetchCategoriesThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -87,6 +93,7 @@ const categorySlice = createSlice({
           state.pagination.totalItems += 1
           state.pagination.totalPages = Math.ceil(state.pagination.totalItems / state.pagination.pageSize)
         }
+        state.cache = markCacheAsStale()
       })
       .addCase(createCategoryThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -108,6 +115,7 @@ const categorySlice = createSlice({
         if (state.selectedCategory?._id === action.payload._id) {
           state.selectedCategory = action.payload
         }
+        state.cache = markCacheAsStale()
       })
       .addCase(updateCategoryThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -131,6 +139,7 @@ const categorySlice = createSlice({
           state.pagination.totalItems -= 1
           state.pagination.totalPages = Math.ceil(state.pagination.totalItems / state.pagination.pageSize)
         }
+        state.cache = markCacheAsStale()
       })
       .addCase(deleteCategoryThunk.rejected, (state, action) => {
         state.isLoading = false
@@ -158,5 +167,5 @@ const categorySlice = createSlice({
   }
 })
 
-export const { setFilter, clearFilter, setSelectedCategory, clearError, resetCategories } = categorySlice.actions
+export const { setFilter, clearFilter, setSelectedCategory, clearError, resetCategories, invalidateCategoryCache } = categorySlice.actions
 export default categorySlice.reducer

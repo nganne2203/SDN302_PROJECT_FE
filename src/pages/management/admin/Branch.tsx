@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from '@/utils/toast'
 import useBranch, { type BranchFormData } from '@/hooks/useBranch'
 import type { Branch, BranchFilter } from '@/features/branch/branchTypes'
-import { userManageApi } from '@/apis/userManage'
+import { branchApi } from '@/apis/branch'
 import { USER_ROLES, STORAGE_KEYS } from '@/constants/constant'
 import { getStorage } from '@/utils/storage'
 import type { User } from '@/features/user/userTypes'
@@ -52,7 +52,7 @@ const BranchesManagement = () => {
   useEffect(() => {
     const loadManagers = async () => {
       try {
-        const res = await userManageApi.getUsers({ page: 1, limit: 200, role: USER_ROLES.MANAGER })
+        const res = await branchApi.getBranchManagers({ sortBy: 'name', sortOrder: 'asc' })
         setManagers(res.data)
       } catch {
         // ignore
@@ -246,12 +246,6 @@ const BranchesManagement = () => {
   return (
     <div className="p-2">
       <BranchHeader onAddClick={() => handleOpenModal()} canManage={canManage} />
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
 
       <BranchFilterComponent
         searchValue={(filter.search as string) || ''}
