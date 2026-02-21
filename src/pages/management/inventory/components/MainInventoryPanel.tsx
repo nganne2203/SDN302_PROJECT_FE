@@ -1,6 +1,6 @@
-import { Card, Table } from 'antd'
+import { Card, Table, Space } from 'antd'
 import { Button } from 'antd'
-import { EditOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusOutlined, SwapOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { InventoryRecord } from '@/types/api'
@@ -15,6 +15,8 @@ interface MainInventoryPanelProps {
   searchText: string
   onSearchTextChange: (_value: string) => void
   onEdit: (_record: InventoryRecord) => void
+  onCreate: () => void
+  onAdjust: (_record: InventoryRecord) => void
 }
 
 const MainInventoryPanel = ({
@@ -24,7 +26,9 @@ const MainInventoryPanel = ({
   onPaginationChange,
   searchText,
   onSearchTextChange,
-  onEdit
+  onEdit,
+  onCreate,
+  onAdjust
 }: MainInventoryPanelProps) => {
   const columns: ColumnsType<InventoryRecord> = [
     {
@@ -60,20 +64,37 @@ const MainInventoryPanel = ({
       title: 'Hanh dong',
       key: 'action',
       render: (_: unknown, record: InventoryRecord) => (
-        <Button
-          type="default"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(record)}
-        >
-          Dieu chinh
-        </Button>
+        <Space size="small">
+          <Button
+            type="default"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          >
+            Sua
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            icon={<SwapOutlined />}
+            onClick={() => onAdjust(record)}
+          >
+            Dieu chinh
+          </Button>
+        </Space>
       )
     }
   ]
 
   return (
-    <Card title="Ton kho kho tong">
+    <Card
+      title="Ton kho kho tong"
+      extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+          Tao moi
+        </Button>
+      }
+    >
       <div className="mb-4">
         <InputField
           label="Tim kiem"

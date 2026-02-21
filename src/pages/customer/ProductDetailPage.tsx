@@ -5,6 +5,7 @@ import { useBranch } from '@/hooks/useBranch'
 import ProductDetail from '@/components/product/ProductDetail'
 import ReviewSection from '@/components/review/ReviewSection'
 import { ButtonCommon } from '@/components/common'
+import LoginRequiredModal from '@/components/common/LoginRequiredModal'
 import cartApi from '@/apis/cart'
 import pricingApi from '@/apis/pricing'
 import { toast } from '@/utils/toast'
@@ -14,6 +15,7 @@ import type { Branch } from '@/types/api'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 import { serviceProductApi } from '@/apis/serviceProduct'
 import type { PricingCalculation } from '@/features/pricing/pricingTypes'
+import { useAppSelector } from '@/apps/hooks'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -35,6 +37,8 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1)
   const [pricingData, setPricingData] = useState<PricingCalculation | null>(null)
   const [isPricingLoading, setIsPricingLoading] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
     if (id) {
@@ -105,6 +109,10 @@ const ProductDetailPage = () => {
   }
 
   const handleAddToCart = async (productId: string, qty: number, serviceIds: string[]) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true)
+      return false
+    }
     try {
       const servicesPayload = serviceIds.map((serviceId) => ({ serviceId }))
       await cartApi.addToCart(productId, qty, servicesPayload)
@@ -117,6 +125,10 @@ const ProductDetailPage = () => {
   }
 
   const handleBuyNow = async (productId: string, qty: number, serviceIds: string[]) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true)
+      return
+    }
     const success = await handleAddToCart(productId, qty, serviceIds)
     if (success) {
       navigate(ROUTES.CART)
@@ -193,6 +205,11 @@ const ProductDetailPage = () => {
           />
         )}
       </div>
+
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   )
 }
