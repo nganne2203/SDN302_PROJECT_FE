@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField, LocationSelectGroup } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField, LocationSelectGroup, UploadField } from '@/components/common'
 import { Button, Divider } from 'antd'
+import type { UploadProps } from 'antd'
 import { Plus, Trash2, MapPin } from 'lucide-react'
 import type { User, Address } from '@/features/user/userTypes'
 import type { Branch, UserRole } from '@/types/api'
 import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import { emailSchema, passwordSchema, fullNameSchema, userAddressSchema } from '@/utils/validator'
 import { useBranch } from '@/hooks/useBranch'
+import uploadApi from '@/apis/upload'
+import { toast } from '@/utils/toast'
 interface UserFormData {
   fullname: string
   email: string
@@ -60,7 +63,7 @@ const UserFormModal = ({
         phone: user.phone || '',
         role: user.role || USER_ROLES.CUSTOMER as UserRole,
         branch: user.branch || '',
-        avatar: user.avatar || '',
+        avatar: user.avatarId || user.avatar || '',
         addresses: user.addresses?.length > 0 ? user.addresses : []
       }
     }
@@ -78,17 +81,69 @@ const UserFormModal = ({
 
   const [formData, setFormData] = useState<UserFormData>(getInitialFormData)
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData | string, string>>>({})
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const { branches, fetchBranchesAll } = useBranch()
 
   useEffect(() => {
+    let isMounted = true
+
     if (isOpen) {
-      setFormData(getInitialFormData())
+      const initialFormData = getInitialFormData()
+      setFormData(initialFormData)
       setErrors({})
+      setAvatarPreview(undefined)
       // Fetch branches for dropdown
       fetchBranchesAll({ isActive: true })
+
+      const avatarPublicId = initialFormData.avatar
+      const avatarUrl = user?.avatar
+
+      if (avatarUrl && avatarUrl.startsWith('http')) {
+        setAvatarPreview(avatarUrl)
+      } else if (avatarPublicId) {
+        uploadApi.getImage(avatarPublicId)
+          .then((response) => {
+            if (isMounted) {
+              setAvatarPreview(response.data.imageUrl)
+            }
+          })
+          .catch(() => {
+            if (isMounted) {
+              setAvatarPreview(undefined)
+            }
+          })
+      }
+    }
+
+    return () => {
+      isMounted = false
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isEditMode, user?._id])
+
+  const handleAvatarUpload: UploadProps['beforeUpload'] = async (file) => {
+    try {
+      setIsUploadingAvatar(true)
+      const response = await uploadApi.uploadImage(file as File)
+      const { publicId, imageUrl } = response.data
+
+      setFormData(prev => ({ ...prev, avatar: publicId }))
+      setAvatarPreview(imageUrl)
+      toast.success('Tải ảnh đại diện thành công')
+    } catch {
+      toast.error('Tải ảnh đại diện thất bại')
+    } finally {
+      setIsUploadingAvatar(false)
+    }
+
+    return false
+  }
+
+  const handleRemoveAvatar = () => {
+    setFormData(prev => ({ ...prev, avatar: '' }))
+    setAvatarPreview(undefined)
+  }
 
   const handleChange = (field: keyof UserFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -293,15 +348,36 @@ const UserFormModal = ({
               }
             />
 
-            <InputField
-              label='URL Avatar'
-              type='url'
-              placeholder='https://example.com/avatar.jpg'
-              value={formData.avatar}
-              onChange={(e) => handleChange('avatar', e.target.value)}
-              error={errors.avatar}
-              helpText='Nhập đường dẫn hình ảnh đại diện (tùy chọn)'
-            />
+            <div>
+              <UploadField
+                label='Ảnh đại diện'
+                accept='image/*'
+                showUploadList={false}
+                beforeUpload={handleAvatarUpload}
+                disabled={isUploadingAvatar || isSubmitting}
+                error={errors.avatar}
+                buttonText={isUploadingAvatar ? 'Đang tải ảnh...' : 'Tải ảnh đại diện'}
+                helpText='Chọn ảnh để upload, hệ thống tự gán avatar theo Cloudinary publicId'
+              />
+
+              {avatarPreview && (
+                <div className='mt-2 flex items-center gap-3'>
+                  <img
+                    src={avatarPreview}
+                    alt='Avatar preview'
+                    className='w-16 h-16 rounded-full object-cover border border-gray-200'
+                  />
+                  <Button
+                    type='default'
+                    size='small'
+                    onClick={handleRemoveAvatar}
+                    disabled={isUploadingAvatar || isSubmitting}
+                  >
+                    Xóa ảnh
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

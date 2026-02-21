@@ -81,7 +81,6 @@ export const registerThunk = createAsyncThunk<
         email: data.email,
         password: data.password,
         phone: data.phoneNumber || '',
-        avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.fullName),
         captchaToken: data.captchaToken
       }
 
