@@ -49,17 +49,18 @@ const BranchesManagement = () => {
   const canManage = currentUserRole === USER_ROLES.ADMIN
 
   // Fetch managers for assign-manager dropdown
-  useEffect(() => {
-    const loadManagers = async () => {
-      try {
-        const res = await branchApi.getBranchManagers({ sortBy: 'name', sortOrder: 'asc' })
-        setManagers(res.data)
-      } catch {
-        // ignore
-      }
+  const loadManagers = useCallback(async () => {
+    try {
+      const res = await branchApi.getBranchManagers({ sortBy: 'name', sortOrder: 'asc' })
+      setManagers(res.data)
+    } catch {
+      // ignore
     }
-    loadManagers()
   }, [])
+
+  useEffect(() => {
+    loadManagers()
+  }, [loadManagers])
 
   // Fetch branches on mount and when filter changes
   useEffect(() => {
@@ -288,6 +289,7 @@ const BranchesManagement = () => {
         onFormChange={handleFormChange}
         onManagerChange={handleManagerChange}
         onSubmit={handleSubmit}
+        onManagerCreated={loadManagers}
       />
     </div>
   )

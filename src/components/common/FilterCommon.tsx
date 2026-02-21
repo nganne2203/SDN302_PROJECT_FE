@@ -1,6 +1,5 @@
 import { Input, Select, Button, Space, Row, Col, Switch, Checkbox } from 'antd'
 import { SearchOutlined, ReloadOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons'
-import type { SelectProps } from 'antd'
 import type { FilterOption, SortOrder } from '../../types/filter'
 import type { ReactNode } from 'react'
 import CardCommon from './CardCommon'
@@ -94,7 +93,7 @@ const FilterCommon = ({
   }
 
   const renderFilterField = (field: FilterField) => {
-    const value = filterValues[field.key]
+    const rawValue = filterValues[field.key]
 
     switch (field.type) {
     case 'select':
@@ -102,7 +101,7 @@ const FilterCommon = ({
         <Select
           key={field.key}
           placeholder={field.placeholder || `Select ${field.label}`}
-          value={value as SelectProps['value']}
+          value={rawValue ?? undefined}
           onChange={(val) => onFilterChange?.(field.key, val)}
           allowClear={field.allowClear ?? true}
           mode={field.mode}
@@ -120,7 +119,7 @@ const FilterCommon = ({
       return (
         <Switch
           key={field.key}
-          checked={value as boolean}
+          checked={rawValue as boolean}
           onChange={(checked) => onFilterChange?.(field.key, checked)}
           defaultChecked={field.defaultChecked}
         />
@@ -131,7 +130,7 @@ const FilterCommon = ({
       return (
         <Checkbox
           key={field.key}
-          checked={value as boolean}
+          checked={rawValue as boolean}
           onChange={(e) => onFilterChange?.(field.key, e.target.checked)}
           defaultChecked={field.defaultChecked}
         >

@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import type { Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { ButtonCommon } from '@/components/common'
+import LoginRequiredModal from '@/components/common/LoginRequiredModal'
 import cartApi from '@/apis/cart'
 import { toast } from '@/utils/toast'
+import { useAppSelector } from '@/apps/hooks'
 
 interface ProductCardProps {
   product: Product
@@ -12,8 +14,14 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isAdding, setIsAdding] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true)
+      return
+    }
     if (isAdding) return
     setIsAdding(true)
     try {
@@ -131,6 +139,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Link>
         </div>
       </div>
+
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   )
 }

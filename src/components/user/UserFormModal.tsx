@@ -24,6 +24,7 @@ interface UserFormModalProps {
   isEditMode: boolean
   user?: User | null
   isSubmitting: boolean
+  defaultRole?: UserRole
   onClose: () => void
   onSubmit: (data: UserFormData) => void
 }
@@ -46,6 +47,7 @@ const UserFormModal = ({
   isEditMode,
   user,
   isSubmitting,
+  defaultRole,
   onClose,
   onSubmit
 }: UserFormModalProps) => {
@@ -67,7 +69,7 @@ const UserFormModal = ({
       email: '',
       password: '',
       phone: '',
-      role: USER_ROLES.CUSTOMER as UserRole,
+      role: (defaultRole || USER_ROLES.CUSTOMER) as UserRole,
       branch: '',
       avatar: '',
       addresses: []
