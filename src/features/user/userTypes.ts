@@ -31,6 +31,7 @@ export interface User {
   role: UserRole;
   phone?: string;
   branch: string | null;
+  avatarId?: string;
   avatar?: string;
   addresses: Address[];
   isActive: boolean;
