@@ -26,13 +26,11 @@ export interface FetchBranchesAllPayload {
 export interface CreateBranchPayload {
   name: string
   address: string
-  manager?: string | null
 }
 
 export interface UpdateBranchPayload {
   name?: string
   address?: string
-  manager?: string | null
 }
 
 export const initialBranchState: BranchState = {
