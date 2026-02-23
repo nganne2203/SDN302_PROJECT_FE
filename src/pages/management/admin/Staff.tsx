@@ -9,16 +9,21 @@ import { toast } from '@/utils/toast'
 import { useUserManagement } from '@/hooks/useUserManagement'
 import UserDetailModal from '@/components/user/UserDetailModal'
 import { useState } from 'react'
+import UserFormModal from '@/components/user/UserFormModal'
+import { stripLocationCodesFromList } from '@/utils/address'
+import { USER_ROLES } from '@/constants/constant'
 
 const ManagementStaff = () => {
   const { staff, pagination, filter, listLoading, error, fetchStaff, handleSetFilter, handleClearFilter, handleClearError } =
     useStaffManagement()
 
-  // Reuse updateUserStatus from userManage hook so we can toggle staff status
-  const { updateUserStatus, actionLoading } = useUserManagement()
+  // Reuse create/update/status actions from userManage hook
+  const { updateUserStatus, actionLoading, createUser, updateUser, getUserById } = useUserManagement()
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState<User | null>(null)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
 
   const lastFetchParamsRef = useRef<string>('')
 
@@ -111,6 +116,104 @@ const ManagementStaff = () => {
     setSelectedStaff(null)
   }, [])
 
+  const handleCreateStaff = useCallback(() => {
+    setIsEditMode(false)
+    setSelectedStaff(null)
+    setIsFormModalOpen(true)
+  }, [])
+
+  const handleEditStaff = useCallback(async (user: User) => {
+    try {
+      const result = await getUserById(user._id)
+      if (result.type.includes('fulfilled')) {
+        setIsEditMode(true)
+        setSelectedStaff(result.payload as User)
+        setIsFormModalOpen(true)
+      } else {
+        toast.error('Không thể tải thông tin nhân viên')
+      }
+    } catch {
+      toast.error('Đã xảy ra lỗi khi tải thông tin nhân viên')
+    }
+  }, [getUserById])
+
+  const handleCloseFormModal = useCallback(() => {
+    setIsFormModalOpen(false)
+    setSelectedStaff(null)
+    setIsEditMode(false)
+  }, [])
+
+  const handleEditFromDetail = useCallback((user: User) => {
+    setIsDetailModalOpen(false)
+    handleEditStaff(user)
+  }, [handleEditStaff])
+
+  const handleFormSubmit = useCallback(async (formData: {
+    fullname: string
+    email: string
+    password: string
+    phone: string
+    role: UserRole
+    branch: string
+    avatar: string
+    addresses: Array<{
+      fullname: string
+      phone: string
+      addressLine: string
+      city: string
+      district: string
+      ward: string
+      isDefault: boolean
+    }>
+  }) => {
+    try {
+      const sanitizedAddresses = formData.addresses.length > 0
+        ? stripLocationCodesFromList(formData.addresses)
+        : undefined
+
+      if (isEditMode && selectedStaff) {
+        const result = await updateUser(selectedStaff._id, {
+          fullname: formData.fullname,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          role: formData.role,
+          branch: formData.branch || undefined,
+          avatar: formData.avatar || undefined,
+          addresses: sanitizedAddresses
+        })
+
+        if (result.type.includes('fulfilled')) {
+          toast.success('Cập nhật nhân viên thành công')
+          handleCloseFormModal()
+          fetchStaff(filter as UserManageFilter)
+        } else if (result.payload) {
+          toast.error(result.payload as string)
+        }
+      } else {
+        const result = await createUser({
+          fullname: formData.fullname,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone || undefined,
+          role: formData.role,
+          branch: formData.branch || undefined,
+          avatar: formData.avatar || undefined,
+          addresses: sanitizedAddresses
+        })
+
+        if (result.type.includes('fulfilled')) {
+          toast.success('Tạo nhân viên thành công')
+          handleCloseFormModal()
+          fetchStaff(filter as UserManageFilter)
+        } else if (result.payload) {
+          toast.error(result.payload as string)
+        }
+      }
+    } catch {
+      toast.error('Đã xảy ra lỗi khi xử lý yêu cầu')
+    }
+  }, [isEditMode, selectedStaff, updateUser, createUser, handleCloseFormModal, fetchStaff, filter])
+
   // Build filter object compatible with UserFilter shape expected by UserFilterComponent
   const staffFilterFields = {
     ...filter,
@@ -121,7 +224,7 @@ const ManagementStaff = () => {
 
   return (
     <div className="p-2">
-      <UserHeader title="Quản lý nhân viên" />
+      <UserHeader title="Quản lý nhân viên" onCreateUser={handleCreateStaff} />
 
       <UserFilterComponent
         searchValue={(filter.search as string) || ''}
@@ -148,12 +251,24 @@ const ManagementStaff = () => {
         onUpdateStatus={handleUpdateStatus}
         onPageChange={handlePageChange}
         onViewUser={handleViewStaff}
+        onEditUser={handleEditStaff}
       />
 
       <UserDetailModal
         isOpen={isDetailModalOpen}
         user={selectedStaff}
         onClose={handleCloseDetailModal}
+        onEdit={handleEditFromDetail}
+      />
+
+      <UserFormModal
+        isOpen={isFormModalOpen}
+        isEditMode={isEditMode}
+        user={selectedStaff}
+        isSubmitting={actionLoading}
+        defaultRole={USER_ROLES.STAFF as UserRole}
+        onClose={handleCloseFormModal}
+        onSubmit={handleFormSubmit}
       />
     </div>
   )
