@@ -144,7 +144,14 @@ export const useProduct = () => {
     setIsUploadingImages(true)
     try {
       const response = await uploadApi.uploadMultipleImages(files)
-      return response.data.map((img: UploadedImage) => img.publicId)
+      return response.data.map((img: UploadedImage) => {
+        let publicId = img.publicId
+        // Strip 'uploads/' prefix if present
+        if (publicId.startsWith('uploads/')) {
+          publicId = publicId.replace(/^uploads\//, '')
+        }
+        return publicId
+      })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       throw new Error(error.response.data?.message || 'Không thể tải lên hình ảnh')

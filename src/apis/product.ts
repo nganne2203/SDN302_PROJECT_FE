@@ -13,14 +13,66 @@ import type {
 
 type ProductFilterAll = Omit<ProductFilter, 'page' | 'limit'>
 
+const PRODUCT_LIST_CACHE_TTL_MS = 1000
+const PRODUCT_CATEGORIES_CACHE_TTL_MS = 1000
+
+const productListCache = new Map<string, { data: PaginatedResponse<Product>; at: number }>()
+const productListInflight = new Map<string, Promise<PaginatedResponse<Product>>>()
+let productCategoriesCache: ApiResponse<{ _id: string; name: string; slug: string }[]> | null = null
+let productCategoriesCacheAt = 0
+let productCategoriesInflight: Promise<ApiResponse<{ _id: string; name: string; slug: string }[]>> | null = null
+
+const normalizeFilter = (filter?: ProductFilter) => {
+  if (!filter) return {}
+
+  const normalizedEntries = Object.entries(filter)
+    .filter(([, value]) => value !== undefined && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+
+  return Object.fromEntries(normalizedEntries)
+}
+
+const getProductListCacheKey = (filter?: ProductFilter) => JSON.stringify(normalizeFilter(filter))
+
+const invalidateProductListCache = () => {
+  productListCache.clear()
+  productListInflight.clear()
+}
+
+const invalidateProductCategoriesCache = () => {
+  productCategoriesCache = null
+  productCategoriesCacheAt = 0
+  productCategoriesInflight = null
+}
+
 export const productApi = {
   // Get all products with filtering
   getProducts: async (filter?: ProductFilter): Promise<PaginatedResponse<Product>> => {
-    const response = await apiClient.get<PaginatedResponse<Product>>(
+    const key = getProductListCacheKey(filter)
+    const cached = productListCache.get(key)
+    const now = Date.now()
+
+    if (cached && now - cached.at <= PRODUCT_LIST_CACHE_TTL_MS) {
+      return cached.data
+    }
+
+    const inflight = productListInflight.get(key)
+    if (inflight) {
+      return inflight
+    }
+
+    const request = apiClient.get<PaginatedResponse<Product>>(
       API_ENDPOINTS.PRODUCT.LIST,
       { params: filter }
-    )
-    return response.data
+    ).then((response) => {
+      productListCache.set(key, { data: response.data, at: Date.now() })
+      return response.data
+    }).finally(() => {
+      productListInflight.delete(key)
+    })
+
+    productListInflight.set(key, request)
+    return request
   },
 
   // Get all products without pagination
@@ -38,6 +90,8 @@ export const productApi = {
       API_ENDPOINTS.PRODUCT.CREATE,
       data
     )
+    invalidateProductListCache()
+    invalidateProductCategoriesCache()
     return response.data
   },
 
@@ -55,6 +109,8 @@ export const productApi = {
       API_ENDPOINTS.PRODUCT.UPDATE(id),
       data
     )
+    invalidateProductListCache()
+    invalidateProductCategoriesCache()
     return response.data
   },
 
@@ -63,6 +119,8 @@ export const productApi = {
     const response = await apiClient.delete<ApiResponse<void>>(
       API_ENDPOINTS.PRODUCT.DELETE(id)
     )
+    invalidateProductListCache()
+    invalidateProductCategoriesCache()
     return response.data
   },
 
@@ -72,6 +130,8 @@ export const productApi = {
       API_ENDPOINTS.PRODUCT.UPDATE_STATUS(id),
       data
     )
+    invalidateProductListCache()
+    invalidateProductCategoriesCache()
     return response.data
   },
 
@@ -147,10 +207,26 @@ export const productApi = {
 
   // Get categories
   getCategories: async (): Promise<ApiResponse<{ _id: string; name: string; slug: string }[]>> => {
-    const response = await apiClient.get<ApiResponse<{ _id: string; name: string; slug: string }[]>>(
+    const now = Date.now()
+    if (productCategoriesCache && now - productCategoriesCacheAt <= PRODUCT_CATEGORIES_CACHE_TTL_MS) {
+      return productCategoriesCache
+    }
+
+    if (productCategoriesInflight) {
+      return productCategoriesInflight
+    }
+
+    productCategoriesInflight = apiClient.get<ApiResponse<{ _id: string; name: string; slug: string }[]>>(
       API_ENDPOINTS.PRODUCT.CATEGORIES
-    )
-    return response.data
+    ).then((response) => {
+      productCategoriesCache = response.data
+      productCategoriesCacheAt = Date.now()
+      return response.data
+    }).finally(() => {
+      productCategoriesInflight = null
+    })
+
+    return productCategoriesInflight
   }
 }
 
