@@ -7,7 +7,7 @@ export interface ProductState {
   selectedProduct: Product | null
   filter: ProductFilter
   pagination: PaginationMeta | null
-  categories: { _id: string; name: string; slug: string }[]
+  categories: { id: string; name: string; slug: string }[]
   featuredProducts: Product[]
   newArrivals: Product[]
   relatedProducts: Product[]

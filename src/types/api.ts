@@ -129,10 +129,7 @@ export interface UploadedImage {
   createdAt?: string;
 }
 
-export interface UploadMultipleImagesResponse {
-  images: UploadedImage[];
-  publicIds: string[];
-}
+export type UploadMultipleImagesResponse = UploadedImage[]
 
 export interface VerifyOTPResponse {
   accessToken?: string;
@@ -269,7 +266,10 @@ export interface Branch {
   _id: string;
   name: string;
   address: string;
-  manager?: string | null;
+  manager?: {
+    id: string;
+    name: string;
+  } | null;
   isActive: boolean;
   createdBy?: string | null;
   updatedBy?: string | null;
