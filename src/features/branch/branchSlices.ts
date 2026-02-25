@@ -134,6 +134,7 @@ const branchSlice = createSlice({
         const idx = state.branches.findIndex(b => b._id === action.payload._id)
         if (idx !== -1) state.branches[idx] = action.payload
         if (state.selectedBranch?._id === action.payload._id) state.selectedBranch = action.payload
+        state.cache = markCacheAsStale()
       })
       .addCase(updateBranchStatusThunk.rejected, (state, action) => {
         state.error = action.payload as string
@@ -143,6 +144,7 @@ const branchSlice = createSlice({
         const idx = state.branches.findIndex(b => b._id === action.payload._id)
         if (idx !== -1) state.branches[idx] = action.payload
         if (state.selectedBranch?._id === action.payload._id) state.selectedBranch = action.payload
+        state.cache = markCacheAsStale()
       })
       .addCase(assignBranchManagerThunk.rejected, (state, action) => {
         state.error = action.payload as string
@@ -152,6 +154,7 @@ const branchSlice = createSlice({
         const idx = state.branches.findIndex(b => b._id === action.payload._id)
         if (idx !== -1) state.branches[idx] = action.payload
         if (state.selectedBranch?._id === action.payload._id) state.selectedBranch = action.payload
+        state.cache = markCacheAsStale()
       })
       .addCase(removeBranchManagerThunk.rejected, (state, action) => {
         state.error = action.payload as string

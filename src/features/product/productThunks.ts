@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { productApi } from '@/apis/product'
 import { extractApiError } from '@/utils/apiError'
+import { invalidatePricingCache } from '@/features/pricing/pricingSlices'
 import type {
   ProductFilter,
   Product,
@@ -70,9 +71,10 @@ export const fetchProductByIdThunk = createAsyncThunk<
 
 export const createProductThunk = createAsyncThunk<Product, CreateProductRequest>(
   'product/createProduct',
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
       const response = await productApi.createProduct(data)
+      dispatch(invalidatePricingCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tạo sản phẩm'))
@@ -82,9 +84,10 @@ export const createProductThunk = createAsyncThunk<Product, CreateProductRequest
 
 export const updateProductThunk = createAsyncThunk<Product, { id: string; data: UpdateProductRequest }>(
   'product/updateProduct',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await productApi.updateProduct(id, data)
+      dispatch(invalidatePricingCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật sản phẩm'))
@@ -94,9 +97,10 @@ export const updateProductThunk = createAsyncThunk<Product, { id: string; data: 
 
 export const deleteProductThunk = createAsyncThunk<string, string>(
   'product/deleteProduct',
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
       await productApi.deleteProduct(id)
+      dispatch(invalidatePricingCache())
       return id
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể xóa sản phẩm'))
@@ -109,9 +113,10 @@ export const updateProductStatusThunk = createAsyncThunk<
   { id: string; data: UpdateProductStatusRequest }
 >(
   'product/updateProductStatus',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await productApi.updateProductStatus(id, data)
+      dispatch(invalidatePricingCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái sản phẩm'))

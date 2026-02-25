@@ -142,6 +142,8 @@ const productSlice = createSlice({
         }
         // Invalidate cache when product is updated
         state.cache.products = markCacheAsStale()
+        state.cache.featuredProducts = markCacheAsStale()
+        state.cache.newArrivals = markCacheAsStale()
         state.cache.productDetail[action.payload._id] = markCacheAsStale()
       })
       .addCase(updateProductThunk.rejected, (state, action) => {
@@ -160,6 +162,8 @@ const productSlice = createSlice({
         state.products = state.products.filter((p) => p._id !== action.payload)
         // Invalidate cache when product is deleted
         state.cache.products = markCacheAsStale()
+        state.cache.featuredProducts = markCacheAsStale()
+        state.cache.newArrivals = markCacheAsStale()
         delete state.cache.productDetail[action.payload]
       })
       .addCase(deleteProductThunk.rejected, (state, action) => {
@@ -179,6 +183,13 @@ const productSlice = createSlice({
         if (index !== -1) {
           state.products[index] = action.payload
         }
+        if (state.selectedProduct?._id === action.payload._id) {
+          state.selectedProduct = action.payload
+        }
+        state.cache.products = markCacheAsStale()
+        state.cache.featuredProducts = markCacheAsStale()
+        state.cache.newArrivals = markCacheAsStale()
+        state.cache.productDetail[action.payload._id] = markCacheAsStale()
       })
       .addCase(updateProductStatusThunk.rejected, (state, action) => {
         state.isSubmitting = false
