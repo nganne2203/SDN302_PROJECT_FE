@@ -4,6 +4,18 @@ import { env } from '@/configs/env'
 import { STORAGE_KEYS, HTTP_STATUS, API_ENDPOINTS, ROUTES } from '@/constants/constant'
 import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 
+const isAuthEndpoint = (url: string): boolean => {
+  return url.includes(API_ENDPOINTS.AUTH.LOGIN)
+    || url.includes(API_ENDPOINTS.AUTH.REGISTER)
+    || url.includes(API_ENDPOINTS.AUTH.REFRESH_TOKEN)
+    || url.includes(API_ENDPOINTS.AUTH.VERIFY_OTP)
+    || url.includes(API_ENDPOINTS.AUTH.RESEND_OTP)
+    || url.includes(API_ENDPOINTS.AUTH.GOOGLE_LOGIN)
+    || url.includes(API_ENDPOINTS.AUTH.GOOGLE_CALLBACK)
+}
+
+let refreshRequest: Promise<{ accessToken: string; refreshToken: string }> | null = null
+
 // Create axios instance
 export const apiClient = axios.create({
   baseURL: env.BASE_URL,
@@ -20,17 +32,11 @@ axiosRetry(apiClient, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     const url = error.config?.url || ''
-    const isAuthEndpoint = url.includes(API_ENDPOINTS.AUTH.LOGIN)
-      || url.includes(API_ENDPOINTS.AUTH.REGISTER)
-      || url.includes(API_ENDPOINTS.AUTH.REFRESH_TOKEN)
-      || url.includes(API_ENDPOINTS.AUTH.VERIFY_OTP)
-      || url.includes(API_ENDPOINTS.AUTH.RESEND_OTP)
-      || url.includes(API_ENDPOINTS.AUTH.GOOGLE_LOGIN)
-      || url.includes(API_ENDPOINTS.AUTH.GOOGLE_CALLBACK)
+    if (isAuthEndpoint(url)) return false
 
-    if (isAuthEndpoint) return false
+    if (error.response?.status === 429) return false
 
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
+    return axiosRetry.isNetworkOrIdempotentRequestError(error)
   }
 })
 
@@ -51,6 +57,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const url = originalRequest?.url || ''
+
+    if (isAuthEndpoint(url)) {
+      return Promise.reject(error)
+    }
 
     // Handle 401 Unauthorized - attempt token refresh
     if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
@@ -59,13 +70,21 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = getStorage(STORAGE_KEYS.REFRESH_TOKEN)
         if (refreshToken) {
-          const response = await axios.post(`${env.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`, {
-            refreshToken
-          })
+          if (!refreshRequest) {
+            refreshRequest = axios
+              .post(`${env.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`, { refreshToken })
+              .then((response) => {
+                const { accessToken, refreshToken: newRefreshToken } = response.data.data
+                setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+                setStorage(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken)
+                return { accessToken, refreshToken: newRefreshToken }
+              })
+              .finally(() => {
+                refreshRequest = null
+              })
+          }
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data
-          setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
-          setStorage(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken)
+          const { accessToken } = await refreshRequest
 
           originalRequest.headers.Authorization = `Bearer ${accessToken}`
           return apiClient(originalRequest)
@@ -75,7 +94,7 @@ apiClient.interceptors.response.use(
         removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
         removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
         removeStorage(STORAGE_KEYS.USER_INFO)
-        window.location.href = ROUTES.HOME
+        window.location.href = ROUTES.LOGIN
       }
     }
 

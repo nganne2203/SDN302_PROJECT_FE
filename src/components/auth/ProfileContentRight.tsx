@@ -35,7 +35,7 @@ const ProfileContentRight = ({
     <div className='lg:col-span-2'>
       <Card
         className='shadow-sm rounded-xl border-gray-200 h-full'
-        bordered={false}
+        variant='borderless'
         title={
           <span className='text-lg font-bold flex items-center gap-2'>
             <MapPin className='w-5 h-5 text-primary' /> Địa chỉ
