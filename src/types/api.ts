@@ -266,7 +266,10 @@ export interface Branch {
   _id: string;
   name: string;
   address: string;
-  manager?: string | null;
+  manager?: {
+    id: string;
+    name: string;
+  } | null;
   isActive: boolean;
   createdBy?: string | null;
   updatedBy?: string | null;

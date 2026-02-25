@@ -4,7 +4,6 @@ import dayjs from 'dayjs'
 import { LoaderCommon, TableCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Branch } from '@/features/branch/branchTypes'
-import type { User } from '@/features/user/userTypes'
 
 /* eslint-disable no-unused-vars */
 interface BranchWithKey extends Record<string, unknown> {
@@ -14,7 +13,6 @@ interface BranchWithKey extends Record<string, unknown> {
 
 interface BranchListProps {
   branches: Branch[]
-  managers: User[]
   isLoading: boolean
   canManage?: boolean
   pagination?: {
@@ -29,7 +27,6 @@ interface BranchListProps {
 
 const BranchListComponent = ({
   branches,
-  managers,
   isLoading,
   canManage = false,
   pagination,
@@ -37,8 +34,6 @@ const BranchListComponent = ({
   onUpdateStatus,
   onPageChange
 }: BranchListProps) => {
-  const managerMap = new Map(managers.map(m => [m._id, m]))
-
   const rows: BranchWithKey[] = branches.map(b => ({
     ...b,
     key: b._id
@@ -66,10 +61,8 @@ const BranchListComponent = ({
       dataIndex: 'manager',
       width: 220,
       render: (value: unknown) => {
-        const id = value as string | null | undefined
-        if (!id) return '-'
-        const m = managerMap.get(id)
-        return m ? `${m.fullname} (${m.email})` : id
+        const manager = value as { id: string; name: string } | null | undefined
+        return manager?.name || '-'
       }
     },
     {
