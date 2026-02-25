@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { deviceApi } from '@/apis/device'
 import { extractApiError } from '@/utils/apiError'
+import { invalidateProductCache } from '@/features/product/productSlices'
 import type { Device, DeviceFilter, CreateDevicePayload, FetchDevicesPayload } from './deviceTypes'
 
 export const fetchDevicesThunk = createAsyncThunk<FetchDevicesPayload, DeviceFilter | undefined>(
@@ -32,9 +33,10 @@ export const fetchDeviceByIdThunk = createAsyncThunk<Device, string>(
 
 export const createDeviceThunk = createAsyncThunk<Device, CreateDevicePayload>(
   'device/createDevice',
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
       const response = await deviceApi.createDevice(data)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Khong the tao thiet bi'))
@@ -47,9 +49,10 @@ export const updateDeviceThunk = createAsyncThunk<
   { id: string; data: CreateDevicePayload }
 >(
   'device/updateDevice',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await deviceApi.updateDevice(id, data)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Khong the cap nhat thiet bi'))
@@ -59,9 +62,10 @@ export const updateDeviceThunk = createAsyncThunk<
 
 export const deleteDeviceThunk = createAsyncThunk<string, string>(
   'device/deleteDevice',
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
       await deviceApi.deleteDevice(id)
+      dispatch(invalidateProductCache())
       return id
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Khong the xoa thiet bi'))
@@ -71,9 +75,10 @@ export const deleteDeviceThunk = createAsyncThunk<string, string>(
 
 export const updateDeviceStatusThunk = createAsyncThunk<Device, { id: string; isActive: boolean }>(
   'device/updateDeviceStatus',
-  async ({ id, isActive }, { rejectWithValue }) => {
+  async ({ id, isActive }, { rejectWithValue, dispatch }) => {
     try {
       const response = await deviceApi.updateDeviceStatus(id, isActive)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Khong the cap nhat trang thai thiet bi'))
