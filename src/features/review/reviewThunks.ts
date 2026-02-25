@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import reviewApi from '@/apis/review'
 import { extractApiError } from '@/utils/apiError'
+import { invalidateProductCache } from '@/features/product/productSlices'
 import type {
   ReviewFilter,
   CreateReviewRequest,
@@ -94,9 +95,10 @@ export const createReviewThunk = createAsyncThunk<
   Review,
   CreateReviewRequest,
   { rejectValue: string }
->('review/create', async (data, { rejectWithValue }) => {
+>('review/create', async (data, { rejectWithValue, dispatch }) => {
   try {
     const res = await reviewApi.createReview(data)
+    dispatch(invalidateProductCache())
     return res.data
   } catch (error) {
     return rejectWithValue(extractApiError(error, 'Không thể tạo đánh giá'))
@@ -108,9 +110,10 @@ export const updateReviewThunk = createAsyncThunk<
   Review,
   { id: string; data: UpdateReviewRequest },
   { rejectValue: string }
->('review/update', async ({ id, data }, { rejectWithValue }) => {
+>('review/update', async ({ id, data }, { rejectWithValue, dispatch }) => {
   try {
     const res = await reviewApi.updateReview(id, data)
+    dispatch(invalidateProductCache())
     return res.data
   } catch (error) {
     return rejectWithValue(extractApiError(error, 'Không thể cập nhật đánh giá'))
@@ -122,9 +125,10 @@ export const deleteReviewThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->('review/delete', async (id, { rejectWithValue }) => {
+>('review/delete', async (id, { rejectWithValue, dispatch }) => {
   try {
     await reviewApi.deleteReview(id)
+    dispatch(invalidateProductCache())
     return id
   } catch (error) {
     return rejectWithValue(extractApiError(error, 'Không thể xóa đánh giá'))

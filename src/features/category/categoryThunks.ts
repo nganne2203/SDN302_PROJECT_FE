@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { categoryApi } from '@/apis/category'
 import { extractApiError } from '@/utils/apiError'
+import { invalidateAllCache as invalidateProductCache } from '@/features/product/productSlices'
 import type { Category, CategoryFilter, CreateCategoryPayload, FetchCategoriesPayload } from './categoryTypes'
 
 export const fetchCategoriesThunk = createAsyncThunk<FetchCategoriesPayload, CategoryFilter | undefined>(
@@ -33,9 +34,10 @@ export const fetchCategoryByIdThunk = createAsyncThunk<Category, string>(
 
 export const createCategoryThunk = createAsyncThunk<Category, CreateCategoryPayload>(
   'category/createCategory',
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
       const response = await categoryApi.createCategory(data)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tạo danh mục'))
@@ -48,9 +50,10 @@ export const updateCategoryThunk = createAsyncThunk<
   { id: string; data: CreateCategoryPayload }
 >(
   'category/updateCategory',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await categoryApi.updateCategory(id, data)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật danh mục'))
@@ -60,9 +63,10 @@ export const updateCategoryThunk = createAsyncThunk<
 
 export const deleteCategoryThunk = createAsyncThunk<string, string>(
   'category/deleteCategory',
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
       await categoryApi.deleteCategory(id)
+      dispatch(invalidateProductCache())
       return id
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể xóa danh mục'))
@@ -72,9 +76,10 @@ export const deleteCategoryThunk = createAsyncThunk<string, string>(
 
 export const updateCategoryStatusThunk = createAsyncThunk<Category, { id: string; isActive: boolean }>(
   'category/updateCategoryStatus',
-  async ({ id, isActive }, { rejectWithValue }) => {
+  async ({ id, isActive }, { rejectWithValue, dispatch }) => {
     try {
       const response = await categoryApi.updateCategoryStatus(id, isActive)
+      dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái danh mục'))

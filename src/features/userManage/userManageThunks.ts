@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { userManageApi } from '@/apis/userManage'
 import { extractApiError } from '@/utils/apiError'
+import { invalidateBranchCache } from '@/features/branch/branchSlices'
 import type {
   UserManageFilter,
   CreateUserRequest,
@@ -59,9 +60,10 @@ export const fetchCustomersThunk = createAsyncThunk<FetchUsersPayload, UserManag
 // Create a new user
 export const createUserThunk = createAsyncThunk<User, CreateUserRequest>(
   'userManage/createUser',
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
       const response = await userManageApi.createUser(data)
+      dispatch(invalidateBranchCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tạo người dùng'))
@@ -85,9 +87,10 @@ export const getUserByIdThunk = createAsyncThunk<User, string>(
 // Update user by ID
 export const updateUserThunk = createAsyncThunk<User, { id: string; data: UpdateUserRequest }>(
   'userManage/updateUser',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await userManageApi.updateUser(id, data)
+      dispatch(invalidateBranchCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật người dùng'))
@@ -98,9 +101,10 @@ export const updateUserThunk = createAsyncThunk<User, { id: string; data: Update
 // Update user status by ID
 export const updateUserStatusThunk = createAsyncThunk<User, { id: string; isActive: boolean }>(
   'userManage/updateUserStatus',
-  async ({ id, isActive }, { rejectWithValue }) => {
+  async ({ id, isActive }, { rejectWithValue, dispatch }) => {
     try {
       const response = await userManageApi.updateUserStatus(id, { isActive })
+      dispatch(invalidateBranchCache())
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái người dùng'))
