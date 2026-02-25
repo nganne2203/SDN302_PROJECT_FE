@@ -2,10 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from '@/utils/toast'
 import useBranch, { type BranchFormData } from '@/hooks/useBranch'
 import type { Branch, BranchFilter } from '@/features/branch/branchTypes'
-import { branchApi } from '@/apis/branch'
 import { USER_ROLES, STORAGE_KEYS } from '@/constants/constant'
 import { getStorage } from '@/utils/storage'
-import type { User } from '@/features/user/userTypes'
 import BranchHeader from '@/components/branch/BranchHeader'
 import BranchFilterComponent from '@/components/branch/BranchFilter'
 import BranchListComponent from '@/components/branch/BranchList'
@@ -29,14 +27,12 @@ const BranchesManagement = () => {
     validateBranchForm
   } = useBranch()
 
-  const [managers, setManagers] = useState<User[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
   const [formData, setFormData] = useState<BranchFormData>({
     name: '',
-    address: '',
-    manager: null
+    address: ''
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -47,20 +43,6 @@ const BranchesManagement = () => {
     ? (JSON.parse(currentUserRaw)?.role as string | undefined)
     : undefined
   const canManage = currentUserRole === USER_ROLES.ADMIN
-
-  // Fetch managers for assign-manager dropdown
-  const loadManagers = useCallback(async () => {
-    try {
-      const res = await branchApi.getBranchManagers({ sortBy: 'name', sortOrder: 'asc' })
-      setManagers(res.data)
-    } catch {
-      // ignore
-    }
-  }, [])
-
-  useEffect(() => {
-    loadManagers()
-  }, [loadManagers])
 
   // Fetch branches on mount and when filter changes
   useEffect(() => {
@@ -92,14 +74,13 @@ const BranchesManagement = () => {
       if (branch) {
         setFormData({
           name: branch.name,
-          address: branch.address,
-          manager: branch.manager || null
+          address: branch.address
         })
         setSelectedBranchId(branch._id)
         handleSetSelectedBranch(branch)
         setIsEditMode(true)
       } else {
-        setFormData({ name: '', address: '', manager: null })
+        setFormData({ name: '', address: '' })
         setSelectedBranchId(null)
         handleSetSelectedBranch(null)
         setIsEditMode(false)
@@ -112,7 +93,7 @@ const BranchesManagement = () => {
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    setFormData({ name: '', address: '', manager: null })
+    setFormData({ name: '', address: '' })
     setFormErrors({})
     setIsEditMode(false)
     setSelectedBranchId(null)
@@ -133,10 +114,6 @@ const BranchesManagement = () => {
     [formErrors]
   )
 
-  const handleManagerChange = useCallback((managerId: string | null) => {
-    setFormData((prev) => ({ ...prev, manager: managerId }))
-  }, [])
-
   const handleSubmit = useCallback(async () => {
     if (!canManage) {
       toast.error('Bạn không có quyền thao tác chi nhánh')
@@ -155,14 +132,12 @@ const BranchesManagement = () => {
       if (isEditMode && selectedBranchId) {
         result = await updateBranch(selectedBranchId, {
           name: formData.name,
-          address: formData.address,
-          manager: formData.manager || null
+          address: formData.address
         })
       } else {
         result = await createBranch({
           name: formData.name,
-          address: formData.address,
-          manager: formData.manager || null
+          address: formData.address
         })
       }
 
@@ -264,7 +239,6 @@ const BranchesManagement = () => {
 
       <BranchListComponent
         branches={branches as unknown as Branch[]}
-        managers={managers}
         isLoading={isLoading}
         canManage={canManage}
         pagination={{
@@ -281,15 +255,12 @@ const BranchesManagement = () => {
         isOpen={isModalOpen}
         isEditMode={isEditMode}
         canManage={canManage}
-        managers={managers}
         formData={formData}
         formErrors={formErrors}
         isSubmitting={isSubmitting}
         onClose={handleCloseModal}
         onFormChange={handleFormChange}
-        onManagerChange={handleManagerChange}
         onSubmit={handleSubmit}
-        onManagerCreated={loadManagers}
       />
     </div>
   )
