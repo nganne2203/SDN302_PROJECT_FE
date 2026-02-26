@@ -124,12 +124,23 @@ const TableCommon = <T extends Record<string, unknown>>({
       ...pagination
     }
 
+  const normalizedData = data.map((item, index) => {
+    const record = item as T & { id?: Key; _id?: Key; key?: Key }
+    const resolvedKey = record.key ?? record.id ?? record._id ?? `row-${index}`
+    return {
+      ...record,
+      key: resolvedKey
+    }
+  })
+
+  const resolvedRowKey = rowKey ?? 'key'
+
   return (
     <Spin spinning={loading}>
       <AntTable<T>
         columns={antColumns}
-        dataSource={data}
-        rowKey={rowKey as string | ((record: T) => Key)}
+        dataSource={normalizedData as T[]}
+        rowKey={resolvedRowKey as string | ((record: T) => Key)}
         onRow={onRow}
         pagination={paginationConfig}
         bordered={bordered}

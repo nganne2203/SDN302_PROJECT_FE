@@ -2,6 +2,7 @@ import { Table, InputNumber, Button, Empty } from 'antd'
 import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import { ROUTES } from '@/constants/constant'
 import { LoaderCommon } from '@/components/common'
 import useCart from '@/hooks/useCart'
@@ -30,8 +31,7 @@ const Cart = () => {
         const originalUnitPrice = pricing?.originalTotal && record.quantity > 0
           ? pricing.originalTotal / record.quantity
           : record.price
-        const firstImage = record.product.images?.[0]
-        const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.imageUrl
+        const imageUrl = getProductImageUrl(record.product.images)
 
         return (
           <div className="flex items-center gap-4">

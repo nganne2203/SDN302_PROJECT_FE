@@ -61,8 +61,14 @@ export const useCart = () => {
       try {
         const results = await Promise.all(
           items.map(async (item) => {
+            const resolvedProductId = item.productId || item.product?._id
+
+            if (!resolvedProductId) {
+              return { id: item.id, data: null }
+            }
+
             try {
-              const response = await pricingApi.calculatePrice(item.productId, item.quantity)
+              const response = await pricingApi.calculatePrice(resolvedProductId, item.quantity)
               return { id: item.id, data: response.data }
             } catch {
               return { id: item.id, data: null }

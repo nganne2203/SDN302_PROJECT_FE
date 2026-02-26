@@ -10,7 +10,7 @@ import {
 } from 'react-hook-form'
 import { MapPin, Plus, Trash2 } from 'lucide-react'
 import type { ProfileFormData } from '@/utils/validator'
-import { LocationSelectGroup } from '../common'
+import { LocationSelectGroupOffline } from '../common'
 
 interface ProfileContentRightProps {
   control: Control<ProfileFormData>;
@@ -35,7 +35,7 @@ const ProfileContentRight = ({
     <div className='lg:col-span-2'>
       <Card
         className='shadow-sm rounded-xl border-gray-200 h-full'
-        bordered={false}
+        variant='borderless'
         title={
           <span className='text-lg font-bold flex items-center gap-2'>
             <MapPin className='w-5 h-5 text-primary' /> Địa chỉ
@@ -143,7 +143,7 @@ const ProfileContentRight = ({
                   </div>
 
                   <div className='md:col-span-2'>
-                    <LocationSelectGroup
+                    <LocationSelectGroupOffline
                       provinceCode={address?.provinceCode}
                       districtCode={address?.districtCode}
                       wardCode={address?.wardCode}
@@ -173,21 +173,21 @@ const ProfileContentRight = ({
                       name={`addresses.${index}.provinceCode`}
                       control={control}
                       render={({ value, onChange }) => (
-                        <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
+                        <input type='hidden' value={(value as string | undefined) ?? ''} onChange={onChange} />
                       )}
                     />
                     <FieldCustom.Controlled
                       name={`addresses.${index}.districtCode`}
                       control={control}
                       render={({ value, onChange }) => (
-                        <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
+                        <input type='hidden' value={(value as string | undefined) ?? ''} onChange={onChange} />
                       )}
                     />
                     <FieldCustom.Controlled
                       name={`addresses.${index}.wardCode`}
                       control={control}
                       render={({ value, onChange }) => (
-                        <input type='hidden' value={(value as number | undefined) ?? ''} onChange={onChange} />
+                        <input type='hidden' value={(value as string | undefined) ?? ''} onChange={onChange} />
                       )}
                     />
                   </div>

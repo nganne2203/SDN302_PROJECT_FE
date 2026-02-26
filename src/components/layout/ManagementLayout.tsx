@@ -47,7 +47,7 @@ const ManagementLayout = () => {
   ]
 
   return (
-    <Layout className='min-h-screen'>
+    <Layout className='h-screen overflow-hidden'>
       <Sider
         trigger={null}
         collapsible
@@ -59,7 +59,7 @@ const ManagementLayout = () => {
         <SidebarLayout collapsed={collapsed} userRole={user?.role} />
       </Sider>
 
-      <Layout className='transition-all duration-200'>
+      <Layout className='h-screen overflow-hidden transition-all duration-200'>
         <Header className='!bg-white px-4 flex items-center justify-between shadow-sm sticky top-0 z-10'>
           <Button
             type='text'
@@ -97,7 +97,7 @@ const ManagementLayout = () => {
           </div>
         </Header>
 
-        <Content className='m-4 p-6 bg-white rounded-lg flex-1 overflow-y-auto max-h-[calc(100vh-88px)]'>
+        <Content className='m-4 p-6 bg-white rounded-lg flex-1 min-h-0 overflow-y-auto'>
           <Outlet />
         </Content>
       </Layout>
