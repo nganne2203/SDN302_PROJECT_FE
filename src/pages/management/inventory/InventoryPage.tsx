@@ -56,13 +56,13 @@ const InventoryPage = () => {
   const [storeCreateSaving, setStoreCreateSaving] = useState(false)
 
   const headerTitle = useMemo(
-    () => (isAdmin ? 'Quan ly ton kho' : 'Quan ly ton kho chi nhanh'),
+    () => (isAdmin ? 'Quản lý tồn kho' : 'Quản lý tồn kho chi nhánh'),
     [isAdmin]
   )
   const headerDescription = useMemo(
     () => (isAdmin
-      ? 'Theo doi kho tong va ton kho chi nhanh'
-      : 'Theo doi ton kho, nguong canh bao tai chi nhanh cua ban'
+      ? 'Theo dõi kho tổng và tồn kho chi nhánh'
+      : 'Theo dõi tồn kho, ngưỡng cảnh báo tại chi nhánh của bạn'
     ),
     [isAdmin]
   )
@@ -94,10 +94,10 @@ const InventoryPage = () => {
         quantity: values.quantity,
         location: values.location
       })
-      message.success('Tao ton kho moi thanh cong')
+      message.success('Tạo tồn kho mới thành công')
       setCreateModalOpen(false)
     } catch {
-      message.error('Khong the tao ton kho moi')
+      message.error('Không thể tạo tồn kho mới')
     } finally {
       setCreateSaving(false)
     }
@@ -108,11 +108,11 @@ const InventoryPage = () => {
     try {
       setAdjustSaving(true)
       await adjustMainInventory(adjustInventory.product._id, values.quantity)
-      message.success('Dieu chinh ton kho thanh cong')
+      message.success('Điều chỉnh tồn kho thành công')
       setAdjustModalOpen(false)
       setAdjustInventory(null)
     } catch {
-      message.error('Khong the dieu chinh ton kho')
+      message.error('Không thể điều chỉnh tồn kho')
     } finally {
       setAdjustSaving(false)
     }
@@ -132,10 +132,10 @@ const InventoryPage = () => {
         minThreshold: values.minThreshold,
         maxThreshold: values.maxThreshold
       })
-      message.success('Tao ton kho chi nhanh thanh cong')
+      message.success('Tạo tồn kho chi nhánh thành công')
       setStoreCreateModalOpen(false)
     } catch {
-      message.error('Khong the tao ton kho chi nhanh')
+      message.error('Không thể tạo tồn kho chi nhánh')
     } finally {
       setStoreCreateSaving(false)
     }
@@ -145,9 +145,9 @@ const InventoryPage = () => {
     if (!selectedBranchId) return
     try {
       await deleteStoreInventory(record._id, selectedBranchId)
-      message.success('Xoa ton kho chi nhanh thanh cong')
+      message.success('Xóa tồn kho chi nhánh thành công')
     } catch {
-      message.error('Khong the xoa ton kho chi nhanh')
+      message.error('Không thể xóa tồn kho chi nhánh')
     }
   }
 
@@ -156,11 +156,11 @@ const InventoryPage = () => {
     try {
       setThresholdSaving(true)
       await updateThresholds(selectedBranchId, selectedStoreInventory.product._id, values)
-      message.success('Cap nhat nguong ton kho thanh cong')
+      message.success('Cập nhật ngưỡng tồn kho thành công')
       setThresholdModalOpen(false)
       setSelectedStoreInventory(null)
     } catch {
-      message.error('Khong the cap nhat nguong ton kho')
+      message.error('Không thể cập nhật ngưỡng tồn kho')
     } finally {
       setThresholdSaving(false)
     }
@@ -171,11 +171,11 @@ const InventoryPage = () => {
     try {
       setMainSaving(true)
       await updateMainInventory(selectedMainInventory._id, values)
-      message.success('Cap nhat ton kho kho tong thanh cong')
+      message.success('Cập nhật tồn kho kho tổng thành công')
       setMainModalOpen(false)
       setSelectedMainInventory(null)
     } catch {
-      message.error('Khong the cap nhat ton kho kho tong')
+      message.error('Không thể cập nhật tồn kho kho tổng')
     } finally {
       setMainSaving(false)
     }
@@ -194,7 +194,7 @@ const InventoryPage = () => {
           items={[
             {
               key: 'main',
-              label: 'Kho tong',
+              label: 'Kho tổng',
               children: (
                 <MainInventoryPanel
                   data={filteredMainInventory}
@@ -211,7 +211,7 @@ const InventoryPage = () => {
             },
             {
               key: 'branch',
-              label: 'Kho chi nhanh',
+              label: 'Kho chi nhánh',
               children: (
                 <BranchInventoryPanel
                   isAdmin={isAdmin}

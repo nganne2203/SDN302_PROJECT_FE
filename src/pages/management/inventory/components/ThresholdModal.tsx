@@ -9,11 +9,11 @@ import { ControlledField, NumberField } from '@/components/common'
 
 const thresholdSchema = z
   .object({
-    minThreshold: z.coerce.number().min(0, 'Toi thieu phai >= 0').optional(),
-    maxThreshold: z.coerce.number().min(1, 'Toi da phai >= 1').optional()
+    minThreshold: z.coerce.number().min(0, 'Tối thiểu phải >= 0').optional(),
+    maxThreshold: z.coerce.number().min(1, 'Tối đa phải >= 1').optional()
   })
   .refine((data) => data.minThreshold !== undefined || data.maxThreshold !== undefined, {
-    message: 'Vui long nhap it nhat mot nguong'
+    message: 'Vui lòng nhập ít nhất một ngưỡng'
   })
 
 export type ThresholdFormValues = z.infer<typeof thresholdSchema>
@@ -50,18 +50,18 @@ const ThresholdModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Cap nhat nguong ton kho"
+      title="Cập nhật ngưỡng tồn kho"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button
             type="primary"
             onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
-            Luu
+            Lưu
           </Button>
         </div>
       }
@@ -72,12 +72,12 @@ const ThresholdModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="Nguong toi thieu"
+              label="Ngưỡng tối thiểu"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={0}
-              placeholder="Nhap nguong toi thieu"
+              placeholder="Nhập ngưỡng tối thiểu"
             />
           )}
         />
@@ -86,12 +86,12 @@ const ThresholdModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="Nguong toi da"
+              label="Ngưỡng tối đa"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error || formState.errors.root?.message}
               min={1}
-              placeholder="Nhap nguong toi da"
+              placeholder="Nhập ngưỡng tối đa"
             />
           )}
         />

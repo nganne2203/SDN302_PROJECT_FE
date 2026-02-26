@@ -26,7 +26,7 @@ const StockRequestTable = ({
 }: StockRequestTableProps) => {
   const columns = [
     {
-      title: 'Ma yeu cau',
+      title: 'Mã yêu cầu',
       dataIndex: '_id',
       key: 'requestId',
       render: (value: string) => value.slice(-6).toUpperCase()
@@ -34,7 +34,7 @@ const StockRequestTable = ({
     ...(isAdmin
       ? [
         {
-          title: 'Chi nhanh',
+          title: 'Chi nhánh',
           dataIndex: ['branch', 'name'],
           key: 'branch',
           render: (_: string, record: StockRequestRecord) => record.branch?.name || '-'
@@ -42,31 +42,31 @@ const StockRequestTable = ({
       ]
       : []),
     {
-      title: 'San pham',
+      title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
       key: 'product',
       render: (_: string, record: StockRequestRecord) => record.product?.name || '-'
     },
     {
-      title: 'So luong',
+      title: 'Số lượng',
       dataIndex: 'quantity',
       key: 'quantity',
-      render: (value: number) => `${value} cai`
+      render: (value: number) => `${value} cái`
     },
     {
-      title: 'Ngay yeu cau',
+      title: 'Ngày yêu cầu',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (value: string) => dayjs(value).format('DD/MM/YYYY')
     },
     {
-      title: 'Yeu cau tu',
+      title: 'Yêu cầu từ',
       dataIndex: ['requester', 'fullname'],
       key: 'requester',
       render: (_: string, record: StockRequestRecord) => record.requester?.fullname || '-'
     },
     {
-      title: 'Trang thai',
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status: StockRequestStatus) => {
@@ -76,9 +76,9 @@ const StockRequestTable = ({
           rejected: 'error'
         }
         const labelMap: Record<string, string> = {
-          pending: 'Cho duyet',
-          approved: 'Da duyet',
-          rejected: 'Bi tu choi'
+          pending: 'Chờ duyệt',
+          approved: 'Đã duyệt',
+          rejected: 'Bị từ chối'
         }
         return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>
       }
@@ -86,7 +86,7 @@ const StockRequestTable = ({
     ...(isAdmin
       ? [
         {
-          title: 'Duyet boi',
+          title: 'Duyệt bởi',
           dataIndex: ['admin', 'fullname'],
           key: 'approvedBy',
           render: (_: string, record: StockRequestRecord) => record.admin?.fullname || '-'
@@ -96,7 +96,7 @@ const StockRequestTable = ({
     ...(isAdmin
       ? [
         {
-          title: 'Hanh dong',
+          title: 'Hành động',
           key: 'action',
           render: (_: unknown, record: StockRequestRecord) => (
             <Space size="small">
@@ -128,7 +128,7 @@ const StockRequestTable = ({
   ]
 
   return (
-    <Card title="Danh sach yeu cau nhap kho">
+    <Card title="Danh sách yêu cầu nhập kho">
       <Table
         columns={columns}
         dataSource={data}

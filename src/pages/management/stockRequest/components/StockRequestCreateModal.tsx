@@ -8,9 +8,9 @@ import { ControlledField, SelectField, NumberField, TextAreaField } from '@/comp
 import type { Product } from '@/types/api'
 
 const createSchema = z.object({
-  product: z.string().min(1, 'Vui long chon san pham'),
-  quantity: z.coerce.number().min(1, 'So luong phai lon hon 0'),
-  reason: z.string().max(500, 'Toi da 500 ky tu').optional()
+  product: z.string().min(1, 'Vui lòng chọn sản phẩm'),
+  quantity: z.coerce.number().min(1, 'Số lượng phải lớn hơn 0'),
+  reason: z.string().max(500, 'Tối đa 500 ký tự').optional()
 })
 
 export type StockRequestCreateValues = z.infer<typeof createSchema>
@@ -46,14 +46,14 @@ const StockRequestCreateModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Tao yeu cau nhap kho moi"
+      title="Tạo yêu cầu nhập kho mới"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
-            Tao
+            Tạo
           </Button>
         </div>
       }
@@ -64,11 +64,11 @@ const StockRequestCreateModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <SelectField
-              label="San pham"
+              label="Sản phẩm"
               value={(value as string) || undefined}
               onChange={(next) => onChange(next)}
               error={error}
-              placeholder="Chon san pham"
+              placeholder="Chọn sản phẩm"
               options={products.map((product) => ({
                 label: product.name,
                 value: product._id
@@ -81,12 +81,12 @@ const StockRequestCreateModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="So luong"
+              label="Số lượng"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={1}
-              placeholder="Nhap so luong"
+              placeholder="Nhập số lượng"
             />
           )}
         />
@@ -95,11 +95,11 @@ const StockRequestCreateModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <TextAreaField
-              label="Ly do yeu cau (tuy chon)"
+              label="Lý do yêu cầu (tùy chọn)"
               value={(value as string) || ''}
               onChange={(event) => onChange(event.target.value)}
               error={error}
-              placeholder="Mo ta ly do yeu cau nhap kho"
+              placeholder="Mô tả lý do yêu cầu nhập kho"
               rows={3}
             />
           )}

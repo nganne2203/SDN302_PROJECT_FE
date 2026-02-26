@@ -52,13 +52,13 @@ const PricingListComponent = ({
   const tableColumns: TableColumn<PricingWithKey>[] = [
     {
       key: 'product',
-      title: 'San pham',
+      title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
       width: 180
     },
     {
       key: 'range',
-      title: 'Khoang so luong',
+      title: 'Khoảng số lượng',
       width: 140,
       render: (_: unknown, record: PricingWithKey) => {
         const maxValue = record.maxQuantity ?? null
@@ -67,14 +67,14 @@ const PricingListComponent = ({
     },
     {
       key: 'pricePerUnit',
-      title: 'Gia/1 sp',
+      title: 'Giá/1 sp',
       dataIndex: 'pricePerUnit',
       width: 130,
       render: (value: unknown) => formatCurrency(value as number)
     },
     {
       key: 'discountPercentage',
-      title: 'Giam gia',
+      title: 'Giảm giá',
       dataIndex: 'discountPercentage',
       width: 110,
       render: (value: unknown) => {
@@ -84,21 +84,21 @@ const PricingListComponent = ({
     },
     {
       key: 'isActive',
-      title: 'Trang thai',
+      title: 'Trạng thái',
       dataIndex: 'isActive',
       width: 110,
       render: (value: unknown) => {
         const isActive = value as boolean
         return (
           <span className={isActive ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-            {isActive ? 'Hoat dong' : 'Khong hoat dong'}
+            {isActive ? 'Hoạt động' : 'Không hoạt động'}
           </span>
         )
       }
     },
     {
       key: 'updatedAt',
-      title: 'Cap nhat',
+      title: 'Cập nhật',
       dataIndex: 'updatedAt',
       width: 140,
       render: (value: unknown) => {
@@ -109,7 +109,7 @@ const PricingListComponent = ({
     },
     {
       key: 'actions',
-      title: 'Hanh dong',
+      title: 'Hành động',
       width: 160,
       fixed: 'right',
       render: (_: unknown, record: PricingWithKey) => (
@@ -131,10 +131,10 @@ const PricingListComponent = ({
             />
           </Tooltip>
           <Popconfirm
-            title="Xac nhan xoa"
-            description="Ban co chac chan muon xoa bang gia nay?"
-            okText="Xoa"
-            cancelText="Huy"
+            title="Xác nhận xóa"
+            description="Bạn có chắc chắn muốn xóa bảng giá này?"
+            okText="Xóa"
+            cancelText="Hủy"
             onConfirm={() => onDelete(record._id)}
             okButtonProps={{ danger: true }}
           >
@@ -150,7 +150,7 @@ const PricingListComponent = ({
   return (
     <>
       {isLoading ? (
-        <LoaderCommon size="lg" tip="Dang tai bang gia..." />
+        <LoaderCommon size="lg" tip="Đang tải bảng giá..." />
       ) : (
         <TableCommon<PricingWithKey>
           columns={tableColumns}
