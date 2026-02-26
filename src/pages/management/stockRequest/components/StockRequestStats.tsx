@@ -12,7 +12,7 @@ const StockRequestStats = ({ pendingCount, approvedCount }: StockRequestStatsPro
       <Col xs={24} sm={12} lg={6}>
         <Card hoverable>
           <Statistic
-            title="Cho duyet"
+            title="Chờ duyệt"
             value={pendingCount}
             prefix={<ClockCircleOutlined className="text-warning" />}
             styles={{ content: { color: '#faad14' } }}
@@ -22,7 +22,7 @@ const StockRequestStats = ({ pendingCount, approvedCount }: StockRequestStatsPro
       <Col xs={24} sm={12} lg={6}>
         <Card hoverable>
           <Statistic
-            title="Da duyet"
+            title="Đã duyệt"
             value={approvedCount}
             prefix={<CheckCircleOutlined className="text-success" />}
             styles={{ content: { color: '#52c41a' } }}

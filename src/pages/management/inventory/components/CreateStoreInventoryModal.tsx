@@ -11,14 +11,14 @@ import type { Product, Branch } from '@/types/api'
 
 const createStoreInventorySchema = z
   .object({
-    branch: z.string().min(1, 'Vui long chon chi nhanh'),
-    product: z.string().min(1, 'Vui long chon san pham'),
-    quantity: z.coerce.number().min(0, 'So luong phai >= 0'),
-    minThreshold: z.coerce.number().min(0, 'Nguong toi thieu phai >= 0'),
-    maxThreshold: z.coerce.number().min(1, 'Nguong toi da phai >= 1')
+    branch: z.string().min(1, 'Vui lòng chọn chi nhánh'),
+    product: z.string().min(1, 'Vui lòng chọn sản phẩm'),
+    quantity: z.coerce.number().min(0, 'Số lượng phải >= 0'),
+    minThreshold: z.coerce.number().min(0, 'Ngưỡng tối thiểu phải >= 0'),
+    maxThreshold: z.coerce.number().min(1, 'Ngưỡng tối đa phải >= 1')
   })
   .refine((data) => data.maxThreshold > data.minThreshold, {
-    message: 'Nguong toi da phai lon hon nguong toi thieu',
+    message: 'Ngưỡng tối đa phải lớn hơn ngưỡng tối thiểu',
     path: ['maxThreshold']
   })
 
@@ -94,18 +94,18 @@ const CreateStoreInventoryModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Tao ton kho chi nhanh"
+      title="Tạo tồn kho chi nhánh"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button
             type="primary"
             onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
-            Tao moi
+            Tạo mới
           </Button>
         </div>
       }
@@ -117,12 +117,12 @@ const CreateStoreInventoryModal = ({
             control={control}
             render={({ value, onChange, error }) => (
               <SelectField
-                label="Chi nhanh"
+                label="Chi nhánh"
                 value={value as string || undefined}
                 onChange={(val) => onChange(val)}
                 options={branchOptions}
                 error={error}
-                placeholder="Chon chi nhanh"
+                placeholder="Chọn chi nhánh"
                 showSearch
                 filterOption={(input, option) =>
                   (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
@@ -133,9 +133,9 @@ const CreateStoreInventoryModal = ({
           />
         ) : (
           <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-sm text-gray-500">Chi nhanh</p>
+            <p className="text-sm text-gray-500">Chi nhánh</p>
             <p className="font-medium">
-              {branches.find((b) => b._id === fixedBranchId)?.name || 'Chi nhanh cua ban'}
+              {branches.find((b) => b._id === fixedBranchId)?.name || 'Chi nhánh của bạn'}
             </p>
           </div>
         )}
@@ -145,12 +145,12 @@ const CreateStoreInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <SelectField
-              label="San pham"
+              label="Sản phẩm"
               value={value as string || undefined}
               onChange={(val) => onChange(val)}
               options={productOptions}
               error={error}
-              placeholder="Chon san pham"
+              placeholder="Chọn sản phẩm"
               showSearch
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
@@ -165,12 +165,12 @@ const CreateStoreInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="So luong"
+              label="Số lượng"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={0}
-              placeholder="Nhap so luong"
+              placeholder="Nhập số lượng"
               required
             />
           )}
@@ -181,12 +181,12 @@ const CreateStoreInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="Nguong toi thieu"
+              label="Ngưỡng tối thiểu"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={0}
-              placeholder="Nhap nguong toi thieu"
+              placeholder="Nhập ngưỡng tối thiểu"
               required
             />
           )}
@@ -197,12 +197,12 @@ const CreateStoreInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="Nguong toi da"
+              label="Ngưỡng tối đa"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={1}
-              placeholder="Nhap nguong toi da"
+              placeholder="Nhập ngưỡng tối đa"
               required
             />
           )}

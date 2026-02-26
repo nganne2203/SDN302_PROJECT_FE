@@ -105,7 +105,7 @@ const Cart = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
-          <LoaderCommon size="lg" tip="Dang tai gio hang..." />
+          <LoaderCommon size="lg" tip="Đang tải giỏ hàng..." />
         </div>
       </div>
     )
@@ -160,7 +160,7 @@ const Cart = () => {
 
               <div className="space-y-4 border-b border-gray-200 pb-4 mb-4">
                 <div className="flex justify-between text-gray-600">
-                  <span>Tam tinh ({totalItems} san pham)</span>
+                  <span>Tạm tính ({totalItems} sản phẩm)</span>
                   <span>{formatCurrency(totalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
@@ -175,7 +175,7 @@ const Cart = () => {
               </div>
               {isPricingLoading && (
                 <div className="text-xs text-gray-500 mb-4">
-                  Dang tinh gia theo so luong...
+                  Đang tính giá theo số lượng...
                 </div>
               )}
 

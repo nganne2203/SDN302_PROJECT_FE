@@ -103,7 +103,7 @@ const ProductModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={handleClose}
-      title={isEditMode ? 'Chinh sua san pham' : 'Them san pham moi'}
+      title={isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
       size="lg"
       footer={
         <div className="flex justify-end gap-2">
@@ -112,14 +112,14 @@ const ProductModal = ({
             onClick={handleClose}
             disabled={isSubmitting || isUploadingImages}
           >
-            Huy
+            Hủy
           </ButtonCommon>
           <ButtonCommon
             variant="primary"
             onClick={onSubmit}
             isLoading={isSubmitting || isUploadingImages}
           >
-            {isEditMode ? 'Cap nhat' : 'Tao moi'}
+            {isEditMode ? 'Cập nhật' : 'Tạo mới'}
           </ButtonCommon>
         </div>
       }
@@ -131,8 +131,8 @@ const ProductModal = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <InputField
-              label="Ten san pham"
-              placeholder="Nhap ten san pham..."
+              label="Tên sản phẩm"
+              placeholder="Nhập tên sản phẩm..."
               required
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}
@@ -148,8 +148,8 @@ const ProductModal = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <TextAreaField
-              label="Mo ta"
-              placeholder="Nhap mo ta san pham..."
+              label="Mô tả"
+              placeholder="Nhập mô tả sản phẩm..."
               required
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}
@@ -167,8 +167,8 @@ const ProductModal = ({
             control={control}
             render={({ value, onChange, onBlur, error }) => (
               <SelectField
-                label="Danh muc"
-                placeholder="Chon danh muc..."
+                label="Danh mục"
+                placeholder="Chọn danh mục..."
                 required
                 value={(value as string) || undefined}
                 options={categoryOptions}
@@ -185,7 +185,7 @@ const ProductModal = ({
             control={control}
             render={({ value, onChange, onBlur, error }) => (
               <NumberField
-                label="Gia (VND)"
+                label="Giá (VND)"
                 placeholder="0"
                 required
                 value={value as number}
@@ -203,8 +203,8 @@ const ProductModal = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <InputField
-              label="Chat lieu"
-              placeholder="Nhap chat lieu..."
+              label="Chất liệu"
+              placeholder="Nhập chất liệu..."
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}
               onBlur={onBlur}
@@ -219,15 +219,15 @@ const ProductModal = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <SelectField
-              label="Thiet bi tuong thich"
-              placeholder="Chon thiet bi tuong thich..."
+              label="Thiết bị tương thích"
+              placeholder="Chọn thiết bị tương thích..."
               mode="multiple"
               value={(value as string[]) || []}
               onChange={(val) => onChange(val)}
               onBlur={onBlur}
               options={deviceOptions}
               error={error}
-              helpText="Chon cac thiet bi tuong thich voi san pham nay"
+              helpText="Chọn các thiết bị tương thích với sản phẩm này"
               showSearch
               filterOption={(input, option) =>
                 String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -240,13 +240,13 @@ const ProductModal = ({
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hinh anh <span className="text-red-500">*</span>
+            Hình ảnh <span className="text-red-500">*</span>
           </label>
 
           {/* Existing Images (for edit mode) */}
           {existingImages && existingImages.length > 0 && (
             <div className="mb-3">
-              <p className="text-xs text-gray-600 mb-2">Hinh anh hien tai:</p>
+              <p className="text-xs text-gray-600 mb-2">Hình ảnh hiện tại:</p>
               <div className="grid grid-cols-4 gap-3">
                 {existingImages.map((image, index) => {
                   const imageUrl = typeof image === 'string' ? image : image.imageUrl
@@ -276,7 +276,7 @@ const ProductModal = ({
           {/* Preview New Images */}
           {previewImages.length > 0 && (
             <div className="mb-3">
-              <p className="text-xs text-gray-600 mb-2">Hinh anh moi:</p>
+              <p className="text-xs text-gray-600 mb-2">Hình ảnh mới:</p>
               <div className="grid grid-cols-4 gap-3">
                 {previewImages.map((preview, index) => (
                   <div key={`preview-${index}`} className="relative group">
@@ -308,7 +308,7 @@ const ProductModal = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click de tai len</span> hoac keo tha
+                  <span className="font-semibold">Click để tải lên</span> hoặc kéo thả
                 </p>
                 <p className="text-xs text-gray-500">PNG, JPG, JPEG (MAX. 5MB)</p>
               </div>

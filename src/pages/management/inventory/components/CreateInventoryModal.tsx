@@ -10,9 +10,9 @@ import { productApi } from '@/apis/product'
 import type { Product } from '@/types/api'
 
 const createInventorySchema = z.object({
-  product: z.string().min(1, 'Vui long chon san pham'),
-  quantity: z.coerce.number().min(0, 'So luong phai >= 0'),
-  location: z.string().max(200, 'Vi tri toi da 200 ky tu').optional()
+  product: z.string().min(1, 'Vui lòng chọn sản phẩm'),
+  quantity: z.coerce.number().min(0, 'Số lượng phải >= 0'),
+  location: z.string().max(200, 'Vị trí tối đa 200 ký tự').optional()
 })
 
 export type CreateInventoryFormValues = z.infer<typeof createInventorySchema>
@@ -66,18 +66,18 @@ const CreateInventoryModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Tao ton kho moi"
+      title="Tạo tồn kho mới"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button
             type="primary"
             onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
-            Tao moi
+            Tạo mới
           </Button>
         </div>
       }
@@ -88,12 +88,12 @@ const CreateInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <SelectField
-              label="San pham"
+              label="Sản phẩm"
               value={value as string || undefined}
               onChange={(val) => onChange(val)}
               options={productOptions}
               error={error}
-              placeholder="Chon san pham"
+              placeholder="Chọn sản phẩm"
               showSearch
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
@@ -107,12 +107,12 @@ const CreateInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="So luong"
+              label="Số lượng"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={0}
-              placeholder="Nhap so luong"
+              placeholder="Nhập số lượng"
               required
             />
           )}
@@ -122,11 +122,11 @@ const CreateInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <InputField
-              label="Vi tri luu kho"
+              label="Vị trí lưu kho"
               value={(value as string | undefined) || ''}
               onChange={(event) => onChange(event.target.value)}
               error={error}
-              placeholder="Vi du: Kho A - Tang 1"
+              placeholder="Ví dụ: Kho A - Tầng 1"
             />
           )}
         />
