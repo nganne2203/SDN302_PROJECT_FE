@@ -23,7 +23,7 @@ const ProfileHeader = ({ isLoading, onSubmit, isEditMode }: ProfileHeaderProps) 
         isLoading={isLoading}
         icon={isEditMode ? <Save className='w-4 h-4' /> : <Edit className='w-4 h-4' />}
       >
-        {isEditMode ? 'Cập nhật hồ sơ' : 'Lưu thay đổi'}
+        {isEditMode ? 'Cập nhật hồ sơ' : 'Chỉnh sửa'}
       </ButtonCommon>
     </div>
   )
