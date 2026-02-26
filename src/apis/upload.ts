@@ -40,7 +40,7 @@ export const uploadApi = {
   },
 
   getImage: async (publicId: string): Promise<ApiResponse<UploadedImage>> => {
-    const endpoint = API_ENDPOINTS.UPLOAD.IMAGE_DETAIL(publicId)
+    const endpoint = API_ENDPOINTS.UPLOAD.IMAGE_DETAIL(encodeURIComponent(publicId))
     const response = await apiClient.get<ApiResponse<UploadedImage>>(endpoint)
     return response.data
   }

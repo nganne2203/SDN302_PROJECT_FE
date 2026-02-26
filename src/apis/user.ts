@@ -1,8 +1,9 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
-import type { ApiResponse, UserInfo, ProfileResponse } from '@/types/api'
+import type { ApiError, ApiResponse, UserInfo, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
 import uploadApi from './upload'
+import type { AxiosError } from 'axios'
 
 export interface UpdateProfileRequest {
   fullname?: string
@@ -28,6 +29,8 @@ export interface SetPasswordRequest {
   password: string
 }
 
+const missingAvatarPublicIds = new Set<string>()
+
 const resolveUserAvatar = async (user: UserInfo): Promise<UserInfo> => {
   const publicId = user.avatarId || user.avatar
 
@@ -39,18 +42,45 @@ const resolveUserAvatar = async (user: UserInfo): Promise<UserInfo> => {
     }
   }
 
-  try {
-    const imageResponse = await uploadApi.getImage(publicId)
+  const normalizedPublicId = publicId.startsWith('uploads/')
+    ? publicId.replace(/^uploads\//, '')
+    : publicId
+
+  const candidatePublicIds = Array.from(new Set([publicId, normalizedPublicId]))
+
+  const hasKnownMissingCandidate = candidatePublicIds.some((candidateId) => missingAvatarPublicIds.has(candidateId))
+  if (hasKnownMissingCandidate) {
     return {
       ...user,
-      avatarId: publicId,
-      avatar: imageResponse.data.imageUrl
+      avatarId: normalizedPublicId,
+      avatar: undefined
     }
-  } catch {
-    return {
-      ...user,
-      avatarId: publicId
+  }
+
+  for (const candidateId of candidatePublicIds) {
+    try {
+      const imageResponse = await uploadApi.getImage(candidateId)
+      return {
+        ...user,
+        avatarId: candidateId,
+        avatar: imageResponse.data.imageUrl
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiError>
+      const statusCode = axiosError.response?.status
+      const errorCode = axiosError.response?.data?.code
+      const isNotFound = statusCode === 404 || errorCode === 'NOT_FOUND'
+
+      if (isNotFound) {
+        missingAvatarPublicIds.add(candidateId)
+      }
     }
+  }
+
+  return {
+    ...user,
+    avatarId: normalizedPublicId,
+    avatar: undefined
   }
 }
 
