@@ -14,7 +14,7 @@ export const fetchDevicesThunk = createAsyncThunk<FetchDevicesPayload, DeviceFil
         pagination: response.pagination
       }
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the tai danh sach thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh sách thiết bị'))
     }
   }
 )
@@ -26,7 +26,7 @@ export const fetchDeviceByIdThunk = createAsyncThunk<Device, string>(
       const response = await deviceApi.getDeviceById(id)
       return response.data
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the tai thong tin thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể tải thông tin thiết bị'))
     }
   }
 )
@@ -39,7 +39,7 @@ export const createDeviceThunk = createAsyncThunk<Device, CreateDevicePayload>(
       dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the tao thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể tạo thiết bị'))
     }
   }
 )
@@ -55,7 +55,7 @@ export const updateDeviceThunk = createAsyncThunk<
       dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the cap nhat thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể cập nhật thiết bị'))
     }
   }
 )
@@ -68,7 +68,7 @@ export const deleteDeviceThunk = createAsyncThunk<string, string>(
       dispatch(invalidateProductCache())
       return id
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the xoa thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể xóa thiết bị'))
     }
   }
 )
@@ -81,7 +81,7 @@ export const updateDeviceStatusThunk = createAsyncThunk<Device, { id: string; is
       dispatch(invalidateProductCache())
       return response.data
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the cap nhat trang thai thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái thiết bị'))
     }
   }
 )
@@ -93,7 +93,7 @@ export const fetchAllDevicesThunk = createAsyncThunk<Device[], void>(
       const response = await deviceApi.getAllDevices()
       return response.data
     } catch (error) {
-      return rejectWithValue(extractApiError(error, 'Khong the tai danh sach tat ca thiet bi'))
+      return rejectWithValue(extractApiError(error, 'Không thể tải danh sách tất cả thiết bị'))
     }
   }
 )

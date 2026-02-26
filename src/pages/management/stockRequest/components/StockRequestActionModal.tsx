@@ -11,8 +11,8 @@ export type StockRequestAction = 'approve' | 'reject'
 const buildSchema = (action: StockRequestAction) => {
   return z.object({
     note: action === 'reject'
-      ? z.string().min(1, 'Vui long nhap ly do tu choi').max(500, 'Toi da 500 ky tu')
-      : z.string().max(500, 'Toi da 500 ky tu').optional()
+      ? z.string().min(1, 'Vui lòng nhập lý do từ chối').max(500, 'Tối đa 500 ký tự')
+      : z.string().max(500, 'Tối đa 500 ký tự').optional()
   })
 }
 
@@ -50,14 +50,14 @@ const StockRequestActionModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title={actionType === 'approve' ? 'Duyet yeu cau nhap kho' : 'Tu choi yeu cau nhap kho'}
+      title={actionType === 'approve' ? 'Duyệt yêu cầu nhập kho' : 'Từ chối yêu cầu nhập kho'}
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
-            Xac nhan
+            Xác nhận
           </Button>
         </div>
       }
@@ -68,12 +68,12 @@ const StockRequestActionModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <TextAreaField
-              label="Ghi chu"
+              label="Ghi chú"
               value={(value as string) || ''}
               onChange={(event) => onChange(event.target.value)}
               error={error}
               rows={3}
-              placeholder="Nhap ghi chu"
+              placeholder="Nhập ghi chú"
             />
           )}
         />

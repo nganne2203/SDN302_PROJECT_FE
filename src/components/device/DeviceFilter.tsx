@@ -29,21 +29,21 @@ const DeviceFilterComponent = ({
   const filterFields: FilterField[] = [
     {
       key: 'sortBy',
-      label: 'Sap xep theo',
+      label: 'Sắp xếp theo',
       type: 'select',
       options: [
-        { label: 'Ten', value: 'name' },
-        { label: 'Thuong hieu', value: 'brand' },
+        { label: 'Tên', value: 'name' },
+        { label: 'Thương hiệu', value: 'brand' },
         { label: 'Model', value: 'model' },
-        { label: 'Ngay tao', value: 'createdAt' },
-        { label: 'Ngay cap nhat', value: 'updatedAt' }
+        { label: 'Ngày tạo', value: 'createdAt' },
+        { label: 'Ngày cập nhật', value: 'updatedAt' }
       ]
     }
   ]
 
   return (
     <FilterCommon
-      searchPlaceholder="Tim kiem theo ten, thuong hieu hoac model..."
+      searchPlaceholder="Tìm kiếm theo tên, thương hiệu hoặc model..."
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       showSearch={true}

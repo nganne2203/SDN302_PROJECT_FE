@@ -100,7 +100,7 @@ export const useCart = () => {
   const updateQuantity = useCallback(async (id: string, quantity: number | null) => {
     const parsed = quantitySchema.safeParse(quantity)
     if (!parsed.success) {
-      message.error(parsed.error.issues[0]?.message || 'So luong khong hop le')
+      message.error(parsed.error.issues[0]?.message || 'Số lượng không hợp lệ')
       return false
     }
 
@@ -111,7 +111,7 @@ export const useCart = () => {
       )
       return true
     } catch {
-      message.error('Cap nhat so luong that bai')
+      message.error('Cập nhật số lượng thất bại')
       return false
     }
   }, [])
@@ -120,10 +120,10 @@ export const useCart = () => {
     try {
       await cartApi.removeFromCart(id)
       setCartItems((prev) => prev.filter((item) => item.id !== id))
-      message.success('Da xoa san pham khoi gio hang')
+      message.success('Đã xóa sản phẩm khỏi giỏ hàng')
       return true
     } catch {
-      message.error('Xoa san pham that bai')
+      message.error('Xóa sản phẩm thất bại')
       return false
     }
   }, [])

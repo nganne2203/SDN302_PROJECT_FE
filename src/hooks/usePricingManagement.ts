@@ -8,11 +8,11 @@ import type { PricingFilter, PricingRule } from '@/features/pricing/pricingTypes
 import type { BulkTierForm } from '@/components/pricing/PricingBulkModal'
 
 const bulkTierSchema = z.object({
-  minQuantity: z.number().min(1, 'So luong toi thieu khong hop le'),
-  maxQuantity: z.number().min(1, 'So luong toi da khong hop le').nullable().optional(),
-  pricePerUnit: z.number().min(0, 'Gia moi san pham khong hop le'),
-  discountPercentage: z.number().min(0, 'Giam gia khong hop le').max(100, 'Giam gia khong hop le').nullable().optional(),
-  description: z.string().max(500, 'Mo ta khong hop le').optional().or(z.literal(''))
+  minQuantity: z.number().min(1, 'Số lượng tối thiểu không hợp lệ'),
+  maxQuantity: z.number().min(1, 'Số lượng tối đa không hợp lệ').nullable().optional(),
+  pricePerUnit: z.number().min(0, 'Giá mỗi sản phẩm không hợp lệ'),
+  discountPercentage: z.number().min(0, 'Giảm giá không hợp lệ').max(100, 'Giảm giá không hợp lệ').nullable().optional(),
+  description: z.string().max(500, 'Mô tả không hợp lệ').optional().or(z.literal(''))
 }).superRefine((data, ctx) => {
   if (data.maxQuantity !== null && data.maxQuantity !== undefined) {
     if (data.maxQuantity < data.minQuantity) {
@@ -251,7 +251,7 @@ export const usePricingManagement = () => {
       }
 
       if (result.type.includes('fulfilled')) {
-        toast.success(isEditMode ? 'Cap nhat bang gia thanh cong' : 'Tao bang gia thanh cong')
+        toast.success(isEditMode ? 'Cập nhật bảng giá thành công' : 'Tạo bảng giá thành công')
         handleCloseModal()
       } else if (result.payload) {
         toast.error(result.payload as string)
@@ -264,7 +264,7 @@ export const usePricingManagement = () => {
   const handleDelete = useCallback(async (id: string) => {
     const result = await deletePricing(id)
     if (result.type.includes('fulfilled')) {
-      toast.success('Xoa bang gia thanh cong')
+      toast.success('Xóa bảng giá thành công')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }
@@ -273,7 +273,7 @@ export const usePricingManagement = () => {
   const handleToggleStatus = useCallback(async (id: string) => {
     const result = await togglePricingStatus(id)
     if (result.type.includes('fulfilled')) {
-      toast.success('Cap nhat trang thai bang gia thanh cong')
+      toast.success('Cập nhật trạng thái bảng giá thành công')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }
@@ -282,7 +282,7 @@ export const usePricingManagement = () => {
   const handleBulkSubmit = useCallback(async (productIdValue: string, tiers: BulkTierForm[]) => {
     const parsed = bulkPricingSchema.safeParse({ productId: productIdValue, tiers })
     if (!parsed.success) {
-      const messageText = parsed.error.issues[0]?.message || 'Du lieu khong hop le'
+      const messageText = parsed.error.issues[0]?.message || 'Dữ liệu không hợp lệ'
       toast.error(messageText)
       return
     }
@@ -302,7 +302,7 @@ export const usePricingManagement = () => {
 
       const result = await bulkCreatePricing(payload)
       if (result.type.includes('fulfilled')) {
-        toast.success('Tao bang gia hang loat thanh cong')
+        toast.success('Tạo bảng giá hàng loạt thành công')
         setIsBulkModalOpen(false)
         const isActiveFilter = filter.isActive === 'true'
           ? true

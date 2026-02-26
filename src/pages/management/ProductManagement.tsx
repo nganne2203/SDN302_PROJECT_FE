@@ -101,7 +101,7 @@ const ProductManagement = () => {
   const handleSubmitForm = useCallback(async (values: ProductFormData) => {
     // Validate images
     if (existingImages.length === 0 && imageFiles.length === 0) {
-      setImageError('Vui long tai len it nhat mot hinh anh')
+      setImageError('Vui lòng tải lên ít nhất một hình ảnh')
       return
     }
     setImageError(undefined)
@@ -133,16 +133,16 @@ const ProductManagement = () => {
 
       if (isEditMode && selectedProduct) {
         await updateProduct(selectedProduct._id, productData)
-        toast.success('Cap nhat san pham thanh cong')
+        toast.success('Cập nhật sản phẩm thành công')
       } else {
         await createProduct(productData)
-        toast.success('Tao san pham thanh cong')
+        toast.success('Tạo sản phẩm thành công')
       }
 
       closeModal()
       fetchProducts()
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Co loi xay ra'
+      const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra'
       toast.error(errorMessage)
     }
   }, [isEditMode, selectedProduct, existingImages, imageFiles, uploadImages, updateProduct, createProduct, closeModal, fetchProducts])
