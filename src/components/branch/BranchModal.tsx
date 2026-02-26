@@ -1,37 +1,153 @@
-import { Input } from 'antd'
+import React, { useState } from 'react'
 import { ModalCommon, ButtonCommon } from '@/components/common'
-import type { BranchFormData } from '@/hooks/useBranch'
+import { Input } from 'antd'
+import LocationSelectGroupOffline from '@/components/common/LocationSelectGroupOffline'
+import { combineAddress, type AddressComponents } from '@/utils/addressHelper'
+
+interface ExtendedBranchFormData {
+  name: string
+  addressLine: string
+  city: string
+  district: string
+  ward: string
+  provinceCode?: string
+  districtCode?: string
+  wardCode?: string
+}
 
 /* eslint-disable no-unused-vars */
-interface BranchModalProps {
+interface BranchModalOfflineProps {
   isOpen: boolean
   isEditMode: boolean
   canManage?: boolean
-  formData: BranchFormData
-  formErrors: Record<string, string>
+  initialData?: {
+    name: string
+    address: string // Combined address from backend
+  }
   isSubmitting: boolean
   onClose: () => void
-  onFormChange: (field: keyof BranchFormData, value: string) => void
-  onSubmit: () => void
+  onSubmit: (data: { name: string; address: string }) => void
 }
 
 const BranchModalComponent = ({
   isOpen,
   isEditMode,
   canManage = true,
-  formData,
-  formErrors,
+  initialData,
   isSubmitting,
   onClose,
-  onFormChange,
   onSubmit
-}: BranchModalProps) => {
+}: BranchModalOfflineProps) => {
+  const [formData, setFormData] = useState<ExtendedBranchFormData>({
+    name: initialData?.name || '',
+    addressLine: '',
+    city: '',
+    district: '',
+    ward: '',
+    provinceCode: undefined,
+    districtCode: undefined,
+    wardCode: undefined
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Simple address parsing function
+  const parseAddress = (fullAddress: string): AddressComponents => {
+    // Simple parsing - just put everything in addressLine for now
+    // Could be enhanced to parse components from existing address
+    return { addressLine: fullAddress }
+  }
+
+  // Initialize form data when modal opens or initialData changes
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        // Parse existing address if editing
+        const addressComponents = parseAddress(initialData.address)
+        setFormData({
+          name: initialData.name,
+          addressLine: addressComponents.addressLine || '',
+          city: addressComponents.city || '',
+          district: addressComponents.district || '',
+          ward: addressComponents.ward || '',
+          provinceCode: addressComponents.provinceCode,
+          districtCode: addressComponents.districtCode,
+          wardCode: addressComponents.wardCode
+        })
+      } else {
+        // Reset form for new branch
+        setFormData({
+          name: '',
+          addressLine: '',
+          city: '',
+          district: '',
+          ward: '',
+          provinceCode: undefined,
+          districtCode: undefined,
+          wardCode: undefined
+        })
+      }
+      setErrors({})
+    }
+  }, [isOpen, initialData])
+
+  const handleFieldChange = (field: keyof ExtendedBranchFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleLocationChange = (changes: Partial<AddressComponents>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...changes
+    }))
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Tên chi nhánh không được để trống'
+    }
+
+    if (!formData.addressLine.trim() && !formData.city.trim()) {
+      newErrors.address = 'Vui lòng nhập địa chỉ hoặc chọn tỉnh/thành phố'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = () => {
+    if (!validateForm()) {
+      return
+    }
+
+    const combinedAddress = combineAddress({
+      addressLine: formData.addressLine,
+      ward: formData.ward,
+      district: formData.district,
+      city: formData.city
+    })
+
+    onSubmit({
+      name: formData.name.trim(),
+      address: combinedAddress
+    })
+  }
+
   const footer = (
     <div className="flex justify-end gap-2">
       <ButtonCommon variant="secondary" onClick={onClose} disabled={isSubmitting}>
         Hủy
       </ButtonCommon>
-      <ButtonCommon variant="primary" onClick={onSubmit} isLoading={isSubmitting} disabled={!canManage}>
+      <ButtonCommon
+        variant="primary"
+        onClick={handleSubmit}
+        isLoading={isSubmitting}
+        disabled={!canManage}
+      >
         {isEditMode ? 'Lưu thay đổi' : 'Tạo chi nhánh'}
       </ButtonCommon>
     </div>
@@ -42,37 +158,49 @@ const BranchModalComponent = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditMode ? 'Cập nhật chi nhánh' : 'Tạo chi nhánh mới'}
-      size="md"
+      size="lg"
       footer={footer}
       maskClosable={false}
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tên chi nhánh <span className="text-red-500">*</span>
           </label>
           <Input
             value={formData.name}
-            onChange={(e) => onFormChange('name', e.target.value)}
+            onChange={(e) => handleFieldChange('name', e.target.value)}
             placeholder="Nhập tên chi nhánh"
-            status={formErrors.name ? 'error' : ''}
+            status={errors.name ? 'error' : ''}
             disabled={!canManage}
           />
-          {formErrors.name && <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>}
+          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Địa chỉ <span className="text-red-500">*</span>
+            Địa chỉ cụ thể
           </label>
           <Input
-            value={formData.address}
-            onChange={(e) => onFormChange('address', e.target.value)}
-            placeholder="Nhập địa chỉ"
-            status={formErrors.address ? 'error' : ''}
+            value={formData.addressLine}
+            onChange={(e) => handleFieldChange('addressLine', e.target.value)}
+            placeholder="Số nhà, tên đường (VD: 123 Nguyễn Trãi)"
             disabled={!canManage}
           />
-          {formErrors.address && <p className="mt-1 text-sm text-red-500">{formErrors.address}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Chọn tỉnh/thành phố, quận/huyện, phường/xã
+          </label>
+          <LocationSelectGroupOffline
+            provinceCode={formData.provinceCode}
+            districtCode={formData.districtCode}
+            wardCode={formData.wardCode}
+            onChange={handleLocationChange}
+            disabled={!canManage}
+          />
+          {errors.address && <p className="mt-2 text-sm text-red-500">{errors.address}</p>}
         </div>
       </div>
     </ModalCommon>
@@ -80,4 +208,3 @@ const BranchModalComponent = ({
 }
 
 export default BranchModalComponent
-

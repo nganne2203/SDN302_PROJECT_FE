@@ -103,9 +103,9 @@ export const shippingAddressSchema = z.object({
   province: z.string().min(1, 'Tỉnh/Thành phố là bắt buộc'),
   district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
   ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
-  provinceCode: z.number().optional(),
-  districtCode: z.number().optional(),
-  wardCode: z.number().optional(),
+  provinceCode: z.string().optional(),
+  districtCode: z.string().optional(),
+  wardCode: z.string().optional(),
   address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc')
 })
 
@@ -116,9 +116,9 @@ export const userAddressSchema = z.object({
   city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
   district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
   ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
-  provinceCode: z.number().optional(),
-  districtCode: z.number().optional(),
-  wardCode: z.number().optional(),
+  provinceCode: z.string().optional(),
+  districtCode: z.string().optional(),
+  wardCode: z.string().optional(),
   isDefault: z.boolean().optional()
 })
 

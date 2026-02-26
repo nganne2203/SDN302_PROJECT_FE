@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField, LocationSelectGroup, UploadField } from '@/components/common'
+import { ModalCommon, ButtonCommon, InputField, SelectField, CheckboxField, LocationSelectGroupOffline, UploadField } from '@/components/common'
 import { Button, Divider } from 'antd'
 import type { UploadProps } from 'antd'
 import { Plus, Trash2, MapPin } from 'lucide-react'
@@ -7,6 +7,7 @@ import type { User, Address } from '@/features/user/userTypes'
 import type { Branch, UserRole } from '@/types/api'
 import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import { emailSchema, passwordSchema, fullNameSchema, userAddressSchema } from '@/utils/validator'
+import { combineAddress } from '@/utils/addressHelper'
 import { useBranch } from '@/hooks/useBranch'
 import uploadApi from '@/apis/upload'
 import { toast } from '@/utils/toast'
@@ -88,7 +89,6 @@ const UserFormModal = ({
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false)
   const [isBranchSubmitting, setIsBranchSubmitting] = useState(false)
   const [branchFormData, setBranchFormData] = useState<BranchFormData>({ name: '', address: '' })
-  const [branchFormErrors, setBranchFormErrors] = useState<Record<string, string>>({})
   const { branches, fetchBranchesAll, createBranch } = useBranch()
 
   useEffect(() => {
@@ -132,7 +132,8 @@ const UserFormModal = ({
     try {
       setIsUploadingAvatar(true)
       const response = await uploadApi.uploadImage(file as File)
-      let { publicId, imageUrl } = response.data
+      let { publicId } = response.data
+      const { imageUrl } = response.data
 
       // Strip 'uploads/' prefix if present
       if (publicId.startsWith('uploads/')) {
@@ -241,16 +242,37 @@ const UserFormModal = ({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      const validAddresses = formData.addresses.filter(addr =>
-        addr.fullname && addr.phone && addr.addressLine && addr.city
-      )
+      // Filter valid addresses and combine address components
+      const validAddresses = formData.addresses
+        .filter(addr =>
+          addr.fullname && addr.phone && (addr.addressLine || addr.city)
+        )
+        .map(addr => {
+          // Combine address components into single address string for backend
+          const combinedAddress = combineAddress({
+            addressLine: addr.addressLine,
+            ward: addr.ward,
+            district: addr.district,
+            city: addr.city
+          })
+
+          return {
+            ...addr,
+            address: combinedAddress, // Single address field for backend
+            // Keep components for potential future use
+            addressLine: addr.addressLine,
+            city: addr.city,
+            district: addr.district,
+            ward: addr.ward
+          }
+        })
+
       onSubmit({ ...formData, addresses: validAddresses })
     }
   }
 
   const handleOpenBranchModal = () => {
     setBranchFormData({ name: '', address: '' })
-    setBranchFormErrors({})
     setIsBranchModalOpen(true)
   }
 
@@ -258,40 +280,19 @@ const UserFormModal = ({
     if (isBranchSubmitting) return
     setIsBranchModalOpen(false)
     setBranchFormData({ name: '', address: '' })
-    setBranchFormErrors({})
   }
 
-  const handleBranchFormChange = (field: keyof BranchFormData, value: string) => {
-    setBranchFormData((prev) => ({ ...prev, [field]: value }))
-    if (branchFormErrors[field as string]) {
-      setBranchFormErrors((prev) => {
-        const next = { ...prev }
-        delete next[field as string]
-        return next
-      })
+  const handleCreateBranchInUserModal = async (data: { name: string; address: string }) => {
+    if (!data.name.trim() || !data.address.trim()) {
+      toast.error('Vui lòng điền đầy đủ thông tin chi nhánh')
+      return
     }
-  }
-
-  const validateBranchModalForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-    if (!branchFormData.name.trim()) {
-      newErrors.name = 'Tên chi nhánh không được để trống'
-    }
-    if (!branchFormData.address.trim()) {
-      newErrors.address = 'Địa chỉ không được để trống'
-    }
-    setBranchFormErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleCreateBranchInUserModal = async () => {
-    if (!validateBranchModalForm()) return
 
     setIsBranchSubmitting(true)
     try {
       const result = await createBranch({
-        name: branchFormData.name.trim(),
-        address: branchFormData.address.trim()
+        name: data.name.trim(),
+        address: data.address.trim()
       })
 
       if (result.type.includes('fulfilled')) {
@@ -537,7 +538,7 @@ const UserFormModal = ({
                         className='mb-0'
                       />
 
-                      <LocationSelectGroup
+                      <LocationSelectGroupOffline
                         provinceCode={address.provinceCode}
                         districtCode={address.districtCode}
                         wardCode={address.wardCode}
@@ -588,11 +589,9 @@ const UserFormModal = ({
         isOpen={isBranchModalOpen}
         isEditMode={false}
         canManage
-        formData={branchFormData}
-        formErrors={branchFormErrors}
+        initialData={{ name: branchFormData.name, address: branchFormData.address }}
         isSubmitting={isBranchSubmitting}
         onClose={handleCloseBranchModal}
-        onFormChange={handleBranchFormChange}
         onSubmit={handleCreateBranchInUserModal}
       />
     </>

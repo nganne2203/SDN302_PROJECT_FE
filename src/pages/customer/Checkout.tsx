@@ -3,6 +3,7 @@ import { Button, Card, Col, Form, Input, Radio, Row, Select, Spin, Typography, m
 import { Link, useNavigate } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import useCart from '@/hooks/useCart'
 import paymentApi, { type BankInfo, type VnpayCreateRequest } from '@/apis/payment'
 import cartApi from '@/apis/cart'
@@ -10,7 +11,7 @@ import branchApi from '@/apis/branch'
 import type { Branch } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import { stripLocationCodes } from '@/utils/address'
-import useVietnamLocations from '@/hooks/useVietnamLocations'
+import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
 
 const { Title, Text } = Typography
 
@@ -33,7 +34,7 @@ const Checkout = () => {
     fetchWards,
     clearDistricts,
     clearWards
-  } = useVietnamLocations()
+  } = useVietnamLocationsOffline()
 
   const hasItems = cartItems.length > 0
 
@@ -68,13 +69,13 @@ const Checkout = () => {
   }, [hasItems, isLoading, navigate])
 
   const orderSummary = useMemo(() => (
-    <Card title="Tóm tắt đơn hàng" bordered={false} className="shadow-md">
+    <Card title="Tóm tắt đơn hàng" variant="borderless" className="shadow-md">
       <div className="space-y-3 max-h-80 overflow-auto pr-2">
-        {cartItems.map((item) => {
-          const firstImage = item.product.images?.[0]
-          const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.imageUrl
+        {cartItems.map((item, index) => {
+          const imageUrl = getProductImageUrl(item.product.images)
+          const itemKey = item.id || item.productId || item.product?._id || `cart-item-${index}`
           return (
-            <div key={item.id} className="flex gap-3">
+            <div key={itemKey} className="flex gap-3">
               <img
                 src={imageUrl || undefined}
                 alt={item.product.name}
@@ -156,7 +157,7 @@ const Checkout = () => {
 
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={16}>
-            <Card bordered={false} className="shadow-md">
+            <Card variant="borderless" className="shadow-md">
               <Title level={4}>Thông tin giao hàng</Title>
               <Form
                 layout="vertical"
@@ -221,7 +222,7 @@ const Checkout = () => {
                           })
                           clearDistricts()
                           clearWards()
-                          if (typeof value === 'number') {
+                          if (value) {
                             fetchDistricts(value, '')
                           }
                         }}
@@ -241,7 +242,7 @@ const Checkout = () => {
                         filterOption={false}
                         loading={locationLoading.districts}
                         onSearch={(value) => {
-                          const provinceCode = form.getFieldValue(['shippingAddress', 'provinceCode']) as number | undefined
+                          const provinceCode = form.getFieldValue(['shippingAddress', 'provinceCode']) as string | undefined
                           if (provinceCode) fetchDistricts(provinceCode, value)
                         }}
                         onChange={(value) => {
@@ -255,7 +256,7 @@ const Checkout = () => {
                             }
                           })
                           clearWards()
-                          if (typeof value === 'number') {
+                          if (value) {
                             fetchWards(value, '')
                           }
                         }}
@@ -276,7 +277,7 @@ const Checkout = () => {
                         filterOption={false}
                         loading={locationLoading.wards}
                         onSearch={(value) => {
-                          const districtCode = form.getFieldValue(['shippingAddress', 'districtCode']) as number | undefined
+                          const districtCode = form.getFieldValue(['shippingAddress', 'districtCode']) as string | undefined
                           if (districtCode) fetchWards(districtCode, value)
                         }}
                         onChange={(value) => {
@@ -333,12 +334,16 @@ const Checkout = () => {
                       <Select
                         placeholder="Chọn ngân hàng"
                         optionLabelProp="label"
-                        dropdownRender={(menu) => (
+                        popupRender={(menu) => (
                           <div className="max-h-64 overflow-auto">{menu}</div>
                         )}
                       >
-                        {banks.map((bank) => (
-                          <Select.Option key={bank.code} value={bank.code} label={bank.name}>
+                        {banks.map((bank, index) => (
+                          <Select.Option
+                            key={bank.code || `bank-${index}`}
+                            value={bank.code}
+                            label={bank.name}
+                          >
                             <div className="flex items-center gap-2">
                               {bank.logo && (
                                 <img src={bank.logo} alt={bank.name} className="w-6 h-6 object-contain" />

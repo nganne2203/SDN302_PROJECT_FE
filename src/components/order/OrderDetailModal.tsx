@@ -163,33 +163,36 @@ const OrderDetailModal = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {order.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={item.productImage}
-                          alt={item.productName}
-                          className="w-12 h-12 rounded object-cover"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {item.productName}
-                          </p>
+                {order.items.map((item, index) => {
+                  const itemKey = item.id || item.productId || `order-item-${index}`
+                  return (
+                    <tr key={itemKey}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={item.productImage}
+                            alt={item.productName}
+                            className="w-12 h-12 rounded object-cover"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {item.productName}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-900">
-                      {item.quantity}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm text-gray-900">
-                      {formatCurrency(item.price)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                      {formatCurrency(item.price * item.quantity)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-900">
+                        {item.quantity}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-gray-900">
+                        {formatCurrency(item.price)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                        {formatCurrency(item.price * item.quantity)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
