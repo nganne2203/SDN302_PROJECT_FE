@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import { ButtonCommon } from '@/components/common'
 import LoginRequiredModal from '@/components/common/LoginRequiredModal'
 import cartApi from '@/apis/cart'
@@ -35,11 +36,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   const categoryName = product.category?.name || 'Chưa phân loại'
-  const firstImage = product.images?.[0]
-  const imageUrl =
-    typeof firstImage === 'string'
-      ? firstImage
-      : firstImage?.imageUrl
+  const imageUrl = getProductImageUrl(product.images)
 
   return (
     <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">

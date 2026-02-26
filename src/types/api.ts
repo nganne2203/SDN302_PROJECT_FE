@@ -204,7 +204,7 @@ export interface Product {
     slug: string;
   };
   price: number;
-  images: Image[];
+  images: Image[] | Image | string[]; // Support multiple formats from different APIs
   material?: string;
   compatibility?: string[];
   ratingAvg: number;
