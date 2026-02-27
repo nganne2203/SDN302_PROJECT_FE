@@ -27,7 +27,7 @@ const HeaderLayout = () => {
     try {
       const response = await cartApi.getCart()
       const items = response.data?.items || []
-      const count = items.reduce((sum, item) => sum + item.quantity, 0)
+      const count = items.length
       setCartCount(count)
     } catch {
       setCartCount(0)
