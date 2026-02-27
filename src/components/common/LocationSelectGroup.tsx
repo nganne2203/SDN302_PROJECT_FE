@@ -29,6 +29,11 @@ const LocationSelectGroup = ({
   onChange,
   disabled = false
 }: LocationSelectGroupProps) => {
+  const normalizeText = (value: string) => value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+
   const {
     provinceOptions,
     districtOptions,
@@ -98,9 +103,11 @@ const LocationSelectGroup = ({
         value={provinceCode}
         options={provinceOptions}
         showSearch
-        filterOption={false}
+        filterOption={(input, option) => {
+          const label = String(option?.label || '')
+          return normalizeText(label).includes(normalizeText(input))
+        }}
         loading={loading.provinces}
-        onSearch={(value) => fetchProvinces(value)}
         onChange={(value) => handleProvinceChange(value as number | undefined)}
         disabled={disabled}
         allowClear
@@ -111,11 +118,11 @@ const LocationSelectGroup = ({
         value={districtCode}
         options={districtOptions}
         showSearch
-        filterOption={false}
-        loading={loading.districts}
-        onSearch={(value) => {
-          if (provinceCode) fetchDistricts(provinceCode, value)
+        filterOption={(input, option) => {
+          const label = String(option?.label || '')
+          return normalizeText(label).includes(normalizeText(input))
         }}
+        loading={loading.districts}
         onChange={(value) => handleDistrictChange(value as number | undefined)}
         disabled={disabled || !provinceCode}
         allowClear
@@ -126,11 +133,11 @@ const LocationSelectGroup = ({
         value={wardCode}
         options={wardOptions}
         showSearch
-        filterOption={false}
-        loading={loading.wards}
-        onSearch={(value) => {
-          if (districtCode) fetchWards(districtCode, value)
+        filterOption={(input, option) => {
+          const label = String(option?.label || '')
+          return normalizeText(label).includes(normalizeText(input))
         }}
+        loading={loading.wards}
         onChange={(value) => handleWardChange(value as number | undefined)}
         disabled={disabled || !districtCode}
         allowClear
