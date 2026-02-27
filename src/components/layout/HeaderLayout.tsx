@@ -35,7 +35,13 @@ const HeaderLayout = () => {
   }, [isAuthenticated])
 
   useEffect(() => {
-    fetchCartCount()
+    const timer = window.setTimeout(() => {
+      fetchCartCount()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
   }, [fetchCartCount])
 
   useEffect(() => {

@@ -15,6 +15,11 @@ import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
 
 const { Title, Text } = Typography
 
+const normalizeText = (value: string) => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+
 const Checkout = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm<VnpayCreateRequest>()
@@ -205,9 +210,11 @@ const Checkout = () => {
                         placeholder="Chọn tỉnh/thành phố"
                         options={provinceOptions}
                         showSearch
-                        filterOption={false}
+                        filterOption={(input, option) => {
+                          const label = String(option?.label || '')
+                          return normalizeText(label).includes(normalizeText(input))
+                        }}
                         loading={locationLoading.provinces}
-                        onSearch={(value) => fetchProvinces(value)}
                         onChange={(value) => {
                           const selected = provinceOptions.find((item) => item.value === value)
                           form.setFieldsValue({
@@ -239,12 +246,11 @@ const Checkout = () => {
                         placeholder="Chọn quận/huyện"
                         options={districtOptions}
                         showSearch
-                        filterOption={false}
-                        loading={locationLoading.districts}
-                        onSearch={(value) => {
-                          const provinceCode = form.getFieldValue(['shippingAddress', 'provinceCode']) as string | undefined
-                          if (provinceCode) fetchDistricts(provinceCode, value)
+                        filterOption={(input, option) => {
+                          const label = String(option?.label || '')
+                          return normalizeText(label).includes(normalizeText(input))
                         }}
+                        loading={locationLoading.districts}
                         onChange={(value) => {
                           const selected = districtOptions.find((item) => item.value === value)
                           form.setFieldsValue({
@@ -274,12 +280,11 @@ const Checkout = () => {
                         placeholder="Chọn phường/xã"
                         options={wardOptions}
                         showSearch
-                        filterOption={false}
-                        loading={locationLoading.wards}
-                        onSearch={(value) => {
-                          const districtCode = form.getFieldValue(['shippingAddress', 'districtCode']) as string | undefined
-                          if (districtCode) fetchWards(districtCode, value)
+                        filterOption={(input, option) => {
+                          const label = String(option?.label || '')
+                          return normalizeText(label).includes(normalizeText(input))
                         }}
+                        loading={locationLoading.wards}
                         onChange={(value) => {
                           const selected = wardOptions.find((item) => item.value === value)
                           form.setFieldsValue({
