@@ -39,6 +39,7 @@ const ProductDetailPage = () => {
   const [isPricingLoading, setIsPricingLoading] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const enableStockLookup = false
 
   useEffect(() => {
     if (id) {
@@ -71,7 +72,11 @@ const ProductDetailPage = () => {
   }, [id])
 
   useEffect(() => {
-    if (!id || !selectedBranchId) return
+    if (!enableStockLookup || !id || !selectedBranchId) {
+      setBranchStock(null)
+      setIsStockLoading(false)
+      return
+    }
     setIsStockLoading(true)
     apiClient.get(API_ENDPOINTS.STORE_INVENTORY.BY_PRODUCT(selectedBranchId, id))
       .then((res) => {

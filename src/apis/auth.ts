@@ -19,8 +19,11 @@ import type {
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<ApiResponse<AuthTokens>> => {
+    const endpoint = data.captchaToken
+      ? API_ENDPOINTS.AUTH.LOGIN
+      : API_ENDPOINTS.AUTH.LOGIN_NO_CAPTCHA
     const response = await apiClient.post<ApiResponse<AuthTokens>>(
-      API_ENDPOINTS.AUTH.LOGIN,
+      endpoint,
       data
     )
     return response.data

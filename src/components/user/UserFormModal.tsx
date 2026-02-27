@@ -132,8 +132,8 @@ const UserFormModal = ({
     try {
       setIsUploadingAvatar(true)
       const response = await uploadApi.uploadImage(file as File)
-      let { publicId } = response.data
-      const { imageUrl } = response.data
+      const { publicId: rawPublicId, imageUrl } = response.data
+      let publicId = rawPublicId
 
       // Strip 'uploads/' prefix if present
       if (publicId.startsWith('uploads/')) {

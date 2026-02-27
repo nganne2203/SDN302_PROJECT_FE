@@ -62,15 +62,20 @@ const Cart = () => {
       dataIndex: 'quantity',
       key: 'quantity',
       width: 150,
-      render: (_: unknown, record: (typeof cartItems)[0]) => (
-        <InputNumber
-          min={1}
-          max={99}
-          value={record.quantity}
-          onChange={(value) => updateQuantity(record.id, value)}
-          className="w-20"
-        />
-      )
+      render: (_: unknown, record: (typeof cartItems)[0]) => {
+        const productId = record.productId || record.product?._id
+        return (
+          <InputNumber
+            min={1}
+            max={99}
+            value={record.quantity}
+            onChange={(value) => {
+              if (productId) updateQuantity(productId, value)
+            }}
+            className="w-20"
+          />
+        )
+      }
     },
     {
       title: 'Thành tiền',
@@ -90,14 +95,19 @@ const Cart = () => {
       title: '',
       key: 'action',
       width: 80,
-      render: (_: unknown, record: (typeof cartItems)[0]) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => removeItem(record.id)}
-        />
-      )
+      render: (_: unknown, record: (typeof cartItems)[0]) => {
+        const productId = record.productId || record.product?._id
+        return (
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              if (productId) removeItem(productId)
+            }}
+          />
+        )
+      }
     }
   ]
 
@@ -145,7 +155,7 @@ const Cart = () => {
               <Table
                 dataSource={cartItems}
                 columns={columns}
-                rowKey="id"
+                rowKey={(record) => record.id || record.productId || record.product?._id || ''}
                 pagination={false}
               />
             </div>
