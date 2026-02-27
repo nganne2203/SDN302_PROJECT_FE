@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Tabs, Table } from 'antd'
-import { Package, Clock, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { LoaderCommon } from '@/components/common'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import useOrder from '@/hooks/useOrder'
