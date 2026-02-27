@@ -85,7 +85,7 @@ const ProductDetailPage = () => {
       })
       .catch(() => setBranchStock(null))
       .finally(() => setIsStockLoading(false))
-  }, [id, selectedBranchId])
+  }, [enableStockLookup, id, selectedBranchId])
 
   useEffect(() => {
     if (!id) return
