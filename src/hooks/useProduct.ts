@@ -81,7 +81,7 @@ export const useProduct = () => {
   // Fetch product by ID
   const fetchProductById = useCallback(
     (id: string, forceRefresh = false) => {
-      dispatch(fetchProductByIdThunk({ id, forceRefresh }))
+      return dispatch(fetchProductByIdThunk({ id, forceRefresh }))
     },
     [dispatch]
   )

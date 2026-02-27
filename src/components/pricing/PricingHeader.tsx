@@ -18,8 +18,8 @@ const PricingHeader = ({ onAddClick, onBulkClick, title = 'Quản lý bảng gi�
           icon={<Layers className="w-5 h-5" />}
           onClick={onBulkClick}
         >
-        Tạo bảng giá hàng loạt
-      </ButtonCommon>
+          Tạo bảng giá hàng loạt
+        </ButtonCommon>
         <ButtonCommon
           variant="primary"
           size="lg"

@@ -1,9 +1,9 @@
 interface OrderStatusBadgeProps {
-  status: string
+  status?: string | null
 }
 
 const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status?: string | null) => {
     const statusMap: Record<string, { label: string; className: string }> = {
       pending: {
         label: 'Chờ xác nhận',
@@ -27,8 +27,9 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
       }
     }
 
-    return statusMap[status.toLowerCase()] || {
-      label: status,
+    const normalized = typeof status === 'string' ? status.toLowerCase() : ''
+    return statusMap[normalized] || {
+      label: status || 'Không xác định',
       className: 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }

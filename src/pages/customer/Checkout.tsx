@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Form, Input, Radio, Row, Select, Spin, Typography, message } from 'antd'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
@@ -8,12 +8,22 @@ import useCart from '@/hooks/useCart'
 import paymentApi, { type BankInfo, type VnpayCreateRequest } from '@/apis/payment'
 import cartApi from '@/apis/cart'
 import branchApi from '@/apis/branch'
-import type { Branch } from '@/types/api'
+import type { Branch, Product } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import { stripLocationCodes } from '@/utils/address'
 import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
+import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
 const { Title, Text } = Typography
+
+interface BuyNowState {
+  product: Product
+  quantity: number
+  serviceIds: string[]
+  services: ServiceProduct[]
+  pricingData: PricingCalculation | null
+}
 
 const normalizeText = (value: string) => value
   .normalize('NFD')
@@ -22,6 +32,8 @@ const normalizeText = (value: string) => value
 
 const Checkout = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const buyNow = (location.state as { buyNow?: BuyNowState } | null)?.buyNow ?? null
   const [form] = Form.useForm<VnpayCreateRequest>()
   const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart()
 
@@ -42,6 +54,13 @@ const Checkout = () => {
   } = useVietnamLocationsOffline()
 
   const hasItems = cartItems.length > 0
+
+  // Buy-now totals
+  const buyNowServiceTotal = buyNow?.services?.reduce((sum, svc) => sum + (svc.price || 0), 0) ?? 0
+  const buyNowUnitPrice = buyNow?.pricingData?.pricing?.pricePerUnit ?? buyNow?.product?.price ?? 0
+  const buyNowTotal = buyNow
+    ? (buyNow.pricingData?.pricing?.totalPrice ?? buyNowUnitPrice * buyNow.quantity) + buyNowServiceTotal * buyNow.quantity
+    : 0
 
   const loadMeta = async () => {
     try {
@@ -68,41 +87,61 @@ const Checkout = () => {
   }, [fetchProvinces])
 
   useEffect(() => {
-    if (!isLoading && !hasItems) {
+    if (!buyNow && !isLoading && !hasItems) {
       navigate(ROUTES.CART, { replace: true })
     }
-  }, [hasItems, isLoading, navigate])
+  }, [buyNow, hasItems, isLoading, navigate])
 
   const orderSummary = useMemo(() => (
     <Card title="Tóm tắt đơn hàng" variant="borderless" className="shadow-md">
       <div className="space-y-3 max-h-80 overflow-auto pr-2">
-        {cartItems.map((item, index) => {
-          const imageUrl = getProductImageUrl(item.product.images)
-          const itemKey = item.id || item.productId || item.product?._id || `cart-item-${index}`
-          return (
-            <div key={itemKey} className="flex gap-3">
-              <img
-                src={imageUrl || undefined}
-                alt={item.product.name}
-                className="w-16 h-16 rounded object-cover bg-gray-100"
-              />
-              <div className="flex-1">
-                <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                  {item.product.name}
+        {buyNow ? (
+          <div className="flex gap-3">
+            <img
+              src={getProductImageUrl(buyNow.product.images) || undefined}
+              alt={buyNow.product.name}
+              className="w-16 h-16 rounded object-cover bg-gray-100"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-gray-900 line-clamp-2">{buyNow.product.name}</div>
+              <div className="text-xs text-gray-500">Số lượng: {buyNow.quantity}</div>
+              {buyNow.services?.length > 0 && (
+                <div className="text-xs text-gray-500">
+                  Dịch vụ: {buyNow.services.map((s) => s.name).join(', ')}
                 </div>
-                <div className="text-xs text-gray-500">Số lượng: {item.quantity}</div>
-                <div className="text-sm text-blue-600 font-semibold">
-                  {formatCurrency(item.price * item.quantity)}
+              )}
+              <div className="text-sm text-blue-600 font-semibold">{formatCurrency(buyNowTotal)}</div>
+            </div>
+          </div>
+        ) : (
+          cartItems.map((item, index) => {
+            const imageUrl = getProductImageUrl(item.product.images)
+            const itemKey = item.id || item.productId || item.product?._id || `cart-item-${index}`
+            return (
+              <div key={itemKey} className="flex gap-3">
+                <img
+                  src={imageUrl || undefined}
+                  alt={item.product.name}
+                  className="w-16 h-16 rounded object-cover bg-gray-100"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                    {item.product.name}
+                  </div>
+                  <div className="text-xs text-gray-500">Số lượng: {item.quantity}</div>
+                  <div className="text-sm text-blue-600 font-semibold">
+                    {formatCurrency(item.price * item.quantity)}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
       </div>
 
       <div className="border-t border-gray-200 mt-4 pt-4 flex justify-between">
         <Text className="text-gray-600">Tạm tính</Text>
-        <Text strong>{formatCurrency(totalAmount)}</Text>
+        <Text strong>{formatCurrency(buyNow ? buyNowTotal : totalAmount)}</Text>
       </div>
       <div className="flex justify-between text-sm text-gray-600 mt-2">
         <span>Phí vận chuyển</span>
@@ -110,19 +149,26 @@ const Checkout = () => {
       </div>
       <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
         <Text strong className="text-lg">Tổng thanh toán</Text>
-        <Text strong className="text-xl text-blue-600">{formatCurrency(totalAmount)}</Text>
+        <Text strong className="text-xl text-blue-600">{formatCurrency(buyNow ? buyNowTotal : totalAmount)}</Text>
       </div>
     </Card>
-  ), [cartItems, totalAmount])
+  ), [buyNow, buyNowTotal, cartItems, totalAmount])
 
   const handleSubmit = async (values: VnpayCreateRequest) => {
-    if (!hasItems) {
+    if (!buyNow && !hasItems) {
       message.warning('Giỏ hàng trống')
       return
     }
 
     setIsSubmitting(true)
     try {
+      if (buyNow) {
+        // Buy-now: set cart to exactly this item before payment
+        await cartApi.clearCart()
+        const servicesPayload = buyNow.serviceIds.map((serviceId) => ({ serviceId }))
+        await cartApi.addToCart(buyNow.product._id, buyNow.quantity, servicesPayload)
+      }
+
       const sanitizedValues: VnpayCreateRequest = {
         ...values,
         shippingAddress: stripLocationCodes(values.shippingAddress)

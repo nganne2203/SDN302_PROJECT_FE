@@ -64,7 +64,7 @@ export const cartApi = {
       { productId, quantity, services }
     )
     invalidateCartCache()
-    emitCartChanged({ type: 'add', delta: quantity })
+    emitCartChanged({ type: 'sync' })
     return response.data
   },
 
