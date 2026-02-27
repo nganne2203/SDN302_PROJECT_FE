@@ -95,6 +95,7 @@ const productSlice = createSlice({
       .addCase(fetchProductByIdThunk.pending, (state) => {
         state.isLoading = true
         state.error = null
+        state.selectedProduct = null
       })
       .addCase(fetchProductByIdThunk.fulfilled, (state, action: PayloadAction<Product>) => {
         state.isLoading = false
