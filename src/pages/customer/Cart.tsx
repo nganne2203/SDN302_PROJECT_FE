@@ -2,6 +2,7 @@ import { Table, InputNumber, Button, Empty } from 'antd'
 import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import { ROUTES } from '@/constants/constant'
 import { LoaderCommon } from '@/components/common'
 import useCart from '@/hooks/useCart'
@@ -30,8 +31,7 @@ const Cart = () => {
         const originalUnitPrice = pricing?.originalTotal && record.quantity > 0
           ? pricing.originalTotal / record.quantity
           : record.price
-        const firstImage = record.product.images?.[0]
-        const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.imageUrl
+        const imageUrl = getProductImageUrl(record.product.images)
 
         return (
           <div className="flex items-center gap-4">
@@ -62,15 +62,20 @@ const Cart = () => {
       dataIndex: 'quantity',
       key: 'quantity',
       width: 150,
-      render: (_: unknown, record: (typeof cartItems)[0]) => (
-        <InputNumber
-          min={1}
-          max={99}
-          value={record.quantity}
-          onChange={(value) => updateQuantity(record.id, value)}
-          className="w-20"
-        />
-      )
+      render: (_: unknown, record: (typeof cartItems)[0]) => {
+        const productId = record.productId || record.product?._id
+        return (
+          <InputNumber
+            min={1}
+            max={99}
+            value={record.quantity}
+            onChange={(value) => {
+              if (productId) updateQuantity(productId, value)
+            }}
+            className="w-20"
+          />
+        )
+      }
     },
     {
       title: 'Thành tiền',
@@ -90,14 +95,19 @@ const Cart = () => {
       title: '',
       key: 'action',
       width: 80,
-      render: (_: unknown, record: (typeof cartItems)[0]) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => removeItem(record.id)}
-        />
-      )
+      render: (_: unknown, record: (typeof cartItems)[0]) => {
+        const productId = record.productId || record.product?._id
+        return (
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              if (productId) removeItem(productId)
+            }}
+          />
+        )
+      }
     }
   ]
 
@@ -105,7 +115,7 @@ const Cart = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
-          <LoaderCommon size="lg" tip="Dang tai gio hang..." />
+          <LoaderCommon size="lg" tip="Đang tải giỏ hàng..." />
         </div>
       </div>
     )
@@ -145,7 +155,7 @@ const Cart = () => {
               <Table
                 dataSource={cartItems}
                 columns={columns}
-                rowKey="id"
+                rowKey={(record) => record.id || record.productId || record.product?._id || ''}
                 pagination={false}
               />
             </div>
@@ -160,7 +170,7 @@ const Cart = () => {
 
               <div className="space-y-4 border-b border-gray-200 pb-4 mb-4">
                 <div className="flex justify-between text-gray-600">
-                  <span>Tam tinh ({totalItems} san pham)</span>
+                  <span>Tạm tính ({totalItems} sản phẩm)</span>
                   <span>{formatCurrency(totalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
@@ -175,7 +185,7 @@ const Cart = () => {
               </div>
               {isPricingLoading && (
                 <div className="text-xs text-gray-500 mb-4">
-                  Dang tinh gia theo so luong...
+                  Đang tính giá theo số lượng...
                 </div>
               )}
 

@@ -7,6 +7,7 @@ export { default as TableCommon } from './TableCommon'
 export { default as CardCommon } from './CardCommon'
 export { default as PaginationCommon } from './PaginationCommon'
 export { default as LocationSelectGroup } from './LocationSelectGroup'
+export { default as LocationSelectGroupOffline } from './LocationSelectGroupOffline'
 
 export {
   InputField,

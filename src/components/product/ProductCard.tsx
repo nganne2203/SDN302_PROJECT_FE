@@ -1,19 +1,23 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import { ButtonCommon } from '@/components/common'
 import LoginRequiredModal from '@/components/common/LoginRequiredModal'
 import cartApi from '@/apis/cart'
 import { toast } from '@/utils/toast'
 import { useAppSelector } from '@/apps/hooks'
+import { ROUTES } from '@/constants/constant'
 
 interface ProductCardProps {
   product: Product
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const [isAdding, setIsAdding] = useState(false)
+  const navigate = useNavigate()
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isBuyingNow, setIsBuyingNow] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
 
@@ -22,27 +26,40 @@ const ProductCard = ({ product }: ProductCardProps) => {
       setShowLoginModal(true)
       return
     }
-    if (isAdding) return
-    setIsAdding(true)
+    if (isAddingToCart || isBuyingNow) return
+    setIsAddingToCart(true)
     try {
       await cartApi.addToCart(product._id, 1)
       toast.success('Đã thêm vào giỏ hàng')
     } catch {
       toast.error('Thêm vào giỏ hàng thất bại')
     } finally {
-      setIsAdding(false)
+      setIsAddingToCart(false)
+    }
+  }
+
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true)
+      return
+    }
+    if (isAddingToCart || isBuyingNow) return
+    setIsBuyingNow(true)
+    try {
+      await cartApi.addToCart(product._id, 1)
+      navigate(ROUTES.CHECKOUT)
+    } catch {
+      toast.error('Mua hàng thất bại')
+    } finally {
+      setIsBuyingNow(false)
     }
   }
 
   const categoryName = product.category?.name || 'Chưa phân loại'
-  const firstImage = product.images?.[0]
-  const imageUrl =
-    typeof firstImage === 'string'
-      ? firstImage
-      : firstImage?.imageUrl
+  const imageUrl = getProductImageUrl(product.images)
 
   return (
-    <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
+    <div className="group w-full min-w-0 h-full flex flex-col bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
       <Link to={`/products/${product._id}`} className="block">
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
@@ -69,17 +86,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
+        <div className="p-4 flex flex-col gap-2 min-h-[180px]">
           {/* Category */}
           <p className="text-xs text-gray-500 mb-1">{categoryName}</p>
 
           {/* Product Name */}
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+          <h3 className="font-semibold text-gray-900 h-7 truncate whitespace-nowrap group-hover:text-blue-600 transition-colors" title={product.name}>
             {product.name}
           </h3>
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mb-2">
+          <div className="flex items-center gap-1 min-h-[24px]">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <svg
@@ -102,7 +119,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 min-h-[32px]">
             <span className="text-xl font-bold text-blue-600">
               {formatCurrency(product.price)}
             </span>
@@ -117,26 +134,26 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
       </Link>
 
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 mt-auto">
         <div className="flex gap-2 w-full">
           <ButtonCommon
             variant="primary"
             size="sm"
             className="!bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900 flex-1"
-            isLoading={isAdding}
+            isLoading={isAddingToCart}
             onClick={handleAddToCart}
           >
             Thêm vào giỏ
           </ButtonCommon>
-          <Link to={`/products/${product._id}`} className="flex-1">
-            <ButtonCommon
-              variant="outline"
-              size="sm"
-              className="!border-gray-300 !text-gray-900 hover:!border-gray-500 hover:!text-black !bg-white w-full"
-            >
-              Chi tiết
-            </ButtonCommon>
-          </Link>
+          <ButtonCommon
+            variant="outline"
+            size="sm"
+            className="!border-gray-300 !text-gray-900 hover:!border-gray-500 hover:!text-black !bg-white w-full flex-1"
+            onClick={handleBuyNow}
+            isLoading={isBuyingNow}
+          >
+            Mua hàng
+          </ButtonCommon>
         </div>
       </div>
 

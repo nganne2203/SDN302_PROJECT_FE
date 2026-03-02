@@ -1,39 +1,34 @@
 import { useEffect } from 'react'
 import { SelectField } from '@/components/common'
-import useVietnamLocations from '@/hooks/useVietnamLocations'
+import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
 
 type LocationChange = Partial<{
   province: string
   district: string
   ward: string
-  provinceCode: number | undefined
-  districtCode: number | undefined
-  wardCode: number | undefined
+  provinceCode: string | undefined
+  districtCode: string | undefined
+  wardCode: string | undefined
 }>
 
 // eslint-disable-next-line no-unused-vars
 type LocationChangeHandler = (changes: LocationChange) => void
 
-interface LocationSelectGroupProps {
-  provinceCode?: number
-  districtCode?: number
-  wardCode?: number
+interface LocationSelectGroupOfflineProps {
+  provinceCode?: string
+  districtCode?: string
+  wardCode?: string
   onChange: LocationChangeHandler
   disabled?: boolean
 }
 
-const LocationSelectGroup = ({
+const LocationSelectGroupOffline = ({
   provinceCode,
   districtCode,
   wardCode,
   onChange,
   disabled = false
-}: LocationSelectGroupProps) => {
-  const normalizeText = (value: string) => value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-
+}: LocationSelectGroupOfflineProps) => {
   const {
     provinceOptions,
     districtOptions,
@@ -44,7 +39,7 @@ const LocationSelectGroup = ({
     fetchWards,
     clearDistricts,
     clearWards
-  } = useVietnamLocations()
+  } = useVietnamLocationsOffline()
 
   useEffect(() => {
     fetchProvinces('')
@@ -62,7 +57,7 @@ const LocationSelectGroup = ({
     }
   }, [districtCode, fetchWards])
 
-  const handleProvinceChange = (value?: number) => {
+  const handleProvinceChange = (value?: string) => {
     const selected = provinceOptions.find((item) => item.value === value)
     onChange({
       province: selected?.label || '',
@@ -76,7 +71,7 @@ const LocationSelectGroup = ({
     clearWards()
   }
 
-  const handleDistrictChange = (value?: number) => {
+  const handleDistrictChange = (value?: string) => {
     const selected = districtOptions.find((item) => item.value === value)
     onChange({
       district: selected?.label || '',
@@ -87,7 +82,7 @@ const LocationSelectGroup = ({
     clearWards()
   }
 
-  const handleWardChange = (value?: number) => {
+  const handleWardChange = (value?: string) => {
     const selected = wardOptions.find((item) => item.value === value)
     onChange({
       ward: selected?.label || '',
@@ -103,12 +98,10 @@ const LocationSelectGroup = ({
         value={provinceCode}
         options={provinceOptions}
         showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
+        filterOption={false}
         loading={loading.provinces}
-        onChange={(value) => handleProvinceChange(value as number | undefined)}
+        onSearch={(value) => fetchProvinces(value)}
+        onChange={(value) => handleProvinceChange(value as string | undefined)}
         disabled={disabled}
         allowClear
       />
@@ -118,12 +111,12 @@ const LocationSelectGroup = ({
         value={districtCode}
         options={districtOptions}
         showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
+        filterOption={false}
         loading={loading.districts}
-        onChange={(value) => handleDistrictChange(value as number | undefined)}
+        onSearch={(value) => {
+          if (provinceCode) fetchDistricts(provinceCode, value)
+        }}
+        onChange={(value) => handleDistrictChange(value as string | undefined)}
         disabled={disabled || !provinceCode}
         allowClear
       />
@@ -133,12 +126,12 @@ const LocationSelectGroup = ({
         value={wardCode}
         options={wardOptions}
         showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
+        filterOption={false}
         loading={loading.wards}
-        onChange={(value) => handleWardChange(value as number | undefined)}
+        onSearch={(value) => {
+          if (districtCode) fetchWards(districtCode, value)
+        }}
+        onChange={(value) => handleWardChange(value as string | undefined)}
         disabled={disabled || !districtCode}
         allowClear
       />
@@ -146,4 +139,4 @@ const LocationSelectGroup = ({
   )
 }
 
-export default LocationSelectGroup
+export default LocationSelectGroupOffline

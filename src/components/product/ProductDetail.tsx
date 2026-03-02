@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
 import { useMemo, useState } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
 import type { Branch, Product } from '@/types/api'
@@ -11,24 +13,19 @@ interface ProductDetailProps {
   isLoading: boolean
   branches: Branch[]
   selectedBranchId: string | null
-  // eslint-disable-next-line no-unused-vars
   onBranchChange: (branchId: string) => void
   branchStock: number | null
   isStockLoading: boolean
   services: ServiceProduct[]
   selectedServiceIds: string[]
-  // eslint-disable-next-line no-unused-vars
   onToggleService: (serviceId: string) => void
   isServiceLoading: boolean
   quantity: number
-  // eslint-disable-next-line no-unused-vars
   onQuantityChange: (nextQuantity: number) => void
   selectedServices: ServiceProduct[]
   pricingData?: PricingCalculation | null
-  isPricingLoading?: boolean
-  // eslint-disable-next-line no-unused-vars
+  isPricingLoading?: boolean // reserved for future use
   onAddToCart?: (productId: string, quantity: number, serviceIds: string[]) => void
-  // eslint-disable-next-line no-unused-vars
   onBuyNow?: (productId: string, quantity: number, serviceIds: string[]) => void
 }
 
@@ -49,7 +46,7 @@ const ProductDetail = ({
   onQuantityChange,
   selectedServices,
   pricingData,
-  isPricingLoading = false,
+  isPricingLoading: _isPricingLoading = false,
   onAddToCart,
   onBuyNow
 }: ProductDetailProps) => {
@@ -57,9 +54,14 @@ const ProductDetail = ({
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'warranty'>('description')
 
   const imageUrls = useMemo(() => {
-    return (product.images || [])
+    const imgs = Array.isArray(product.images)
+      ? product.images
+      : product.images
+        ? [product.images]
+        : []
+    return (imgs as Array<string | { imageUrl: string }>)
       .map((img) => (typeof img === 'string' ? img : img.imageUrl))
-      .filter(Boolean)
+      .filter(Boolean) as string[]
   }, [product.images])
 
   const categoryName = product.category?.name || 'Chưa phân loại'
@@ -74,7 +76,8 @@ const ProductDetail = ({
   const discountPercent = pricingInfo?.discountPercentage ?? 0
   const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
   const totalPrice = productTotal + serviceTotal * quantity
-  const maxQuantity = branchStock && branchStock > 0 ? branchStock : 99
+  const isOutOfStock = !isStockLoading && branchStock !== null && branchStock === 0
+  const maxQuantity = branchStock !== null && branchStock > 0 ? branchStock : 99
   const selectedBranch = branches.find((branch) => branch._id === selectedBranchId)
 
   if (isLoading) {
@@ -206,9 +209,6 @@ const ProductDetail = ({
                 )}
               </div>
               <p className="text-xs text-gray-500">Đã bao gồm VAT</p>
-              {isPricingLoading && (
-                <p className="text-xs text-gray-500">Dang tinh bang gia so luong...</p>
-              )}
             </div>
 
             <p className="text-gray-600 leading-relaxed">
@@ -248,20 +248,23 @@ const ProductDetail = ({
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="font-medium text-gray-700">Tình trạng:</span>
                 {isStockLoading ? (
-                  <span>Đang kiểm tra tồn kho...</span>
+                  <span className='text-gray-500'>Đang kiểm tra tồn kho...</span>
+                ) : branchStock === null ? (
+                  <span className='text-gray-400'>Chưa cập nhật</span>
+                ) : branchStock > 0 ? (
+                  <span className='text-green-600'>Còn hàng ({branchStock} sản phẩm)</span>
                 ) : (
-                  <span className={branchStock && branchStock > 0 ? 'text-green-600' : 'text-red-600'}>
-                    {branchStock && branchStock > 0 ? `Còn hàng (${branchStock} sản phẩm)` : 'Hết hàng'}
-                  </span>
+                  <span className='text-red-600'>Hết hàng</span>
                 )}
               </div>
 
               <div className="flex items-center gap-4">
                 <span className="text-gray-700 font-medium">Số lượng:</span>
-                <div className="flex items-center border border-gray-300 rounded-lg">
+                <div className={`flex items-center border rounded-lg ${isOutOfStock ? 'border-gray-200 opacity-50' : 'border-gray-300'}`}>
                   <button
                     onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
-                    className="px-4 py-2 hover:bg-gray-100 transition-colors"
+                    disabled={isOutOfStock}
+                    className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
                     -
                   </button>
@@ -270,28 +273,33 @@ const ProductDetail = ({
                   </span>
                   <button
                     onClick={() => onQuantityChange(Math.min(maxQuantity, quantity + 1))}
-                    className="px-4 py-2 hover:bg-gray-100 transition-colors"
+                    disabled={isOutOfStock}
+                    className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
                     +
                   </button>
                 </div>
-                <span className="text-xs text-gray-500">Tối đa: {maxQuantity}</span>
+                {!isOutOfStock && branchStock !== null && (
+                  <span className="text-xs text-gray-500">Tối đa: {branchStock}</span>
+                )}
               </div>
 
               <div className="flex gap-3">
                 <ButtonCommon
                   variant="primary"
                   size="lg"
-                  className="flex-1 !bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900"
+                  className="flex-1 !bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900 disabled:!bg-gray-400 disabled:!border-gray-400 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
+                  disabled={isOutOfStock}
                 >
-                  Thêm vào giỏ hàng
+                  {isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
                 </ButtonCommon>
                 <ButtonCommon
                   variant="outline"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBuyNow}
+                  disabled={isOutOfStock}
                 >
                   Mua ngay
                 </ButtonCommon>
@@ -410,7 +418,7 @@ const ProductDetail = ({
               <div>
                 <span className="font-medium text-gray-700">Thiết bị tương thích:</span>{' '}
                 {product.compatibility && product.compatibility.length > 0
-                  ? product.compatibility.join(', ')
+                  ? product.compatibility.map((c: { name: string } | string) => typeof c === 'string' ? c : c.name).join(', ')
                   : 'Đang cập nhật'}
               </div>
             </div>
@@ -441,9 +449,17 @@ const ProductDetail = ({
                 className="group"
               >
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
-                  {relatedProduct.images && relatedProduct.images.length > 0 ? (
+                  {(() => {
+                    const rimgs = Array.isArray(relatedProduct.images)
+                      ? relatedProduct.images
+                      : relatedProduct.images
+                        ? [relatedProduct.images]
+                        : []
+                    const first = rimgs[0] as string | { imageUrl: string } | undefined
+                    const firstUrl = first ? (typeof first === 'string' ? first : first.imageUrl) : null
+                    return firstUrl ? (
                     <img
-                      src={typeof relatedProduct.images[0] === 'string' ? relatedProduct.images[0] : relatedProduct.images[0].imageUrl}
+                      src={firstUrl}
                       alt={relatedProduct.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
@@ -453,7 +469,8 @@ const ProductDetail = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                  )}
+                  )
+                  })()}
                 </div>
                 <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
                   {relatedProduct.name}

@@ -12,6 +12,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    open: true
+    open: true,
+    proxy: {
+      '/api/provinces': {
+        target: 'https://provinces.open-api.vn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/provinces/, '/api/v1')
+      }
+    }
   }
 })

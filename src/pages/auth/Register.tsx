@@ -2,7 +2,7 @@ import { useRef, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Lock, User, Phone } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { toast } from '@/utils/toast'
 import { ControlledField, InputField } from '@/components/common'
@@ -14,6 +14,7 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Register = () => {
+  const navigate = useNavigate()
   const {
     register: registerUser,
     isLoading,
@@ -27,7 +28,8 @@ const Register = () => {
 
   const {
     handleSubmit,
-    control
+    control,
+    reset
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -85,8 +87,10 @@ const Register = () => {
   )
 
   const handleOTPSuccess = useCallback(() => {
-    toast.success('Xác thực email thành công!')
-  }, [])
+    toast.success('Xác thực email thành công! Vui lòng đăng nhập.')
+    reset()
+    navigate(ROUTES.LOGIN)
+  }, [reset, navigate])
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-50 to-green-100 flex items-center justify-center p-4">

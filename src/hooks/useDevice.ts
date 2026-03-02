@@ -130,7 +130,7 @@ export const useDevice = () => {
         })
         return { valid: false, data: null, errors }
       }
-      return { valid: false, data: null, errors: { general: 'Loi xac thuc' } }
+      return { valid: false, data: null, errors: { general: 'Lỗi xác thực' } }
     }
   }, [])
 

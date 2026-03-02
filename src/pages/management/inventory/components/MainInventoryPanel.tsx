@@ -32,36 +32,36 @@ const MainInventoryPanel = ({
 }: MainInventoryPanelProps) => {
   const columns: ColumnsType<InventoryRecord> = [
     {
-      title: 'San pham',
+      title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
       key: 'productName',
       render: (_: string, record) => record.product?.name || '-'
     },
     {
-      title: 'Danh muc',
+      title: 'Danh mục',
       dataIndex: ['product', 'category', 'name'],
       key: 'category',
       render: (_: string, record) => record.product?.category?.name || '-'
     },
     {
-      title: 'So luong',
+      title: 'Số lượng',
       dataIndex: 'quantity',
       key: 'quantity'
     },
     {
-      title: 'Vi tri',
+      title: 'Vị trí',
       dataIndex: 'location',
       key: 'location',
       render: (value?: string) => value || '-'
     },
     {
-      title: 'Cap nhat',
+      title: 'Cập nhật',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       render: (value: string) => dayjs(value).format('DD/MM/YYYY')
     },
     {
-      title: 'Hanh dong',
+      title: 'Hành động',
       key: 'action',
       render: (_: unknown, record: InventoryRecord) => (
         <Space size="small">
@@ -71,7 +71,7 @@ const MainInventoryPanel = ({
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
           >
-            Sua
+            Sửa
           </Button>
           <Button
             type="default"
@@ -79,7 +79,7 @@ const MainInventoryPanel = ({
             icon={<SwapOutlined />}
             onClick={() => onAdjust(record)}
           >
-            Dieu chinh
+            Điều chỉnh
           </Button>
         </Space>
       )
@@ -88,19 +88,19 @@ const MainInventoryPanel = ({
 
   return (
     <Card
-      title="Ton kho kho tong"
+      title="Tồn kho kho tổng"
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
-          Tao moi
+          Tạo mới
         </Button>
       }
     >
       <div className="mb-4">
         <InputField
-          label="Tim kiem"
+          label="Tìm kiếm"
           value={searchText}
           onChange={(e) => onSearchTextChange(e.target.value)}
-          placeholder="Tim theo ten san pham"
+          placeholder="Tìm theo tên sản phẩm"
           className="mb-0"
         />
       </div>

@@ -70,34 +70,34 @@ const BranchInventoryPanel = ({
 
   const getStatusLabel = (status: string) => {
     const labelMap: Record<string, string> = {
-      optimal: 'Toi uu',
-      low_stock: 'Sap het',
-      out_of_stock: 'Het hang',
-      overstock: 'Qua ton'
+      optimal: 'Tối ưu',
+      low_stock: 'Sắp hết',
+      out_of_stock: 'Hết hàng',
+      overstock: 'Quá tồn'
     }
     return labelMap[status] || status
   }
 
   const branchColumns: ColumnsType<StoreInventoryRecord> = [
     {
-      title: 'San pham',
+      title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
       key: 'productName',
       render: (_: string, record) => record.product?.name || '-'
     },
     {
-      title: 'Danh muc',
+      title: 'Danh mục',
       dataIndex: ['product', 'category', 'name'],
       key: 'category',
       render: (_: string, record) => record.product?.category?.name || '-'
     },
     {
-      title: 'Ton kho',
+      title: 'Tồn kho',
       key: 'stockStatus',
       render: (_: unknown, record) => {
         const max = record.maxThreshold || 1
         return (
-          <Tooltip title={`Toi thieu: ${record.minThreshold}, Toi da: ${record.maxThreshold}`}>
+          <Tooltip title={`Tối thiểu: ${record.minThreshold}, Tối đa: ${record.maxThreshold}`}>
             <div>
               <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>
                 {record.quantity} / {record.maxThreshold}
@@ -121,7 +121,7 @@ const BranchInventoryPanel = ({
       }
     },
     {
-      title: 'Trang thai',
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (_: string, record) => {
@@ -130,7 +130,7 @@ const BranchInventoryPanel = ({
       }
     },
     {
-      title: 'Cap nhat',
+      title: 'Cập nhật',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       render: (value: string) => dayjs(value).format('DD/MM/YYYY')
@@ -138,7 +138,7 @@ const BranchInventoryPanel = ({
     ...((canEditThresholds || canDelete)
       ? [
         {
-          title: 'Hanh dong',
+          title: 'Hành động',
           key: 'action',
           render: (_: unknown, record: StoreInventoryRecord) => (
             <Space size="small">
@@ -149,16 +149,16 @@ const BranchInventoryPanel = ({
                   icon={<EditOutlined />}
                   onClick={() => onEditThresholds(record)}
                 >
-                  Nguong
+                  Ngưỡng
                 </Button>
               )}
               {canDelete && (
                 <Popconfirm
-                  title="Xoa ton kho"
-                  description="Ban co chac chan muon xoa ban ghi ton kho nay?"
+                  title="Xóa tồn kho"
+                  description="Bạn có chắc chắn muốn xóa bản ghi tồn kho này?"
                   onConfirm={() => onDelete(record)}
-                  okText="Xoa"
-                  cancelText="Huy"
+                  okText="Xóa"
+                  cancelText="Hủy"
                   okButtonProps={{ danger: true }}
                 >
                   <Button
@@ -167,7 +167,7 @@ const BranchInventoryPanel = ({
                     size="small"
                     icon={<DeleteOutlined />}
                   >
-                    Xoa
+                    Xóa
                   </Button>
                 </Popconfirm>
               )}
@@ -179,19 +179,19 @@ const BranchInventoryPanel = ({
   ]
 
   const branchViewTabs = [
-    { key: 'all', label: 'Tat ca' },
-    { key: 'out_of_stock', label: 'Het hang' },
-    { key: 'low_stock', label: 'Sap het' },
-    { key: 'need_restock', label: 'Can nhap' },
-    { key: 'overstock', label: 'Qua ton' }
+    { key: 'all', label: 'Tất cả' },
+    { key: 'out_of_stock', label: 'Hết hàng' },
+    { key: 'low_stock', label: 'Sắp hết' },
+    { key: 'need_restock', label: 'Cần nhập' },
+    { key: 'overstock', label: 'Quá tồn' }
   ]
 
   return (
     <>
       {!selectedBranchId && (
         <Alert
-          message="Chua co chi nhanh"
-          description="Vui long chon chi nhanh de xem ton kho"
+          message="Chưa có chi nhánh"
+          description="Vui lòng chọn chi nhánh để xem tồn kho"
           type="warning"
           showIcon
           className="mb-6"
@@ -200,8 +200,8 @@ const BranchInventoryPanel = ({
 
       {selectedBranchId && branchStats.lowStock > 0 && (
         <Alert
-          message={`Canh bao: ${branchStats.lowStock} san pham duoi nguong toi thieu`}
-          description="Vui long tao yeu cau nhap kho hoac cap nhat nguong ton kho"
+          message={`Cảnh báo: ${branchStats.lowStock} sản phẩm dưới ngưỡng tối thiểu`}
+          description="Vui lòng tạo yêu cầu nhập kho hoặc cập nhật ngưỡng tồn kho"
           type="warning"
           showIcon
           className="mb-6"
@@ -212,7 +212,7 @@ const BranchInventoryPanel = ({
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="SKU hoat dong"
+              title="SKU hoạt động"
               value={branchInventory.length}
               prefix={<CheckCircleOutlined className="text-success" />}
               styles={{ content: { color: '#52c41a' } }}
@@ -222,7 +222,7 @@ const BranchInventoryPanel = ({
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="San pham toi uu"
+              title="Sản phẩm tối ưu"
               value={branchStats.optimal}
               prefix={<CheckCircleOutlined className="text-blue-600" />}
               styles={{ content: { color: '#1890ff' } }}
@@ -232,7 +232,7 @@ const BranchInventoryPanel = ({
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Sap het"
+              title="Sắp hết"
               value={branchStats.lowStock}
               prefix={<AlertOutlined className="text-red-600" />}
               styles={{ content: { color: '#cf1322' } }}
@@ -242,7 +242,7 @@ const BranchInventoryPanel = ({
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="Het hang"
+              title="Hết hàng"
               value={branchStats.outOfStock}
               prefix={<ShoppingOutlined className="text-gray-500" />}
               styles={{ content: { color: '#595959' } }}
@@ -255,7 +255,7 @@ const BranchInventoryPanel = ({
         <Space wrap>
           {isAdmin && (
             <SelectField
-              label="Chi nhanh"
+              label="Chi nhánh"
               value={selectedBranchId || undefined}
               onChange={(value) => onBranchChange(value as string)}
               options={branches.map((branch) => ({ label: branch.name, value: branch._id }))}
@@ -263,10 +263,10 @@ const BranchInventoryPanel = ({
             />
           )}
           <InputField
-            label="Tim kiem"
+            label="Tìm kiếm"
             value={searchText}
             onChange={(e) => onSearchTextChange(e.target.value)}
-            placeholder="Tim theo ten san pham"
+            placeholder="Tìm theo tên sản phẩm"
             className="mb-0 min-w-[240px]"
           />
         </Space>
@@ -279,11 +279,11 @@ const BranchInventoryPanel = ({
       />
 
       <Card
-        title="Danh sach ton kho chi nhanh"
+        title="Danh sách tồn kho chi nhánh"
         extra={
           canCreate && selectedBranchId ? (
             <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
-              Tao moi
+              Tạo mới
             </Button>
           ) : null
         }

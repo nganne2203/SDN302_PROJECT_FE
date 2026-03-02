@@ -53,7 +53,7 @@ const ManagementPricing = () => {
       />
 
       {isLoadingProducts && (
-        <div className="mb-4 text-sm text-gray-500">Dang tai san pham...</div>
+        <div className="mb-4 text-sm text-gray-500">Đang tải sản phẩm...</div>
       )}
 
       <PricingListComponent

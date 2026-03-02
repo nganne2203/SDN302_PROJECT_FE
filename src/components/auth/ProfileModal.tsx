@@ -59,12 +59,7 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
       try {
         setUploadingAvatar(true)
         const response = await uploadApi.uploadImage(file)
-        let { publicId, imageUrl } = response.data
-
-        // Strip 'uploads/' prefix if present
-        if (publicId.startsWith('uploads/')) {
-          publicId = publicId.replace(/^uploads\//, '')
-        }
+        const { publicId, imageUrl } = response.data
 
         setValue('avatar', publicId)
         setAvatarPreview(imageUrl)
