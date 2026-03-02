@@ -230,6 +230,7 @@ export const ROUTES = {
   LOGIN: '/login',
   REGISTER: '/register',
   SET_PASSWORD: '/set-password',
+  CHANGE_PASSWORD: '/change-password',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   PRODUCTS: '/products',

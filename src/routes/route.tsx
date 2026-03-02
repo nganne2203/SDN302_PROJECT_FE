@@ -19,6 +19,7 @@ const Login = lazy(() => import('@/pages/auth/Login'))
 const Register = lazy(() => import('@/pages/auth/Register'))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const ChangePassword = lazy(() => import('@/pages/auth/ChangePassword'))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
@@ -215,6 +216,14 @@ export const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         {withCustomerLayout(OrderHistory)}
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: ROUTES.CHANGE_PASSWORD,
+    element: (
+      <ProtectedRoute>
+        {withSuspense(ChangePassword)}
       </ProtectedRoute>
     )
   },

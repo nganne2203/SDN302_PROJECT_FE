@@ -2,6 +2,7 @@
 
 export const env = {
   BASE_URL: import.meta.env.VITE_BASE_URL || 'http://localhost:8080',
+  LOCATION_API_BASE: import.meta.env.VITE_LOCATION_API_BASE || '/location-api',
   APP_NAME: import.meta.env.VITE_APP_NAME || 'Phone Accessories',
   RECAPTCHA_SITE_KEY: import.meta.env.VITE_RECAPTCHA_SITE_KEY || '',
   CLIENT_URL: import.meta.env.VITE_CLIENT_URL || 'http://localhost:5173',
