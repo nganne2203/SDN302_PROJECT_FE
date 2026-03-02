@@ -100,7 +100,7 @@ const Home = () => {
               <LoaderCommon />
             </div>
           ) : displayProducts && displayProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
               {displayProducts.map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
@@ -124,7 +124,7 @@ const Home = () => {
                 <LoaderCommon />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
                 {displayNewArrivals.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
