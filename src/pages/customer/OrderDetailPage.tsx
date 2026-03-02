@@ -121,7 +121,7 @@ const OrderDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  const canCancel = (order?.orderStatus ?? '').toLowerCase() === 'pending'
+  const canCancel = ['pending', 'confirmed'].includes((order?.orderStatus ?? '').toLowerCase())
 
   const handleCancel = () => {
     Modal.confirm({
