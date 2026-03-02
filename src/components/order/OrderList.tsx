@@ -31,6 +31,26 @@ const OrderList = ({
   onPageChange,
   canManage = false
 }: OrderListProps) => {
+  const getOrderId = (order: Order) => {
+    const withMongoId = order as unknown as { _id?: string }
+    return withMongoId._id || order.id || ''
+  }
+
+  const getOrderStatus = (order: Order) => {
+    const withOrderStatus = order as unknown as { orderStatus?: string; status?: string }
+    return withOrderStatus.orderStatus || withOrderStatus.status || ''
+  }
+
+  const getShippingName = (order: Order) => {
+    const shipping = order.shippingAddress as unknown as { fullname?: string; fullName?: string }
+    return shipping?.fullname || shipping?.fullName || 'N/A'
+  }
+
+  const getShippingPhone = (order: Order) => {
+    const shipping = order.shippingAddress as unknown as { phone?: string; phoneNumber?: string }
+    return shipping?.phone || shipping?.phoneNumber || 'N/A'
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -41,6 +61,8 @@ const OrderList = ({
     })
   }
 
+  const normalizeStatus = (status?: string) => (typeof status === 'string' ? status.toLowerCase() : '')
+
   const getNextStatus = (currentStatus: string) => {
     const statusFlow: Record<string, string | null> = {
       pending: 'confirmed',
@@ -49,7 +71,7 @@ const OrderList = ({
       delivered: null,
       canceled: null
     }
-    return statusFlow[currentStatus.toLowerCase()]
+    return statusFlow[normalizeStatus(currentStatus)]
   }
 
   const getStatusActionLabel = (status: string) => {
@@ -69,7 +91,7 @@ const OrderList = ({
       width: 150,
       render: (_, order) => (
         <span className="font-medium text-gray-900">
-          {('orderNumber' in order ? (order as { orderNumber: string }).orderNumber : order.id.slice(0, 8))}
+          {('orderNumber' in order ? (order as { orderNumber: string }).orderNumber : getOrderId(order).slice(0, 8))}
         </span>
       )
     },
@@ -79,8 +101,8 @@ const OrderList = ({
       width: 200,
       render: (_, order) => (
         <div>
-          <div className="text-sm text-gray-900">{order.shippingAddress?.fullName || 'N/A'}</div>
-          <div className="text-xs text-gray-500">{order.shippingAddress?.phoneNumber || 'N/A'}</div>
+          <div className="text-sm text-gray-900">{getShippingName(order)}</div>
+          <div className="text-xs text-gray-500">{getShippingPhone(order)}</div>
         </div>
       )
     },
@@ -89,7 +111,7 @@ const OrderList = ({
       title: 'Số lượng',
       width: 120,
       render: (_, order) => (
-        <span className="text-sm text-gray-900">{order.items.length} sản phẩm</span>
+        <span className="text-sm text-gray-900">{order.items?.length || 0} sản phẩm</span>
       )
     },
     {
@@ -110,7 +132,7 @@ const OrderList = ({
         <div>
           <div className="text-sm text-gray-900">{order.paymentMethod}</div>
           <div className="text-xs">
-            {order.paymentStatus === 'PAID' ? (
+            {String(order.paymentStatus || '').toUpperCase() === 'PAID' ? (
               <span className="text-green-600">Đã thanh toán</span>
             ) : (
               <span className="text-yellow-600">Chưa thanh toán</span>
@@ -123,7 +145,7 @@ const OrderList = ({
       key: 'status',
       title: 'Trạng thái',
       width: 150,
-      render: (_, order) => <OrderStatusBadge status={order.status} />
+      render: (_, order) => <OrderStatusBadge status={getOrderStatus(order)} />
     },
     {
       key: 'createdAt',
@@ -139,17 +161,19 @@ const OrderList = ({
       width: 200,
       align: 'center',
       render: (_, order) => {
-        const nextStatus = getNextStatus(order.status)
+        const orderStatus = getOrderStatus(order)
+        const nextStatus = getNextStatus(orderStatus)
+        const currentStatus = normalizeStatus(orderStatus)
         const canUpdate =
           canManage &&
           nextStatus &&
           onUpdateStatus &&
-          order.status.toLowerCase() !== 'canceled' &&
-          order.status.toLowerCase() !== 'delivered'
+          currentStatus !== 'canceled' &&
+          currentStatus !== 'delivered'
         const canCancel =
           canManage &&
           onCancelOrder &&
-          order.status.toLowerCase() === 'pending'
+          currentStatus === 'pending'
 
         return (
           <div className="flex items-center justify-center gap-2">
@@ -167,7 +191,7 @@ const OrderList = ({
                 <ButtonCommon
                   variant="primary"
                   size="sm"
-                  onClick={() => onUpdateStatus(order.id, nextStatus)}
+                  onClick={() => onUpdateStatus(getOrderId(order), nextStatus)}
                   icon={<CheckCircle className="w-4 h-4" />}
                 />
               </Tooltip>
@@ -178,7 +202,7 @@ const OrderList = ({
                 <ButtonCommon
                   variant="danger"
                   size="sm"
-                  onClick={() => onCancelOrder(order.id)}
+                  onClick={() => onCancelOrder(getOrderId(order))}
                   icon={<XCircle className="w-4 h-4" />}
                 />
               </Tooltip>
@@ -194,7 +218,10 @@ const OrderList = ({
       columns={columns as unknown as TableColumn<Record<string, unknown>>[]}
       data={orders as unknown as Record<string, unknown>[]}
       loading={isLoading}
-      rowKey="id"
+      rowKey={(record) => {
+        const typedRecord = record as unknown as Order
+        return getOrderId(typedRecord)
+      }}
       pagination={{
         current: pagination?.currentPage || 1,
         pageSize: pagination?.pageSize || 10,
