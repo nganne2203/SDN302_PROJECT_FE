@@ -53,7 +53,7 @@ const Checkout = () => {
   type PaymentMethod = 'cod' | 'vnpay'
   interface CheckoutFormValues extends Omit<VnpayCreateRequest, 'message'> {
     paymentMethod: PaymentMethod
-    note?: string
+    message?: string
   }
 
   const [form] = Form.useForm<CheckoutFormValues>()
@@ -214,7 +214,7 @@ const Checkout = () => {
         const codPayload: CreateCodOrderRequest = {
           shippingAddress: sanitizedAddress,
           paymentMethod: 'cod',
-          note: values.note
+          message: values.message
         }
         await orderApi.createCodOrder(codPayload)
         message.success('Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.')
@@ -225,7 +225,7 @@ const Checkout = () => {
           shippingAddress: sanitizedAddress,
           bankCode: values.bankCode,
           locale: values.locale,
-          message: values.note
+          message: values.message
         }
         const response = await paymentApi.createVnpayPayment(vnpayPayload)
         const paymentUrl = response.data?.paymentUrl
@@ -474,7 +474,7 @@ const Checkout = () => {
                   </Row>
                 )}
 
-                <Form.Item name="note" label="Ghi chú">
+                <Form.Item name="message" label="Ghi chú">
                   <Input.TextArea rows={2} placeholder="Yêu cầu giao buổi sáng..." />
                 </Form.Item>
 
