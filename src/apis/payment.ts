@@ -30,12 +30,11 @@ export interface VnpayCreateRequest {
     city: string
     district: string
     ward: string
-    provinceCode?: number
-    districtCode?: number
-    wardCode?: number
+    provinceCode?: string
+    districtCode?: string
+    wardCode?: string
   }
   message?: string
-  branchId: string
   bankCode?: string
   locale?: 'vn' | 'en'
 }

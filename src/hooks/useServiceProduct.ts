@@ -21,6 +21,9 @@ import type {
   UpdateServiceProductRequest
 } from '@/features/serviceProduct/serviceProductTypes'
 
+// eslint-disable-next-line no-unused-vars
+type ServiceProductFilterUpdater = (filter: ServiceProductFilter) => ServiceProductFilter
+
 export const useServiceProduct = () => {
   const dispatch = useAppDispatch()
   const {
@@ -82,7 +85,7 @@ export const useServiceProduct = () => {
     throw result.payload
   }, [dispatch, filter])
 
-  const handleSetFilter = useCallback((newFilter: ServiceProductFilter | ((_prev: ServiceProductFilter) => ServiceProductFilter)) => {
+  const handleSetFilter = useCallback((newFilter: ServiceProductFilter | ServiceProductFilterUpdater) => {
     if (typeof newFilter === 'function') {
       const updatedFilter = newFilter(filter)
       dispatch(setFilter(updatedFilter))

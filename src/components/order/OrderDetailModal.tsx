@@ -1,8 +1,9 @@
-import { X, MapPin, CreditCard, Package } from 'lucide-react'
+import { MapPin, CreditCard, Package } from 'lucide-react'
 import { ButtonCommon, ModalCommon } from '@/components/common'
 import OrderStatusBadge from './OrderStatusBadge'
 import type { Order } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 
 interface OrderDetailModalProps {
   order: Order | null
@@ -25,6 +26,46 @@ const OrderDetailModal = ({
 }: OrderDetailModalProps) => {
   if (!order) return null
 
+  const getOrderId = (targetOrder: Order) => {
+    const withMongoId = targetOrder as unknown as { _id?: string }
+    return withMongoId._id || targetOrder.id || ''
+  }
+
+  const getOrderStatus = (targetOrder: Order) => {
+    const withOrderStatus = targetOrder as unknown as { orderStatus?: string; status?: string }
+    return withOrderStatus.orderStatus || withOrderStatus.status || ''
+  }
+
+  const getShippingName = (targetOrder: Order) => {
+    const shipping = targetOrder.shippingAddress as unknown as { fullname?: string; fullName?: string }
+    return shipping?.fullname || shipping?.fullName || 'N/A'
+  }
+
+  const getShippingPhone = (targetOrder: Order) => {
+    const shipping = targetOrder.shippingAddress as unknown as { phone?: string; phoneNumber?: string }
+    return shipping?.phone || shipping?.phoneNumber || 'N/A'
+  }
+
+  const getShippingAddressText = (targetOrder: Order) => {
+    const shipping = targetOrder.shippingAddress as unknown as {
+      addressLine?: string
+      address?: string
+      ward?: string
+      district?: string
+      city?: string
+      province?: string
+    }
+
+    const parts = [
+      shipping?.addressLine || shipping?.address,
+      shipping?.ward,
+      shipping?.district,
+      shipping?.city || shipping?.province
+    ].filter(Boolean)
+
+    return parts.length > 0 ? parts.join(', ') : 'N/A'
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -35,6 +76,8 @@ const OrderDetailModal = ({
     })
   }
 
+  const normalizeStatus = (status?: string) => (typeof status === 'string' ? status.toLowerCase() : '')
+
   const getNextStatus = (currentStatus: string) => {
     const statusFlow: Record<string, string | null> = {
       pending: 'confirmed',
@@ -43,7 +86,7 @@ const OrderDetailModal = ({
       delivered: null,
       canceled: null
     }
-    return statusFlow[currentStatus.toLowerCase()]
+    return statusFlow[normalizeStatus(currentStatus)]
   }
 
   const getStatusActionLabel = (status: string) => {
@@ -55,17 +98,19 @@ const OrderDetailModal = ({
     return labels[status] || 'Cập nhật'
   }
 
-  const nextStatus = getNextStatus(order.status)
+  const orderStatus = getOrderStatus(order)
+  const nextStatus = getNextStatus(orderStatus)
+  const currentStatus = normalizeStatus(orderStatus)
   const canUpdate =
     canManage &&
     nextStatus &&
     onUpdateStatus &&
-    order.status.toLowerCase() !== 'canceled' &&
-    order.status.toLowerCase() !== 'delivered'
+    currentStatus !== 'canceled' &&
+    currentStatus !== 'delivered'
   const canCancel =
     canManage &&
     onCancelOrder &&
-    order.status.toLowerCase() === 'pending'
+    currentStatus === 'pending'
 
   return (
     <ModalCommon isOpen={isOpen} onClose={onClose} size="lg">
@@ -75,22 +120,16 @@ const OrderDetailModal = ({
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Chi tiết đơn hàng</h2>
             <p className="text-gray-500 mt-1">
-              Mã: {'orderNumber' in order ? (order as { orderNumber: string }).orderNumber : order.id}
+              Mã: {'orderNumber' in order ? (order as { orderNumber: string }).orderNumber : getOrderId(order)}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
         {/* Status and Date */}
         <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
           <div>
             <p className="text-sm text-gray-500 mb-1">Trạng thái</p>
-            <OrderStatusBadge status={order.status} />
+            <OrderStatusBadge status={orderStatus} />
           </div>
           <div>
             <p className="text-sm text-gray-500 mb-1">Ngày tạo</p>
@@ -105,11 +144,10 @@ const OrderDetailModal = ({
             <h3 className="text-lg font-semibold text-gray-800">Địa chỉ giao hàng</h3>
           </div>
           <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900">{order.shippingAddress.fullName}</p>
-            <p className="text-sm text-gray-600 mt-1">{order.shippingAddress.phoneNumber}</p>
+            <p className="font-medium text-gray-900">{getShippingName(order)}</p>
+            <p className="text-sm text-gray-600 mt-1">{getShippingPhone(order)}</p>
             <p className="text-sm text-gray-600 mt-1">
-              {order.shippingAddress.address}, {order.shippingAddress.ward},{' '}
-              {order.shippingAddress.district}, {order.shippingAddress.province}
+              {getShippingAddressText(order)}
             </p>
           </div>
         </div>
@@ -124,14 +162,14 @@ const OrderDetailModal = ({
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-gray-600">Phương thức</p>
-                <p className="font-medium text-gray-900">{order.paymentMethod}</p>
+                <p className="font-medium text-gray-900">{order.paymentMethod.toUpperCase() === 'COD' ? 'Thanh toán khi nhận hàng' : 'Thanh toán trực tuyến'}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Trạng thái</p>
                 <p className={`font-medium ${
-                  order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'
+                  String(order.paymentStatus || '').toUpperCase() === 'PAID' ? 'text-green-600' : 'text-yellow-600'
                 }`}>
-                  {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                  {String(order.paymentStatus || '').toUpperCase() === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                 </p>
               </div>
             </div>
@@ -163,33 +201,54 @@ const OrderDetailModal = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {order.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={item.productImage}
-                          alt={item.productName}
-                          className="w-12 h-12 rounded object-cover"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {item.productName}
-                          </p>
+                {(order.items || []).map((item, index) => {
+                  const itemRecord = item as unknown as {
+                    _id?: string
+                    id?: string
+                    productId?: string
+                    productName?: string
+                    productImage?: string
+                    quantity?: number
+                    price?: number
+                    product?: {
+                      _id?: string
+                      name?: string
+                      images?: unknown
+                    }
+                  }
+                  const itemKey = itemRecord._id || itemRecord.id || itemRecord.productId || itemRecord.product?._id || `order-item-${index}`
+                  const itemName = itemRecord.productName || itemRecord.product?.name || 'Sản phẩm'
+                  const itemImage = itemRecord.productImage || getProductImageUrl(itemRecord.product?.images as never) || '/placeholder.png'
+                  const itemQuantity = itemRecord.quantity || 0
+                  const itemPrice = itemRecord.price || 0
+                  return (
+                    <tr key={itemKey}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={itemImage}
+                            alt={itemName}
+                            className="w-12 h-12 rounded object-cover"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {itemName}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-900">
-                      {item.quantity}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm text-gray-900">
-                      {formatCurrency(item.price)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                      {formatCurrency(item.price * item.quantity)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-900">
+                        {itemQuantity}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-gray-900">
+                        {formatCurrency(itemPrice)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                        {formatCurrency(itemPrice * itemQuantity)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -216,7 +275,7 @@ const OrderDetailModal = ({
               variant="danger"
               size="md"
               onClick={() => {
-                onCancelOrder(order.id)
+                onCancelOrder(getOrderId(order))
                 onClose()
               }}
             >
@@ -229,7 +288,7 @@ const OrderDetailModal = ({
               variant="primary"
               size="md"
               onClick={() => {
-                onUpdateStatus(order.id, nextStatus)
+                onUpdateStatus(getOrderId(order), nextStatus)
                 onClose()
               }}
             >

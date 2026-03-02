@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TablePaginationConfig } from 'antd/es/table'
+import { jwtDecode } from 'jwt-decode'
 import useAuth from '@/hooks/useAuth'
+import { useAppSelector } from '@/apps/hooks'
 import { USER_ROLES } from '@/constants/constant'
 import { branchApi } from '@/apis/branch'
 import storeInventoryApi, { type StoreInventoryQuery, type CreateStoreInventoryPayload } from '@/apis/storeInventory'
 import inventoryApi, { type InventoryQuery } from '@/apis/inventory'
-import type { Branch, InventoryRecord, StoreInventoryRecord } from '@/types/api'
+import type { Branch, InventoryRecord, StoreInventoryRecord, TokenPayload } from '@/types/api'
 
 export type BranchView = 'all' | 'out_of_stock' | 'low_stock' | 'need_restock' | 'overstock'
 
@@ -19,8 +21,24 @@ const buildKey = (prefix: string, params: Record<string, unknown>) => {
 
 export const useInventory = () => {
   const { user } = useAuth()
+  const accessToken = useAppSelector((state) => state.auth.accessToken)
   const isAdmin = user?.role === USER_ROLES.ADMIN
   const isManager = user?.role === USER_ROLES.MANAGER
+
+  const tokenBranchId = useMemo(() => {
+    if (!accessToken) return null
+    try {
+      const payload = jwtDecode<TokenPayload>(accessToken)
+      return payload.branch ?? null
+    } catch {
+      return null
+    }
+  }, [accessToken])
+
+  const resolvedBranchId = useMemo(
+    () => user?.branch || tokenBranchId || null,
+    [tokenBranchId, user?.branch]
+  )
 
   const cacheRef = useRef(new Map<string, CacheEntry<unknown>>())
 
@@ -39,7 +57,7 @@ export const useInventory = () => {
   }, [])
 
   const [branches, setBranches] = useState<Branch[]>([])
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(user?.branch || null)
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(resolvedBranchId)
   const [branchView, setBranchView] = useState<BranchView>('all')
   const [searchText, setSearchText] = useState('')
 
@@ -68,10 +86,10 @@ export const useInventory = () => {
   )
 
   useEffect(() => {
-    if (!isAdmin && user?.branch) {
-      setSelectedBranchId(user.branch)
+    if (!isAdmin && resolvedBranchId) {
+      setSelectedBranchId(resolvedBranchId)
     }
-  }, [isAdmin, user?.branch])
+  }, [isAdmin, resolvedBranchId])
 
   const fetchBranches = useCallback(
     async (force = false) => {

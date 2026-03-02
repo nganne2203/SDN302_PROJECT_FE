@@ -32,8 +32,12 @@ export const useOrder = () => {
   )
 
   const fetchOrderById = useCallback(
-    (id: string) => {
-      dispatch(fetchOrderByIdThunk(id))
+    async (id: string) => {
+      const result = await dispatch(fetchOrderByIdThunk(id))
+      if (fetchOrderByIdThunk.fulfilled.match(result)) {
+        return result.payload
+      }
+      return null
     },
     [dispatch]
   )

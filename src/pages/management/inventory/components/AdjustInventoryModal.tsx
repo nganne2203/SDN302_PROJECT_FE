@@ -9,7 +9,7 @@ import { ControlledField, NumberField } from '@/components/common'
 
 const adjustInventorySchema = z.object({
   quantity: z.coerce.number().refine((val) => val !== 0, {
-    message: 'So luong dieu chinh phai khac 0'
+    message: 'Số lượng điều chỉnh phải khác 0'
   })
 })
 
@@ -50,30 +50,30 @@ const AdjustInventoryModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Dieu chinh ton kho"
+      title="Điều chỉnh tồn kho"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button
             type="primary"
             onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
-            Xac nhan
+            Xác nhận
           </Button>
         </div>
       }
     >
       <div className="space-y-4">
         <div className="rounded-lg bg-gray-50 p-3">
-          <p className="text-sm text-gray-500">San pham</p>
+          <p className="text-sm text-gray-500">Sản phẩm</p>
           <p className="font-medium">{productName}</p>
         </div>
 
         <div className="rounded-lg bg-gray-50 p-3">
-          <p className="text-sm text-gray-500">So luong hien tai</p>
+          <p className="text-sm text-gray-500">Số lượng hiện tại</p>
           <p className="text-lg font-semibold">{currentQuantity}</p>
         </div>
 
@@ -83,11 +83,11 @@ const AdjustInventoryModal = ({
             control={control}
             render={({ value, onChange, error }) => (
               <NumberField
-                label="So luong dieu chinh (+ nhap them, - xuat bot)"
+                label="Số lượng điều chỉnh (+ nhập thêm, - xuất bớt)"
                 value={value as number | undefined}
                 onChange={(next) => onChange(next)}
                 error={error}
-                placeholder="Vi du: 50 hoac -20"
+                placeholder="Ví dụ: 50 hoặc -20"
                 required
               />
             )}
@@ -95,7 +95,7 @@ const AdjustInventoryModal = ({
         </form>
 
         <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-3">
-          <p className="text-sm text-gray-500">So luong sau dieu chinh</p>
+          <p className="text-sm text-gray-500">Số lượng sau điều chỉnh</p>
           <p className={`text-lg font-semibold ${previewQuantity < 0 ? 'text-red-500' : 'text-green-600'}`}>
             {previewQuantity}
           </p>

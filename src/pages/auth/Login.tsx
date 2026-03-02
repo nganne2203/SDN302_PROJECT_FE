@@ -14,6 +14,7 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Login = () => {
+  const isCaptchaEnabled = false
   const {
     login,
     isLoading,
@@ -50,11 +51,6 @@ const Login = () => {
   const onSubmit = useCallback(
     async (data: LoginFormData) => {
       if (isLoading) return
-
-      if (env.RECAPTCHA_SITE_KEY && !recaptchaToken) {
-        toast.error('Vui lòng xác minh bạn không phải là robot')
-        return
-      }
 
       const result = await login({
         ...data,
@@ -147,7 +143,7 @@ const Login = () => {
             </Link>
           </div>
 
-          {env.RECAPTCHA_SITE_KEY && (
+          {isCaptchaEnabled && env.RECAPTCHA_SITE_KEY && (
             <div className="flex justify-center">
               <ReCAPTCHA
                 ref={recaptchaRef}

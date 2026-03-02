@@ -38,12 +38,16 @@ const ProductDetailPage = () => {
   const [pricingData, setPricingData] = useState<PricingCalculation | null>(null)
   const [isPricingLoading, setIsPricingLoading] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
     if (id) {
-      fetchProductById(id)
-      fetchRelatedProducts(id, 4)
+      setHasFetched(false)
+      Promise.allSettled([
+        fetchProductById(id),
+        fetchRelatedProducts(id, 4)
+      ]).finally(() => setHasFetched(true))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
@@ -71,14 +75,23 @@ const ProductDetailPage = () => {
   }, [id])
 
   useEffect(() => {
-    if (!id || !selectedBranchId) return
+    if (!id || !selectedBranchId) {
+      setBranchStock(null)
+      setIsStockLoading(false)
+      return
+    }
     setIsStockLoading(true)
+    setBranchStock(null)
     apiClient.get(API_ENDPOINTS.STORE_INVENTORY.BY_PRODUCT(selectedBranchId, id))
       .then((res) => {
         const quantityValue = res?.data?.data?.quantity
         setBranchStock(typeof quantityValue === 'number' ? quantityValue : null)
       })
-      .catch(() => setBranchStock(null))
+      .catch((err) => {
+        const status = err?.response?.status
+        // 404 = branch has no inventory record for this product → unknown, not "out of stock"
+        setBranchStock(status === 404 ? null : 0)
+      })
       .finally(() => setIsStockLoading(false))
   }, [id, selectedBranchId])
 
@@ -129,13 +142,31 @@ const ProductDetailPage = () => {
       setShowLoginModal(true)
       return
     }
-    const success = await handleAddToCart(productId, qty, serviceIds)
-    if (success) {
-      navigate(ROUTES.CART)
-    }
+    navigate(ROUTES.CHECKOUT, {
+      state: {
+        buyNow: {
+          product: selectedProduct,
+          quantity: qty,
+          serviceIds,
+          services: selectedServices,
+          pricingData
+        }
+      }
+    })
   }
 
-  if (!selectedProduct && !isLoading) {
+  if (isLoading || !hasFetched) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-500 text-sm">Đang tải sản phẩm...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!selectedProduct) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

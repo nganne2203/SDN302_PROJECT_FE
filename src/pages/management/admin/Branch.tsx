@@ -34,7 +34,6 @@ const BranchesManagement = () => {
     name: '',
     address: ''
   })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const lastFetchParamsRef = useRef<string>('')
 
@@ -85,7 +84,6 @@ const BranchesManagement = () => {
         handleSetSelectedBranch(null)
         setIsEditMode(false)
       }
-      setFormErrors({})
       setIsModalOpen(true)
     },
     [handleSetSelectedBranch]
@@ -94,35 +92,20 @@ const BranchesManagement = () => {
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setFormData({ name: '', address: '' })
-    setFormErrors({})
     setIsEditMode(false)
     setSelectedBranchId(null)
     handleSetSelectedBranch(null)
   }, [handleSetSelectedBranch])
 
-  const handleFormChange = useCallback(
-    (field: keyof BranchFormData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }))
-      if (formErrors[field as string]) {
-        setFormErrors((prev) => {
-          const next = { ...prev }
-          delete next[field as string]
-          return next
-        })
-      }
-    },
-    [formErrors]
-  )
-
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (data: { name: string; address: string }) => {
     if (!canManage) {
       toast.error('Bạn không có quyền thao tác chi nhánh')
       return
     }
 
-    const validation = validateBranchForm(formData as unknown as Record<string, unknown>)
+    const validation = validateBranchForm(data as unknown as Record<string, unknown>)
     if (!validation.valid) {
-      setFormErrors(validation.errors)
+      toast.error('Dữ liệu không hợp lệ')
       return
     }
 
@@ -131,13 +114,13 @@ const BranchesManagement = () => {
       let result
       if (isEditMode && selectedBranchId) {
         result = await updateBranch(selectedBranchId, {
-          name: formData.name,
-          address: formData.address
+          name: data.name,
+          address: data.address
         })
       } else {
         result = await createBranch({
-          name: formData.name,
-          address: formData.address
+          name: data.name,
+          address: data.address
         })
       }
 
@@ -153,7 +136,6 @@ const BranchesManagement = () => {
   }, [
     canManage,
     createBranch,
-    formData,
     handleCloseModal,
     isEditMode,
     selectedBranchId,
@@ -255,11 +237,9 @@ const BranchesManagement = () => {
         isOpen={isModalOpen}
         isEditMode={isEditMode}
         canManage={canManage}
-        formData={formData}
-        formErrors={formErrors}
+        initialData={isEditMode && selectedBranchId ? formData : undefined}
         isSubmitting={isSubmitting}
         onClose={handleCloseModal}
-        onFormChange={handleFormChange}
         onSubmit={handleSubmit}
       />
     </div>

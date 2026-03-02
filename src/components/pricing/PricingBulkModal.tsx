@@ -73,22 +73,22 @@ const PricingBulkModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={handleClose}
-      title="Tao bang gia hang loat"
+      title="Tạo bảng giá hàng loạt"
       size="xl"
       footer={
         <div className="flex justify-end gap-2">
           <ButtonCommon variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </ButtonCommon>
           <ButtonCommon variant="primary" onClick={handleSubmit} isLoading={isSubmitting}>
-            Tao bang gia
+            Tạo bảng giá
           </ButtonCommon>
         </div>
       }
     >
       <div className="space-y-4">
         <SelectField
-          label="San pham"
+          label="Sản phẩm"
           required
           options={productOptions}
           value={productId}
@@ -102,38 +102,38 @@ const PricingBulkModal = ({
                 <h4 className="font-semibold">Tier {index + 1}</h4>
                 {tiers.length > 1 && (
                   <ButtonCommon variant="danger" size="sm" onClick={() => handleRemoveTier(index)}>
-                    Xoa tier
+                    Xóa tier
                   </ButtonCommon>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <NumberField
-                  label="So luong toi thieu"
+                  label="Số lượng tối thiểu"
                   required
                   min={1}
                   value={tier.minQuantity}
                   onChange={(value) => handleTierChange(index, 'minQuantity', typeof value === 'number' ? value : 0)}
                 />
                 <NumberField
-                  label="So luong toi da"
+                  label="Số lượng tối đa"
                   min={1}
                   value={tier.maxQuantity ?? undefined}
                   onChange={(value) => handleTierChange(index, 'maxQuantity', typeof value === 'number' ? value : null)}
-                  placeholder="Bo trong neu khong gioi han"
+                  placeholder="Bỏ trống nếu không giới hạn"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <NumberField
-                  label="Gia moi san pham"
+                  label="Giá mỗi sản phẩm"
                   required
                   min={0}
                   value={tier.pricePerUnit}
                   onChange={(value) => handleTierChange(index, 'pricePerUnit', typeof value === 'number' ? value : 0)}
                 />
                 <NumberField
-                  label="Giam gia (%)"
+                  label="Giảm giá (%)"
                   min={0}
                   max={100}
                   value={tier.discountPercentage ?? undefined}
@@ -142,7 +142,7 @@ const PricingBulkModal = ({
               </div>
 
               <InputField
-                label="Mo ta"
+                label="Mô tả"
                 value={tier.description || ''}
                 onChange={(e) => handleTierChange(index, 'description', e.target.value)}
               />
@@ -151,7 +151,7 @@ const PricingBulkModal = ({
         </div>
 
         <ButtonCommon variant="outline" onClick={handleAddTier}>
-          Them tier
+          Thêm tier
         </ButtonCommon>
       </div>
     </ModalCommon>

@@ -27,6 +27,7 @@ const OrderManagement = ({
     isLoading,
     fetchAllOrders,
     fetchOrders,
+    fetchOrderById,
     updateOrderStatus,
     cancelOrder
   } = useOrder()
@@ -67,9 +68,22 @@ const OrderManagement = ({
     })
   }
 
-  const handleViewDetail = (order: Order) => {
+  const handleViewDetail = async (order: Order) => {
+    const withMongoId = order as unknown as { _id?: string }
+    const orderId = withMongoId._id || order.id
+
     setSelectedOrder(order)
     setIsDetailModalOpen(true)
+
+    if (!orderId) {
+      toast.error('Không tìm thấy mã đơn hàng để tải chi tiết')
+      return
+    }
+
+    const detailedOrder = await fetchOrderById(orderId)
+    if (detailedOrder) {
+      setSelectedOrder(detailedOrder)
+    }
   }
 
   const handleUpdateStatus = async (orderId: string, status: string) => {
