@@ -20,7 +20,7 @@ export interface CreateCodOrderRequest {
     wardCode?: string
   }
   paymentMethod: 'cod'
-  note?: string
+  message?: string
 }
 
 export interface CreateOfflineOrderRequest {
