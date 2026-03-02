@@ -418,7 +418,7 @@ const ProductDetail = ({
               <div>
                 <span className="font-medium text-gray-700">Thiết bị tương thích:</span>{' '}
                 {product.compatibility && product.compatibility.length > 0
-                  ? product.compatibility.join(', ')
+                  ? product.compatibility.map((c: { name: string } | string) => typeof c === 'string' ? c : c.name).join(', ')
                   : 'Đang cập nhật'}
               </div>
             </div>

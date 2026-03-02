@@ -93,7 +93,7 @@ const ProductDetailPage = () => {
         setBranchStock(status === 404 ? null : 0)
       })
       .finally(() => setIsStockLoading(false))
-  }, [enableStockLookup, id, selectedBranchId])
+  }, [id, selectedBranchId])
 
   useEffect(() => {
     if (!id) return

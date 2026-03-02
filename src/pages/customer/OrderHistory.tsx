@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Tabs, Table } from 'antd'
+import { Tabs, Table, Button, Pagination } from 'antd'
+import { EyeOutlined } from '@ant-design/icons'
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import useOrder from '@/hooks/useOrder'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { ROUTES } from '@/constants/constant'
 import type { Order } from '@/types/api'
 import type { OrderFilter } from '@/features/order/orderTypes'
 
 const OrderHistory = () => {
+  const navigate = useNavigate()
   const {
     orders,
     pagination,
@@ -17,11 +21,12 @@ const OrderHistory = () => {
   } = useOrder()
 
   const [activeTab, setActiveTab] = useState<string>('pending')
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Build filter based on active tab
   const buildFilter = useCallback((): OrderFilter => {
     const baseFilter: OrderFilter = {
-      page: 1,
+      page: currentPage,
       limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'desc'
@@ -29,6 +34,10 @@ const OrderHistory = () => {
 
     if (activeTab === 'pending') {
       baseFilter.status = 'pending'
+    } else if (activeTab === 'confirmed') {
+      baseFilter.status = 'confirmed'
+    } else if (activeTab === 'shipped') {
+      baseFilter.status = 'shipped'
     } else if (activeTab === 'completed') {
       baseFilter.status = 'delivered'
     } else if (activeTab === 'cancelled') {
@@ -36,7 +45,7 @@ const OrderHistory = () => {
     }
 
     return baseFilter
-  }, [activeTab])
+  }, [activeTab, currentPage])
 
   const loadOrders = useCallback(() => {
     fetchOrders(buildFilter())
@@ -48,23 +57,34 @@ const OrderHistory = () => {
 
   const handleTabChange = (key: string) => {
     setActiveTab(key)
+    setCurrentPage(1)
   }
 
   const orderColumns = [
     {
-      title: 'Order ID',
+      title: 'Mã đơn hàng',
       dataIndex: 'id',
       key: 'orderId',
       render: (_: unknown, order: Order) => (
         <span className="font-medium text-gray-900">
-          {'orderNumber' in order ? (order as { orderNumber: string }).orderNumber : order.id}
+          {'orderNumber' in order
+            ? (order as { orderNumber: string }).orderNumber
+            : order.id}
         </span>
       )
     },
     {
-      title: 'Total',
+      title: 'Ngày đặt',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (value: string) =>
+        value ? new Date(value).toLocaleDateString('vi-VN') : '—'
+    },
+    {
+      title: 'Tổng tiền',
       dataIndex: 'totalAmount',
       key: 'total',
+      align: 'right' as const,
       render: (value: number) => (
         <span className="font-semibold text-blue-600">
           {formatCurrency(value)}
@@ -72,10 +92,30 @@ const OrderHistory = () => {
       )
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
+      title: 'Trạng thái',
+      dataIndex: 'orderStatus',
       key: 'status',
-      render: (value: string) => <OrderStatusBadge status={value} />
+      render: (value: string, record: Order) => (
+        <OrderStatusBadge status={value ?? (record as unknown as Record<string, string>).status} />
+      )
+    },
+    {
+      title: 'Thảo tác',
+      key: 'actions',
+      align: 'center' as const,
+      render: (_: unknown, order: Order) => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => {
+            const id = (order as unknown as { _id: string })._id || order.id
+            navigate(ROUTES.ORDER_DETAIL.replace(':id', id))
+          }}
+        >
+          Xem chi tiết
+        </Button>
+      )
     }
   ]
 
@@ -86,6 +126,24 @@ const OrderHistory = () => {
         <span className="flex items-center gap-2">
           <Clock className="w-4 h-4" />
           Chờ xác nhận
+        </span>
+      )
+    },
+    {
+      key: 'confirmed',
+      label: (
+        <span className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          Đang xử lý
+        </span>
+      )
+    },
+    {
+      key: 'shipped',
+      label: (
+        <span className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          Đang giao hàng
         </span>
       )
     },
@@ -150,9 +208,10 @@ const OrderHistory = () => {
           ) : (
             <Table
               dataSource={orders}
-              rowKey={(order) => order.id}
+              rowKey={(order) => (order as unknown as { _id: string })._id || order.id}
               pagination={false}
               columns={orderColumns}
+              loading={isLoading}
             />
           )}
         </div>
@@ -160,12 +219,13 @@ const OrderHistory = () => {
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
           <div className="mt-6 flex justify-center">
-            <div className="bg-white rounded-lg shadow px-6 py-3">
-              <p className="text-sm text-gray-600">
-                Trang {pagination.currentPage} / {pagination.totalPages}
-                {' '}({pagination.totalItems} đơn hàng)
-              </p>
-            </div>
+            <Pagination
+              current={currentPage}
+              total={pagination.totalItems}
+              pageSize={10}
+              showSizeChanger={false}
+              onChange={(page) => setCurrentPage(page)}
+            />
           </div>
         )}
       </div>

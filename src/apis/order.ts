@@ -7,6 +7,22 @@ import type {
   CreateOrderRequest
 } from '@/types/api'
 
+export interface CreateCodOrderRequest {
+  shippingAddress: {
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    provinceCode?: string
+    districtCode?: string
+    wardCode?: string
+  }
+  paymentMethod: 'cod'
+  message?: string
+}
+
 export interface CreateOfflineOrderRequest {
   customerId?: string
   branchId: string
@@ -63,6 +79,15 @@ export const orderApi = {
 
   // Create order
   createOrder: async (data: CreateOrderRequest): Promise<ApiResponse<Order>> => {
+    const response = await apiClient.post<ApiResponse<Order>>(
+      API_ENDPOINTS.ORDER.CREATE,
+      data
+    )
+    return response.data
+  },
+
+  // Create online COD order (Customer - ship to address, pay on delivery)
+  createCodOrder: async (data: CreateCodOrderRequest): Promise<ApiResponse<Order>> => {
     const response = await apiClient.post<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.CREATE,
       data
