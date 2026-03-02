@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Form, Input, Radio, Row, Select, Spin, Typography, message } from 'antd'
+import { Button, Card, Col, Form, Input, Radio, Row, Select, Spin, Tooltip, Typography, message } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import useCart from '@/hooks/useCart'
 import paymentApi, { type BankInfo, type VnpayCreateRequest } from '@/apis/payment'
+import { orderApi, type CreateCodOrderRequest } from '@/apis/order'
 import cartApi from '@/apis/cart'
 import branchApi from '@/apis/branch'
 import type { Branch, Product } from '@/types/api'
@@ -25,20 +27,42 @@ interface BuyNowState {
   pricingData: PricingCalculation | null
 }
 
+const INTER_PROVINCE_FEE = 50000
+const INTRA_PROVINCE_FEE = 0
+
 const normalizeText = (value: string) => value
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
   .toLowerCase()
+  .trim()
+
+/** Mirror the backend isInterProvince logic: check if any branch address contains the customer city */
+const estimateShippingFee = (city: string, branches: Branch[]): number => {
+  if (!city || branches.length === 0) return INTRA_PROVINCE_FEE
+  const normalizedCity = normalizeText(city)
+  const hasSameProvinceBranch = branches.some((b) =>
+    normalizeText(b.address).includes(normalizedCity)
+  )
+  return hasSameProvinceBranch ? INTRA_PROVINCE_FEE : INTER_PROVINCE_FEE
+}
 
 const Checkout = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const buyNow = (location.state as { buyNow?: BuyNowState } | null)?.buyNow ?? null
-  const [form] = Form.useForm<VnpayCreateRequest>()
+  type PaymentMethod = 'cod' | 'vnpay'
+  interface CheckoutFormValues extends Omit<VnpayCreateRequest, 'message'> {
+    paymentMethod: PaymentMethod
+    note?: string
+  }
+
+  const [form] = Form.useForm<CheckoutFormValues>()
   const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart()
 
   const [banks, setBanks] = useState<BankInfo[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
+  const [shippingFee, setShippingFee] = useState<number>(INTRA_PROVINCE_FEE)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMetaLoading, setIsMetaLoading] = useState(true)
   const {
@@ -72,7 +96,7 @@ const Checkout = () => {
       setBanks(bankRes.data || [])
       setBranches(branchRes.data || [])
     } catch {
-      message.error('Không tải được thông tin ngân hàng/chi nhánh')
+      message.error('Không tải được dữ liệu thanh toán')
     } finally {
       setIsMetaLoading(false)
     }
@@ -144,17 +168,31 @@ const Checkout = () => {
         <Text strong>{formatCurrency(buyNow ? buyNowTotal : totalAmount)}</Text>
       </div>
       <div className="flex justify-between text-sm text-gray-600 mt-2">
-        <span>Phí vận chuyển</span>
-        <span>Miễn phí</span>
+        <span className="flex items-center gap-1">
+          Phí vận chuyển
+          <Tooltip title="Phí ước tính dựa trên tỉnh/thành phố giao hàng. Số chính xác sẽ được xác nhận khi đặt hàng.">
+            <InfoCircleOutlined className="text-gray-400 cursor-help" />
+          </Tooltip>
+        </span>
+        <span className={shippingFee === 0 ? 'text-green-600 font-medium' : 'text-orange-500 font-medium'}>
+          {shippingFee === 0 ? 'Miễn phí' : `+${formatCurrency(shippingFee)}`}
+        </span>
       </div>
+      {shippingFee > 0 && (
+        <div className="text-xs text-gray-400 text-right mt-0.5">
+          Giao khác tỉnh/thành phố
+        </div>
+      )}
       <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between items-center">
         <Text strong className="text-lg">Tổng thanh toán</Text>
-        <Text strong className="text-xl text-blue-600">{formatCurrency(buyNow ? buyNowTotal : totalAmount)}</Text>
+        <Text strong className="text-xl text-blue-600">
+          {formatCurrency((buyNow ? buyNowTotal : totalAmount) + shippingFee)}
+        </Text>
       </div>
     </Card>
-  ), [buyNow, buyNowTotal, cartItems, totalAmount])
+  ), [buyNow, buyNowTotal, cartItems, totalAmount, shippingFee])
 
-  const handleSubmit = async (values: VnpayCreateRequest) => {
+  const handleSubmit = async (values: CheckoutFormValues) => {
     if (!buyNow && !hasItems) {
       message.warning('Giỏ hàng trống')
       return
@@ -169,20 +207,38 @@ const Checkout = () => {
         await cartApi.addToCart(buyNow.product._id, buyNow.quantity, servicesPayload)
       }
 
-      const sanitizedValues: VnpayCreateRequest = {
-        ...values,
-        shippingAddress: stripLocationCodes(values.shippingAddress)
-      }
-      await cartApi.validateBeforeCheckout()
-      const response = await paymentApi.createVnpayPayment(sanitizedValues)
-      const paymentUrl = response.data?.paymentUrl
-      if (paymentUrl) {
-        window.location.href = paymentUrl
+      const sanitizedAddress = stripLocationCodes(values.shippingAddress)
+
+      if (values.paymentMethod === 'cod') {
+        await cartApi.validateBeforeCheckout()
+        const codPayload: CreateCodOrderRequest = {
+          shippingAddress: sanitizedAddress,
+          paymentMethod: 'cod',
+          note: values.note
+        }
+        await orderApi.createCodOrder(codPayload)
+        message.success('Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.')
+        navigate(ROUTES.ORDERS)
       } else {
-        message.error('Không nhận được liên kết thanh toán')
+        await cartApi.validateBeforeCheckout()
+        const vnpayPayload: VnpayCreateRequest = {
+          shippingAddress: sanitizedAddress,
+          bankCode: values.bankCode,
+          locale: values.locale,
+          message: values.note
+        }
+        const response = await paymentApi.createVnpayPayment(vnpayPayload)
+        const paymentUrl = response.data?.paymentUrl
+        if (paymentUrl) {
+          window.location.href = paymentUrl
+        } else {
+          message.error('Không nhận được liên kết thanh toán')
+        }
       }
     } catch {
-      message.error('Tạo thanh toán VNPay thất bại')
+      message.error(
+        values.paymentMethod === 'cod' ? 'Đặt hàng thất bại' : 'Tạo thanh toán VNPay thất bại'
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -213,7 +269,7 @@ const Checkout = () => {
               <Form
                 layout="vertical"
                 form={form}
-                initialValues={{ locale: 'vn' }}
+                initialValues={{ locale: 'vn', paymentMethod: 'cod' }}
                 onFinish={handleSubmit}
               >
                 <Row gutter={16}>
@@ -263,9 +319,10 @@ const Checkout = () => {
                         loading={locationLoading.provinces}
                         onChange={(value) => {
                           const selected = provinceOptions.find((item) => item.value === value)
+                          const cityLabel = selected?.label || ''
                           form.setFieldsValue({
                             shippingAddress: {
-                              city: selected?.label || '',
+                              city: cityLabel,
                               district: '',
                               ward: '',
                               provinceCode: value,
@@ -273,6 +330,7 @@ const Checkout = () => {
                               wardCode: undefined
                             }
                           })
+                          setShippingFee(estimateShippingFee(cityLabel, branches))
                           clearDistricts()
                           clearWards()
                           if (value) {
@@ -356,73 +414,69 @@ const Checkout = () => {
                   <Input />
                 </Form.Item>
 
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name="branchId"
-                      label="Chi nhánh nhận hàng"
-                      rules={[{ required: true, message: 'Vui lòng chọn chi nhánh' }]}
-                    >
-                      <Select
-                        placeholder="Chọn chi nhánh"
-                        options={branches.map((branch) => ({
-                          label: `${branch.name} - ${branch.address}`,
-                          value: branch._id
-                        }))}
-                        showSearch
-                        filterOption={(input, option) =>
-                          (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                        }
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="bankCode"
-                      label="Ngân hàng VNPay"
-                      rules={[{ required: true, message: 'Vui lòng chọn ngân hàng' }]}
-                    >
-                      <Select
-                        placeholder="Chọn ngân hàng"
-                        optionLabelProp="label"
-                        popupRender={(menu) => (
-                          <div className="max-h-64 overflow-auto">{menu}</div>
-                        )}
-                      >
-                        {banks.map((bank, index) => (
-                          <Select.Option
-                            key={bank.code || `bank-${index}`}
-                            value={bank.code}
-                            label={bank.name}
-                          >
-                            <div className="flex items-center gap-2">
-                              {bank.logo && (
-                                <img src={bank.logo} alt={bank.name} className="w-6 h-6 object-contain" />
-                              )}
-                              <span>{bank.name}</span>
-                            </div>
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
+                <Form.Item
+                  name="paymentMethod"
+                  label="Phương thức thanh toán"
+                  rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán' }]}
+                >
+                  <Radio.Group
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <Radio value="cod">
+                      <span className="font-medium">Thanh toán khi nhận hàng (COD)</span>
+                    </Radio>
+                    <Radio value="vnpay">
+                      <span className="font-medium">Thanh toán VNPay</span>
+                    </Radio>
+                  </Radio.Group>
+                </Form.Item>
 
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item name="locale" label="Ngôn ngữ">
-                      <Radio.Group>
-                        <Radio value="vn">Tiếng Việt</Radio>
-                        <Radio value="en">English</Radio>
-                      </Radio.Group>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item name="message" label="Ghi chú">
-                      <Input.TextArea rows={2} placeholder="Yêu cầu giao buổi sáng..." />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                {paymentMethod === 'vnpay' && (
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item
+                        name="bankCode"
+                        label="Ngân hàng VNPay"
+                        rules={[{ required: paymentMethod === 'vnpay', message: 'Vui lòng chọn ngân hàng' }]}
+                      >
+                        <Select
+                          placeholder="Chọn ngân hàng"
+                          optionLabelProp="label"
+                          popupRender={(menu) => (
+                            <div className="max-h-64 overflow-auto">{menu}</div>
+                          )}
+                        >
+                          {banks.map((bank, index) => (
+                            <Select.Option
+                              key={bank.code || `bank-${index}`}
+                              value={bank.code}
+                              label={bank.name}
+                            >
+                              <div className="flex items-center gap-2">
+                                {bank.logo && (
+                                  <img src={bank.logo} alt={bank.name} className="w-6 h-6 object-contain" />
+                                )}
+                                <span>{bank.name}</span>
+                              </div>
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="locale" label="Ngôn ngữ">
+                        <Radio.Group>
+                          <Radio value="vn">Tiếng Việt</Radio>
+                          <Radio value="en">English</Radio>
+                        </Radio.Group>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                )}
+
+                <Form.Item name="note" label="Ghi chú">
+                  <Input.TextArea rows={2} placeholder="Yêu cầu giao buổi sáng..." />
+                </Form.Item>
 
                 <div className="flex items-center justify-between mt-4">
                   <Link to={ROUTES.CART} className="text-gray-600 hover:underline text-sm">
@@ -435,7 +489,7 @@ const Checkout = () => {
                     loading={isSubmitting}
                     disabled={isPricingLoading}
                   >
-                    Thanh toán VNPay
+                    {paymentMethod === 'cod' ? 'Đặt hàng (COD)' : 'Thanh toán VNPay'}
                   </Button>
                 </div>
 

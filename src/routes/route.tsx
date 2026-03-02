@@ -32,6 +32,9 @@ const PaymentError = lazy(() => import('@/pages/customer/PaymentError'))
 const OrderHistory = lazy(() =>
   import('@/pages/customer/OrderHistory') as Promise<{ default: ComponentType }>
 )
+const OrderDetailPage = lazy(() =>
+  import('@/pages/customer/OrderDetailPage') as Promise<{ default: ComponentType }>
+)
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -272,6 +275,14 @@ export const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         {withCustomerLayout(OrderHistory)}
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: ROUTES.ORDER_DETAIL,
+    element: (
+      <ProtectedRoute>
+        {withCustomerLayout(OrderDetailPage)}
       </ProtectedRoute>
     )
   },
