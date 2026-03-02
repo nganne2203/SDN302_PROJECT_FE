@@ -35,7 +35,6 @@ export interface VnpayCreateRequest {
     wardCode?: string
   }
   message?: string
-  branchId: string
   bankCode?: string
   locale?: 'vn' | 'en'
 }
