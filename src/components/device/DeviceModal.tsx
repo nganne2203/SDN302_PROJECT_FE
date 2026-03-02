@@ -29,7 +29,7 @@ const DeviceModalComponent = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditMode ? 'Chinh sua thiet bi' : 'Them thiet bi moi'}
+      title={isEditMode ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới'}
       size="md"
       footer={
         <div className="flex justify-end gap-2">
@@ -38,14 +38,14 @@ const DeviceModalComponent = ({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Huy
+            Hủy
           </ButtonCommon>
           <ButtonCommon
             variant="primary"
             onClick={onSubmit}
             isLoading={isSubmitting}
           >
-            {isEditMode ? 'Cap nhat' : 'Tao moi'}
+            {isEditMode ? 'Cập nhật' : 'Tạo mới'}
           </ButtonCommon>
         </div>
       }
@@ -56,8 +56,8 @@ const DeviceModalComponent = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <InputField
-              label="Ten thiet bi"
-              placeholder="Nhap ten thiet bi..."
+              label="Tên thiết bị"
+              placeholder="Nhập tên thiết bị..."
               required
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}
@@ -71,8 +71,8 @@ const DeviceModalComponent = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <SelectField
-              label="Loai"
-              placeholder="Chon loai thiet bi..."
+              label="Loại"
+              placeholder="Chọn loại thiết bị..."
               required
               value={(value as string) || undefined}
               options={deviceTypeOptions}
@@ -88,8 +88,8 @@ const DeviceModalComponent = ({
           control={control}
           render={({ value, onChange, onBlur, error }) => (
             <InputField
-              label="Thuong hieu"
-              placeholder="Nhap thuong hieu..."
+              label="Thương hiệu"
+              placeholder="Nhập thương hiệu..."
               required
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}
@@ -104,7 +104,7 @@ const DeviceModalComponent = ({
           render={({ value, onChange, onBlur, error }) => (
             <InputField
               label="Model"
-              placeholder="Nhap model..."
+              placeholder="Nhập model..."
               required
               value={(value as string) || ''}
               onChange={(e) => onChange(e.target.value)}

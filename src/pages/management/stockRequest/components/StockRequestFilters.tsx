@@ -22,18 +22,18 @@ const StockRequestFilters = ({
       <Space wrap>
         {isManager && (
           <Button type="primary" icon={<PlusOutlined />} onClick={onCreate} size="large">
-            Tao yeu cau nhap kho moi
+            Tạo yêu cầu nhập kho mới
           </Button>
         )}
         <SelectField
-          label="Trang thai"
+          label="Trạng thái"
           value={statusFilter}
           onChange={(value) => onStatusChange(value as StockRequestStatus | 'all')}
           options={[
-            { label: 'Tat ca trang thai', value: 'all' },
-            { label: 'Cho duyet', value: 'pending' },
-            { label: 'Da duyet', value: 'approved' },
-            { label: 'Bi tu choi', value: 'rejected' }
+            { label: 'Tất cả trạng thái', value: 'all' },
+            { label: 'Chờ duyệt', value: 'pending' },
+            { label: 'Đã duyệt', value: 'approved' },
+            { label: 'Bị từ chối', value: 'rejected' }
           ]}
           className="mb-0 min-w-[200px]"
         />

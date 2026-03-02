@@ -114,7 +114,7 @@ const ManagementDevice = () => {
       }
 
       if (result.type.includes('fulfilled')) {
-        toast.success(isEditMode ? 'Cap nhat thiet bi thanh cong' : 'Tao thiet bi thanh cong')
+        toast.success(isEditMode ? 'Cập nhật thiết bị thành công' : 'Tạo thiết bị thành công')
         handleCloseModal()
       } else if (result.payload) {
         toast.error(result.payload as string)
@@ -127,7 +127,7 @@ const ManagementDevice = () => {
   const handleDelete = useCallback(async (id: string) => {
     const result = await deleteDevice(id)
     if (result.type.includes('fulfilled')) {
-      toast.success('Xoa thiet bi thanh cong')
+      toast.success('Xóa thiết bị thành công')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }
@@ -136,7 +136,7 @@ const ManagementDevice = () => {
   const handleUpdateStatus = useCallback(async (id: string, isActive: boolean) => {
     const result = await updateDeviceStatus(id, isActive)
     if (result.type.includes('fulfilled')) {
-      toast.success('Cap nhat trang thai thiet bi thanh cong')
+      toast.success('Cập nhật trạng thái thiết bị thành công')
     } else if (result.payload) {
       toast.error(result.payload as string)
     }

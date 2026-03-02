@@ -19,37 +19,37 @@ const ProductFilterComponent = ({
   const categoryOptions = categories.map(cat => ({ value: cat.id, label: cat.name }))
 
   const statusOptions = [
-    { label: 'Tat ca', value: '' },
-    { label: 'Dang hoat dong', value: 'true' },
-    { label: 'Ngung hoat dong', value: 'false' }
+    { label: 'Tất cả', value: '' },
+    { label: 'Đang hoạt động', value: 'true' },
+    { label: 'Ngừng hoạt động', value: 'false' }
   ]
 
   const sortByOptions = [
-    { label: 'Mac dinh', value: '' },
-    { label: 'Ten san pham', value: 'name' },
-    { label: 'Gia', value: 'price' },
-    { label: 'Ngay tao', value: 'createdAt' },
-    { label: 'Ngay cap nhat', value: 'updatedAt' },
-    { label: 'Danh gia', value: 'ratingAvg' },
-    { label: 'So luot danh gia', value: 'ratingCount' }
+    { label: 'Mặc định', value: '' },
+    { label: 'Tên sản phẩm', value: 'name' },
+    { label: 'Giá', value: 'price' },
+    { label: 'Ngày tạo', value: 'createdAt' },
+    { label: 'Ngày cập nhật', value: 'updatedAt' },
+    { label: 'Đánh giá', value: 'ratingAvg' },
+    { label: 'Số lượt đánh giá', value: 'ratingCount' }
   ]
 
   const filterFields: FilterField[] = [
     {
       key: 'categoryId',
-      label: 'Danh muc',
+      label: 'Danh mục',
       type: 'select',
       options: categoryOptions
     },
     {
       key: 'isActive',
-      label: 'Trang thai',
+      label: 'Trạng thái',
       type: 'select',
       options: statusOptions
     },
     {
       key: 'sortBy',
-      label: 'Sap xep theo',
+      label: 'Sắp xếp theo',
       type: 'select',
       options: sortByOptions
     }
@@ -66,7 +66,7 @@ const ProductFilterComponent = ({
 
   return (
     <FilterCommon
-      searchPlaceholder="Tim kiem theo ten san pham..."
+      searchPlaceholder="Tìm kiếm theo tên sản phẩm..."
       searchValue={filter.search || ''}
       onSearchChange={(value) => onFilterChange({ ...filter, search: value, page: 1 })}
       showSearch={true}

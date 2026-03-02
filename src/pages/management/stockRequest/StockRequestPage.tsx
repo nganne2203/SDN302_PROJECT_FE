@@ -36,14 +36,14 @@ const StockRequestPage = () => {
     try {
       setCreateSaving(true)
       await createRequest(values)
-      message.success('Tao yeu cau nhap kho thanh cong')
+      message.success('Tạo yêu cầu nhập kho thành công')
       setCreateModalOpen(false)
     } catch (error) {
       if (error instanceof Error && error.message === 'missing_branch') {
-        message.error('Ban chua duoc gan chi nhanh')
+        message.error('Bạn chưa được gắn chi nhánh')
         return
       }
-      message.error('Khong the tao yeu cau nhap kho')
+      message.error('Không thể tạo yêu cầu nhập kho')
     } finally {
       setCreateSaving(false)
     }
@@ -60,10 +60,10 @@ const StockRequestPage = () => {
     try {
       setActionSaving(true)
       await updateRequestStatus(selectedRequest._id, actionType, values.note)
-      message.success(actionType === 'approve' ? 'Da duyet yeu cau' : 'Da tu choi yeu cau')
+      message.success(actionType === 'approve' ? 'Đã duyệt yêu cầu' : 'Đã từ chối yêu cầu')
       setActionModalOpen(false)
     } catch {
-      message.error(actionType === 'approve' ? 'Khong the duyet yeu cau' : 'Khong the tu choi yeu cau')
+      message.error(actionType === 'approve' ? 'Không thể duyệt yêu cầu' : 'Không thể từ chối yêu cầu')
     } finally {
       setActionSaving(false)
     }
@@ -73,12 +73,12 @@ const StockRequestPage = () => {
     <div>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">
-          {isAdmin ? 'Quan ly yeu cau nhap kho toan he thong' : 'Yeu cau nhap kho chi nhanh'}
+          {isAdmin ? 'Quản lý yêu cầu nhập kho toàn hệ thống' : 'Yêu cầu nhập kho chi nhánh'}
         </h1>
         <p className="text-gray-500">
           {isAdmin
-            ? 'Duyet va xuat kho tu inventory chung ve cac chi nhanh'
-            : 'Tao yeu cau nhap kho tu kho tong'}
+            ? 'Duyệt và xuất kho từ inventory chung về các chi nhánh'
+            : 'Tạo yêu cầu nhập kho từ kho tổng'}
         </p>
       </div>
 
@@ -86,8 +86,8 @@ const StockRequestPage = () => {
 
       {isAdmin && pendingCount > 0 && (
         <Alert
-          message={`Con ${pendingCount} yeu cau cho duyet`}
-          description="Vui long kiem tra va phe duyet cac yeu cau nhap kho"
+          message={`Còn ${pendingCount} yêu cầu chờ duyệt`}
+          description="Vui lòng kiểm tra và phê duyệt các yêu cầu nhập kho"
           type="warning"
           showIcon
           closable

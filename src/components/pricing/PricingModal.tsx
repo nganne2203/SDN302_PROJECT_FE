@@ -34,7 +34,7 @@ const PricingModalComponent = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditMode ? 'Cap nhat bang gia' : 'Them bang gia moi'}
+      title={isEditMode ? 'Cập nhật bảng giá' : 'Thêm bảng giá mới'}
       size="md"
       footer={
         <div className="flex justify-end gap-2">
@@ -43,21 +43,21 @@ const PricingModalComponent = ({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Huy
+            Hủy
           </ButtonCommon>
           <ButtonCommon
             variant="primary"
             onClick={onSubmit}
             isLoading={isSubmitting}
           >
-            {isEditMode ? 'Cap nhat' : 'Tao moi'}
+            {isEditMode ? 'Cập nhật' : 'Tạo mới'}
           </ButtonCommon>
         </div>
       }
     >
       <div className="space-y-4">
         <SelectField
-          label="San pham"
+          label="Sản phẩm"
           required
           options={productOptions}
           value={formData.productId}
@@ -67,7 +67,7 @@ const PricingModalComponent = ({
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <NumberField
-            label="So luong toi thieu"
+            label="Số lượng tối thiểu"
             required
             min={1}
             value={formData.minQuantity}
@@ -75,17 +75,17 @@ const PricingModalComponent = ({
             error={formErrors.minQuantity}
           />
           <NumberField
-            label="So luong toi da"
+            label="Số lượng tối đa"
             min={1}
             value={formData.maxQuantity ?? undefined}
             onChange={(value) => onFormChange('maxQuantity', typeof value === 'number' ? value : null)}
             error={formErrors.maxQuantity}
-            placeholder="Bo trong neu khong gioi han"
+            placeholder="Bỏ trống nếu không giới hạn"
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <NumberField
-            label="Gia moi san pham"
+            label="Giá mỗi sản phẩm"
             required
             min={0}
             value={formData.pricePerUnit}
@@ -93,7 +93,7 @@ const PricingModalComponent = ({
             error={formErrors.pricePerUnit}
           />
           <NumberField
-            label="Giam gia (%)"
+            label="Giảm giá (%)"
             min={0}
             max={100}
             value={formData.discountPercentage ?? undefined}
@@ -102,8 +102,8 @@ const PricingModalComponent = ({
           />
         </div>
         <TextAreaField
-          label="Mo ta"
-          placeholder="Nhap mo ta..."
+          label="Mô tả"
+          placeholder="Nhập mô tả..."
           value={formData.description || ''}
           onChange={(e) => onFormChange('description', e.target.value)}
           error={formErrors.description}

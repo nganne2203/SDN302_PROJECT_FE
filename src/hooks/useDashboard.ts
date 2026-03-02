@@ -27,7 +27,7 @@ export const useDashboard = (initialPeriod: DashboardPeriod = 'this_month') => {
         setLoading(false)
       }
     }
-  }, [])
+  }, [filter])
 
   useEffect(() => {
     activeRef.current = true

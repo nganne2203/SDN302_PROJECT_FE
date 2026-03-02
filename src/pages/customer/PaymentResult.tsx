@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Card, Result, Spin } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import paymentApi from '@/apis/payment'
 import { ROUTES } from '@/constants/constant'
+import cartApi from '@/apis/cart'
 
 const PaymentResult = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [status, setStatus] = useState<'success' | 'pending' | 'error'>('pending')
   const [description, setDescription] = useState('Đang kiểm tra trạng thái thanh toán...')
+  const didHandleSuccessRef = useRef(false)
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search])
   const orderNumber = useMemo(
@@ -23,7 +25,7 @@ const PaymentResult = () => {
         const paymentStatus = response.data?.status
         if (paymentStatus === 'success') {
           setStatus('success')
-          setDescription('Thanh toán VNPay thành công. Cảm ơn bạn đã mua sắm!')
+          setDescription('Thanh toán VNPay thành công. Đang chuyển về trang mua hàng...')
         } else if (paymentStatus === 'pending') {
           setStatus('pending')
           setDescription('Thanh toán đang được xử lý. Vui lòng chờ trong giây lát.')
@@ -41,6 +43,21 @@ const PaymentResult = () => {
       checkPayment()
     }
   }, [orderNumber])
+
+  useEffect(() => {
+    if (status !== 'success' || didHandleSuccessRef.current) return
+    didHandleSuccessRef.current = true
+    const handleSuccess = async () => {
+      try {
+        await cartApi.clearCart()
+      } catch {
+        // ignore clear cart failure
+      } finally {
+        setTimeout(() => navigate(ROUTES.PRODUCTS), 800)
+      }
+    }
+    handleSuccess()
+  }, [status, navigate])
 
   if (!orderNumber) {
     return (
@@ -90,11 +107,11 @@ const PaymentResult = () => {
           <Result
             {...getResultProps()}
             extra={[
-              <Button type="primary" key="orders" onClick={() => navigate(ROUTES.ORDERS)}>
-                Xem đơn hàng
+              <Button type="primary" key="shop" onClick={() => navigate(ROUTES.PRODUCTS)}>
+                Tiếp tục mua hàng
               </Button>,
-              <Button key="home" onClick={() => navigate(ROUTES.HOME)}>
-                Về trang chủ
+              <Button key="orders" onClick={() => navigate(ROUTES.ORDERS)}>
+                Xem đơn hàng
               </Button>
             ]}
           />

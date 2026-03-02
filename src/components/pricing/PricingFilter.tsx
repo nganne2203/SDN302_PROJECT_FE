@@ -32,17 +32,17 @@ const PricingFilterComponent = ({
   const filterFields: FilterField[] = [
     {
       key: 'productId',
-      label: 'San pham',
+      label: 'Sản phẩm',
       type: 'select',
       options: productOptions
     },
     {
       key: 'isActive',
-      label: 'Trang thai',
+      label: 'Trạng thái',
       type: 'select',
       options: [
-        { label: 'Hoat dong', value: 'true' },
-        { label: 'Khong hoat dong', value: 'false' }
+        { label: 'Hoạt động', value: 'true' },
+        { label: 'Không hoạt động', value: 'false' }
       ]
     }
   ]

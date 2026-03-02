@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/api/v1/auth/login',
+    LOGIN_NO_CAPTCHA: '/api/v1/auth/login/no-captcha',
     REGISTER: '/api/v1/auth/register',
     LOGOUT: '/api/v1/auth/logout',
     LOGOUT_ALL: '/api/v1/auth/logout-all',
@@ -237,6 +238,9 @@ export const ROUTES = {
   CART: '/cart',
   CHECKOUT: '/checkout',
   PAYMENT_RESULT: '/payment-result',
+  PAYMENT_SUCCESS: '/payment/success',
+  PAYMENT_FAILED: '/payment/failed',
+  PAYMENT_ERROR: '/payment/error',
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',

@@ -5,6 +5,8 @@ import cartApi from '@/apis/cart'
 import pricingApi from '@/apis/pricing'
 import type { CartItem } from '@/types/api'
 import type { PricingCalculation } from '@/features/pricing/pricingTypes'
+import { STORAGE_KEYS } from '@/constants/constant'
+import { getStorage } from '@/utils/storage'
 
 const quantitySchema = z.number().int().min(1, 'So luong khong hop le').max(99, 'So luong khong hop le')
 
@@ -22,6 +24,14 @@ export const useCart = () => {
     }
 
     try {
+      const token = getStorage(STORAGE_KEYS.ACCESS_TOKEN)
+      if (!token) {
+        applyIfActive(() => {
+          setCartItems([])
+          setIsLoading(false)
+        })
+        return
+      }
       const response = await cartApi.getCart()
       applyIfActive(() => setCartItems(response.data?.items || []))
     } catch {
@@ -97,33 +107,39 @@ export const useCart = () => {
     }
   }, [cartItems, loadPricing])
 
-  const updateQuantity = useCallback(async (id: string, quantity: number | null) => {
+  const updateQuantity = useCallback(async (productId: string, quantity: number | null) => {
     const parsed = quantitySchema.safeParse(quantity)
     if (!parsed.success) {
-      message.error(parsed.error.issues[0]?.message || 'So luong khong hop le')
+      message.error(parsed.error.issues[0]?.message || 'Số lượng không hợp lệ')
       return false
     }
 
     try {
-      await cartApi.updateCartItemQuantity(id, parsed.data)
+      await cartApi.updateCartItemQuantity(productId, parsed.data)
       setCartItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, quantity: parsed.data } : item))
+        prev.map((item) => (
+          item.productId === productId || item.product?._id === productId
+            ? { ...item, quantity: parsed.data }
+            : item
+        ))
       )
       return true
     } catch {
-      message.error('Cap nhat so luong that bai')
+      message.error('Cập nhật số lượng thất bại')
       return false
     }
   }, [])
 
-  const removeItem = useCallback(async (id: string) => {
+  const removeItem = useCallback(async (productId: string) => {
     try {
-      await cartApi.removeFromCart(id)
-      setCartItems((prev) => prev.filter((item) => item.id !== id))
-      message.success('Da xoa san pham khoi gio hang')
+      await cartApi.removeFromCart(productId)
+      setCartItems((prev) => prev.filter(
+        (item) => item.productId !== productId && item.product?._id !== productId
+      ))
+      message.success('Đã xóa sản phẩm khỏi giỏ hàng')
       return true
     } catch {
-      message.error('Xoa san pham that bai')
+      message.error('Xóa sản phẩm thất bại')
       return false
     }
   }, [])

@@ -25,19 +25,19 @@ import type {
 import { z } from 'zod'
 
 const pricingValidationSchema = z.object({
-  productId: z.string().min(1, 'Vui long chon san pham'),
-  minQuantity: z.number().min(1, 'So luong toi thieu phai lon hon 0'),
-  maxQuantity: z.number().min(1, 'So luong toi da phai lon hon 0').nullable().optional(),
-  pricePerUnit: z.number().min(0, 'Gia moi san pham phai lon hon hoac bang 0'),
-  discountPercentage: z.number().min(0, 'Giam gia khong duoc nho hon 0').max(100, 'Giam gia khong duoc vuot qua 100').optional(),
-  description: z.string().max(500, 'Mo ta khong duoc vuot qua 500 ky tu').optional().or(z.literal(''))
+  productId: z.string().min(1, 'Vui lòng chọn sản phẩm'),
+  minQuantity: z.number().min(1, 'Số lượng tối thiểu phải lớn hơn 0'),
+  maxQuantity: z.number().min(1, 'Số lượng tối đa phải lớn hơn 0').nullable().optional(),
+  pricePerUnit: z.number().min(0, 'Giá mỗi sản phẩm phải lớn hơn hoặc bằng 0'),
+  discountPercentage: z.number().min(0, 'Giảm giá không được nhỏ hơn 0').max(100, 'Giảm giá không được vượt quá 100').optional(),
+  description: z.string().max(500, 'Mô tả không được vượt quá 500 ký tự').optional().or(z.literal(''))
 }).superRefine((data, ctx) => {
   if (data.maxQuantity !== null && data.maxQuantity !== undefined) {
     if (data.maxQuantity < data.minQuantity) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['maxQuantity'],
-        message: 'So luong toi da phai lon hon hoac bang so luong toi thieu'
+        message: 'Số lượng tối đa phải lớn hơn hoặc bằng số lượng tối thiểu'
       })
     }
   }
@@ -143,7 +143,7 @@ export const usePricing = () => {
         })
         return { valid: false, data: null, errors }
       }
-      return { valid: false, data: null, errors: { general: 'Loi xac thuc' } }
+      return { valid: false, data: null, errors: { general: 'Lỗi xác thực' } }
     }
   }, [])
 

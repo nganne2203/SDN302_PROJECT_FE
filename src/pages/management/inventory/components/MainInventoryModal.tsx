@@ -8,8 +8,8 @@ import ModalCommon from '@/components/common/ModalCommon'
 import { ControlledField, NumberField, InputField } from '@/components/common'
 
 const mainInventorySchema = z.object({
-  quantity: z.coerce.number().min(0, 'So luong phai >= 0').optional(),
-  location: z.string().max(200, 'Vi tri toi da 200 ky tu').optional()
+  quantity: z.coerce.number().min(0, 'Số lượng phải >= 0').optional(),
+  location: z.string().max(200, 'Vị trí tối đa 200 ký tự').optional()
 })
 
 export type MainInventoryFormValues = z.infer<typeof mainInventorySchema>
@@ -44,18 +44,18 @@ const MainInventoryModal = ({
     <ModalCommon
       isOpen={isOpen}
       onClose={onClose}
-      title="Dieu chinh ton kho kho tong"
+      title="Điều chỉnh tồn kho kho tổng"
       footer={
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={isSubmitting}>
-            Huy
+            Hủy
           </Button>
           <Button
             type="primary"
             onClick={handleSubmit(onSubmit)}
             loading={isSubmitting}
           >
-            Luu
+            Lưu
           </Button>
         </div>
       }
@@ -66,12 +66,12 @@ const MainInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <NumberField
-              label="So luong"
+              label="Số lượng"
               value={value as number | undefined}
               onChange={(next) => onChange(next)}
               error={error}
               min={0}
-              placeholder="Nhap so luong"
+              placeholder="Nhập số lượng"
             />
           )}
         />
@@ -80,11 +80,11 @@ const MainInventoryModal = ({
           control={control}
           render={({ value, onChange, error }) => (
             <InputField
-              label="Vi tri luu kho"
+              label="Vị trí lưu kho"
               value={(value as string | undefined) || ''}
               onChange={(event) => onChange(event.target.value)}
               error={error}
-              placeholder="Vi du: Kho A - Tang 1"
+              placeholder="Ví dụ: Kho A - Tầng 1"
             />
           )}
         />
