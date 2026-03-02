@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { env } from '@/configs/env'
 
 const provincesClient = axios.create({
-  baseURL: '/api/provinces',
+  baseURL: env.LOCATION_API_BASE,
   timeout: 15000
 })
 
@@ -26,44 +27,54 @@ export interface WardItem {
   codename: string
   division_type: string
   name: string
-  district_code: number
+  district_code?: number
+  province_code?: number
+  district_name?: string
 }
 
-interface ProvinceWithDistricts extends ProvinceItem {
+interface ProvinceDetailResponse extends ProvinceItem {
   districts?: DistrictItem[]
 }
 
-interface DistrictWithWards extends DistrictItem {
+interface ProvinceWithWardsResponse extends ProvinceItem {
   wards?: WardItem[]
 }
 
-const filterBySearch = <T extends { name: string }>(items: T[], search = ''): T[] => {
-  if (!search) return items
-  const keyword = search.trim().toLowerCase()
+interface DistrictDetailResponse extends DistrictItem {
+  wards?: WardItem[]
+}
+
+const normalizeSearch = (value: string): string => value.trim().toLowerCase()
+
+const filterByName = <T extends { name: string }>(items: T[], search = ''): T[] => {
+  const keyword = normalizeSearch(search)
   if (!keyword) return items
-  return items.filter((item) => item.name.toLowerCase().includes(keyword))
+  return items.filter((item) => normalizeSearch(item.name).includes(keyword))
 }
 
 export const provinceApi = {
   listProvinces: async (search = ''): Promise<ProvinceItem[]> => {
-    const response = await provincesClient.get<ProvinceItem[]>('/p/', {
-      params: { search }
-    })
-    return response.data
+    const response = await provincesClient.get<ProvinceItem[]>('/p/')
+    return filterByName(response.data, search)
   },
   listDistricts: async (provinceCode: number, search = ''): Promise<DistrictItem[]> => {
-    const response = await provincesClient.get<ProvinceWithDistricts>(`/p/${provinceCode}`, {
+    const response = await provincesClient.get<ProvinceDetailResponse>(`/p/${provinceCode}`, {
       params: { depth: 2 }
     })
-    const districts = response.data?.districts || []
-    return filterBySearch(districts, search)
+    return filterByName(response.data.districts || [], search)
   },
   listWards: async (districtCode: number, search = ''): Promise<WardItem[]> => {
-    const response = await provincesClient.get<DistrictWithWards>(`/d/${districtCode}`, {
+    const response = await provincesClient.get<DistrictDetailResponse>(`/d/${districtCode}`, {
       params: { depth: 2 }
     })
-    const wards = response.data?.wards || []
-    return filterBySearch(wards, search)
+    return filterByName(response.data.wards || [], search)
+  },
+  listWardsByProvince: async (provinceCode: number, search = ''): Promise<WardItem[]> => {
+    const response = await provincesClient.get<ProvinceWithWardsResponse>(`/p/${provinceCode}`, {
+      params: { depth: 2 }
+    })
+
+    return filterByName(response.data.wards || [], search)
   }
 }
 
