@@ -72,7 +72,7 @@ const Checkout = () => {
     loading: locationLoading,
     fetchProvinces,
     fetchDistricts,
-    fetchWards,
+    fetchWardsByProvince,
     clearDistricts,
     clearWards
   } = useVietnamLocationsOffline()
@@ -302,7 +302,7 @@ const Checkout = () => {
                 </Form.Item>
 
                 <Row gutter={16}>
-                  <Col span={8}>
+                  <Col span={12}>
                     <Form.Item
                       name={['shippingAddress', 'city']}
                       label="Tỉnh/Thành phố"
@@ -335,46 +335,13 @@ const Checkout = () => {
                           clearWards()
                           if (value) {
                             fetchDistricts(value, '')
+                            fetchWardsByProvince(value, '')
                           }
                         }}
                       />
                     </Form.Item>
                   </Col>
-                  <Col span={8}>
-                    <Form.Item
-                      name={['shippingAddress', 'district']}
-                      label="Quận/Huyện"
-                      rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}
-                    >
-                      <Select
-                        placeholder="Chọn quận/huyện"
-                        options={districtOptions}
-                        showSearch
-                        filterOption={(input, option) => {
-                          const label = String(option?.label || '')
-                          return normalizeText(label).includes(normalizeText(input))
-                        }}
-                        loading={locationLoading.districts}
-                        onChange={(value) => {
-                          const selected = districtOptions.find((item) => item.value === value)
-                          form.setFieldsValue({
-                            shippingAddress: {
-                              district: selected?.label || '',
-                              ward: '',
-                              districtCode: value,
-                              wardCode: undefined
-                            }
-                          })
-                          clearWards()
-                          if (value) {
-                            fetchWards(value, '')
-                          }
-                        }}
-                        disabled={!form.getFieldValue(['shippingAddress', 'provinceCode'])}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={8}>
+                  <Col span={12}>
                     <Form.Item
                       name={['shippingAddress', 'ward']}
                       label="Phường/Xã"
@@ -389,20 +356,34 @@ const Checkout = () => {
                           return normalizeText(label).includes(normalizeText(input))
                         }}
                         loading={locationLoading.wards}
+                        onSearch={(value) => {
+                          const provinceCode = form.getFieldValue(['shippingAddress', 'provinceCode'])
+                          if (provinceCode) {
+                            fetchWardsByProvince(provinceCode, value)
+                          }
+                        }}
                         onChange={(value) => {
                           const selected = wardOptions.find((item) => item.value === value)
+                          const inferredDistrictCode = value ? String(value).slice(0, 3) : undefined
+                          const selectedDistrict = districtOptions.find((item) => item.value === inferredDistrictCode)
                           form.setFieldsValue({
                             shippingAddress: {
+                              district: selectedDistrict?.label || '',
+                              districtCode: inferredDistrictCode,
                               ward: selected?.label || '',
                               wardCode: value
                             }
                           })
                         }}
-                        disabled={!form.getFieldValue(['shippingAddress', 'districtCode'])}
+                        disabled={!form.getFieldValue(['shippingAddress', 'provinceCode'])}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
+
+                <Form.Item name={['shippingAddress', 'district']} hidden>
+                  <Input />
+                </Form.Item>
 
                 <Form.Item name={['shippingAddress', 'provinceCode']} hidden>
                   <Input />
