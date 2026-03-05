@@ -10,10 +10,20 @@ import ProfileContentLeft from './ProfileContentLeft'
 import ProfileContentRight from './ProfileContentRight'
 import uploadApi from '@/apis/upload'
 import type { UpdateProfilePayload } from '@/features/user/userTypes'
+import provinceApi from '@/apis/province'
 
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+const normalizeLocationName = (value: string): string => {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/^thanh pho\s+|^tinh\s+/i, '')
+    .trim()
 }
 
 const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
@@ -42,15 +52,60 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
   }, [isOpen, fetchProfile])
 
   useEffect(() => {
-    if (profile) {
+    if (!profile) return
+
+    let isCancelled = false
+
+    const hydrateAddressCodes = async () => {
+      const rawAddresses = profile.addresses || []
+
+      const provinces = await provinceApi.listProvinces('')
+
+      const hydratedAddresses = await Promise.all(
+        rawAddresses.map(async (address) => {
+          if (!address.city || !address.ward) {
+            return address
+          }
+
+          const matchedProvince = provinces.find((province) =>
+            normalizeLocationName(province.name) === normalizeLocationName(address.city)
+          )
+
+          if (!matchedProvince) {
+            return address
+          }
+
+          const wards = await provinceApi.listWardsByProvince(matchedProvince.code, '')
+          const matchedWard = wards.find((ward) =>
+            normalizeLocationName(ward.name) === normalizeLocationName(address.ward)
+          )
+
+          return {
+            ...address,
+            provinceCode: matchedProvince.code,
+            districtCode: matchedWard?.district_code,
+            wardCode: matchedWard?.code,
+            district: matchedWard?.district_name || address.district
+          }
+        })
+      )
+
+      if (isCancelled) return
+
       reset({
         fullname: profile.fullname || '',
         email: profile.email,
         phone: profile.phone || '',
-        addresses: profile.addresses || [],
+        addresses: hydratedAddresses,
         avatar: profile.avatarId || ''
       })
       setAvatarPreview(profile.avatar)
+    }
+
+    void hydrateAddressCodes()
+
+    return () => {
+      isCancelled = true
     }
   }, [profile, reset])
 
@@ -59,7 +114,13 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
       try {
         setUploadingAvatar(true)
         const response = await uploadApi.uploadImage(file)
-        const { publicId, imageUrl } = response.data
+        let { publicId } = response.data
+        const { imageUrl } = response.data
+
+        // Strip 'uploads/' prefix if present
+        if (publicId.startsWith('uploads/')) {
+          publicId = publicId.replace(/^uploads\//, '')
+        }
 
         setValue('avatar', publicId)
         setAvatarPreview(imageUrl)
@@ -81,7 +142,16 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
       const payload: UpdateProfilePayload = {
         fullname: data.fullname,
         phone: data.phone,
-        avatar: data.avatar || undefined
+        avatar: data.avatar || undefined,
+        addresses: (data.addresses || []).map((address) => ({
+          fullname: address.fullname,
+          phone: address.phone,
+          addressLine: address.addressLine,
+          city: address.city,
+          district: address.district,
+          ward: address.ward,
+          isDefault: Boolean(address.isDefault)
+        }))
       }
 
       const result = await updateProfile(payload)

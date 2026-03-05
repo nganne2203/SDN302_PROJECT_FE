@@ -9,6 +9,15 @@ export interface UpdateProfileRequest {
   fullname?: string
   phone?: string
   avatar?: string
+  addresses?: Array<{
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    district: string
+    ward: string
+    isDefault: boolean
+  }>
 }
 
 export interface ChangePasswordRequest {

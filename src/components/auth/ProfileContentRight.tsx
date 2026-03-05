@@ -145,7 +145,6 @@ const ProfileContentRight = ({
                   <div className='md:col-span-2'>
                     <LocationSelectGroupOffline
                       provinceCode={address?.provinceCode}
-                      districtCode={address?.districtCode}
                       wardCode={address?.wardCode}
                       disabled={disabled}
                       onChange={(changes) => {
@@ -239,6 +238,9 @@ const ProfileContentRight = ({
                   city: '',
                   district: '',
                   ward: '',
+                  provinceCode: undefined,
+                  districtCode: undefined,
+                  wardCode: undefined,
                   isDefault: false
                 })
               }
@@ -263,6 +265,9 @@ const ProfileContentRight = ({
                     city: '',
                     district: '',
                     ward: '',
+                    provinceCode: undefined,
+                    districtCode: undefined,
+                    wardCode: undefined,
                     isDefault: true
                   })
                 }

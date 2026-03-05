@@ -94,6 +94,28 @@ const useVietnamLocationsOffline = () => {
     }
   }, [])
 
+  const fetchWardsByProvince = useCallback(async (provinceCode: string, search = '') => {
+    if (!provinceCode) {
+      setWardOptions([])
+      return
+    }
+
+    setLoading(prev => ({ ...prev, wards: true }))
+
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    try {
+      const wards = vietnamAddressService.getWardsByProvinceCode(provinceCode, search)
+      const options = wards.map(ward => ({
+        value: ward.ward_code,
+        label: ward.name
+      }))
+      setWardOptions(options)
+    } finally {
+      setLoading(prev => ({ ...prev, wards: false }))
+    }
+  }, [])
+
   const clearDistricts = useCallback(() => {
     setDistrictOptions([])
   }, [])
@@ -110,6 +132,7 @@ const useVietnamLocationsOffline = () => {
     fetchProvinces,
     fetchDistricts,
     fetchWards,
+    fetchWardsByProvince,
     clearDistricts,
     clearWards,
     allProvinces // Additional helper for getting all provinces

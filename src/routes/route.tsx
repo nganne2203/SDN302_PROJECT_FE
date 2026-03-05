@@ -5,7 +5,7 @@ import {
   type RouteObject
 } from 'react-router-dom'
 import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant'
-import { getStorage, removeStorage } from '@/utils/storage'
+import { getStorage } from '@/utils/storage'
 import { STORAGE_KEYS } from '@/constants/constant'
 import type { UserRole } from '@/types/api'
 
@@ -19,6 +19,7 @@ const Login = lazy(() => import('@/pages/auth/Login'))
 const Register = lazy(() => import('@/pages/auth/Register'))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const ChangePassword = lazy(() => import('@/pages/auth/ChangePassword'))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword'))
 const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
@@ -27,13 +28,8 @@ const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 const Checkout = lazy(() => import('@/pages/customer/Checkout'))
 const PaymentResult = lazy(() => import('@/pages/customer/PaymentResult'))
-const PaymentRedirect = lazy(() => import('@/pages/customer/PaymentRedirect'))
-const PaymentError = lazy(() => import('@/pages/customer/PaymentError'))
 const OrderHistory = lazy(() =>
   import('@/pages/customer/OrderHistory') as Promise<{ default: ComponentType }>
-)
-const OrderDetailPage = lazy(() =>
-  import('@/pages/customer/OrderDetailPage') as Promise<{ default: ComponentType }>
 )
 
 // Lazy loaded components - Management pages
@@ -66,6 +62,7 @@ const ServiceProductManagement = lazy(() => import('@/pages/management/ServicePr
 const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
 const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
 
+/* eslint-disable no-console */
 const LoadingFallback = () => (
   <div className='flex items-center justify-center min-h-screen'>
     <LoaderCommon />
@@ -100,57 +97,11 @@ const getCurrentUser = (): { role: UserRole } | null => {
   return null
 }
 
-const getTokenExpiry = (jwt: string): number | null => {
-  try {
-    const [, payload] = jwt.split('.')
-    if (!payload) return null
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-    const data = JSON.parse(json)
-    return typeof data.exp === 'number' ? data.exp : null
-  } catch {
-    return null
-  }
-}
-
 /**
  * Check if user is authenticated
  */
 const isAuthenticated = (): boolean => {
-  const token = getStorage(STORAGE_KEYS.ACCESS_TOKEN)
-  const userStr = getStorage(STORAGE_KEYS.USER_INFO)
-
-  if (!token || token === 'null' || token === 'undefined') {
-    return false
-  }
-
-  if (!userStr) {
-    removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-    removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-    return false
-  }
-
-  try {
-    const user = JSON.parse(userStr)
-    if (!user || typeof user !== 'object' || !user.email || !user.role) {
-      removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-      removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-      removeStorage(STORAGE_KEYS.USER_INFO)
-      return false
-    }
-    const tokenExp = getTokenExpiry(token)
-    if (tokenExp && tokenExp * 1000 < Date.now()) {
-      removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-      removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-      removeStorage(STORAGE_KEYS.USER_INFO)
-      return false
-    }
-    return true
-  } catch {
-    removeStorage(STORAGE_KEYS.ACCESS_TOKEN)
-    removeStorage(STORAGE_KEYS.REFRESH_TOKEN)
-    removeStorage(STORAGE_KEYS.USER_INFO)
-    return false
-  }
+  return !!getStorage(STORAGE_KEYS.ACCESS_TOKEN)
 }
 
 /**
@@ -158,6 +109,8 @@ const isAuthenticated = (): boolean => {
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated()) {
+    console.log(isAuthenticated)
+
     return <Navigate to={ROUTES.LOGIN} replace />
   }
   return <>{children}</>
@@ -259,18 +212,6 @@ export const routes: RouteObject[] = [
     element: withCustomerLayout(PaymentResult)
   },
   {
-    path: ROUTES.PAYMENT_SUCCESS,
-    element: withCustomerLayout(PaymentRedirect)
-  },
-  {
-    path: ROUTES.PAYMENT_FAILED,
-    element: withCustomerLayout(PaymentRedirect)
-  },
-  {
-    path: ROUTES.PAYMENT_ERROR,
-    element: withCustomerLayout(PaymentError)
-  },
-  {
     path: ROUTES.ORDERS,
     element: (
       <ProtectedRoute>
@@ -279,10 +220,10 @@ export const routes: RouteObject[] = [
     )
   },
   {
-    path: ROUTES.ORDER_DETAIL,
+    path: ROUTES.CHANGE_PASSWORD,
     element: (
       <ProtectedRoute>
-        {withCustomerLayout(OrderDetailPage)}
+        {withSuspense(ChangePassword)}
       </ProtectedRoute>
     )
   },

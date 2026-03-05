@@ -16,7 +16,6 @@ type LocationChangeHandler = (changes: LocationChange) => void
 
 interface LocationSelectGroupProps {
   provinceCode?: number
-  districtCode?: number
   wardCode?: number
   onChange: LocationChangeHandler
   disabled?: boolean
@@ -24,25 +23,16 @@ interface LocationSelectGroupProps {
 
 const LocationSelectGroup = ({
   provinceCode,
-  districtCode,
   wardCode,
   onChange,
   disabled = false
 }: LocationSelectGroupProps) => {
-  const normalizeText = (value: string) => value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-
   const {
     provinceOptions,
-    districtOptions,
     wardOptions,
     loading,
     fetchProvinces,
-    fetchDistricts,
-    fetchWards,
-    clearDistricts,
+    fetchWardsByProvince,
     clearWards
   } = useVietnamLocations()
 
@@ -52,15 +42,9 @@ const LocationSelectGroup = ({
 
   useEffect(() => {
     if (provinceCode) {
-      fetchDistricts(provinceCode, '')
+      fetchWardsByProvince(provinceCode, '')
     }
-  }, [provinceCode, fetchDistricts])
-
-  useEffect(() => {
-    if (districtCode) {
-      fetchWards(districtCode, '')
-    }
-  }, [districtCode, fetchWards])
+  }, [provinceCode, fetchWardsByProvince])
 
   const handleProvinceChange = (value?: number) => {
     const selected = provinceOptions.find((item) => item.value === value)
@@ -72,59 +56,35 @@ const LocationSelectGroup = ({
       ward: '',
       wardCode: undefined
     })
-    clearDistricts()
     clearWards()
-  }
-
-  const handleDistrictChange = (value?: number) => {
-    const selected = districtOptions.find((item) => item.value === value)
-    onChange({
-      district: selected?.label || '',
-      districtCode: value,
-      ward: '',
-      wardCode: undefined
-    })
-    clearWards()
+    if (value) {
+      void fetchWardsByProvince(value, '')
+    }
   }
 
   const handleWardChange = (value?: number) => {
     const selected = wardOptions.find((item) => item.value === value)
     onChange({
+      district: selected?.districtName || selected?.label || '',
+      districtCode: selected?.districtCode,
       ward: selected?.label || '',
       wardCode: value
     })
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <SelectField
         label="Tỉnh/Thành phố"
         placeholder="Chọn tỉnh/thành phố"
         value={provinceCode}
         options={provinceOptions}
         showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
+        filterOption={false}
         loading={loading.provinces}
+        onSearch={(value) => fetchProvinces(value)}
         onChange={(value) => handleProvinceChange(value as number | undefined)}
         disabled={disabled}
-        allowClear
-      />
-      <SelectField
-        label="Quận/Huyện"
-        placeholder="Chọn quận/huyện"
-        value={districtCode}
-        options={districtOptions}
-        showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
-        loading={loading.districts}
-        onChange={(value) => handleDistrictChange(value as number | undefined)}
-        disabled={disabled || !provinceCode}
         allowClear
       />
       <SelectField
@@ -133,13 +93,13 @@ const LocationSelectGroup = ({
         value={wardCode}
         options={wardOptions}
         showSearch
-        filterOption={(input, option) => {
-          const label = String(option?.label || '')
-          return normalizeText(label).includes(normalizeText(input))
-        }}
+        filterOption={false}
         loading={loading.wards}
+        onSearch={(value) => {
+          if (provinceCode) fetchWardsByProvince(provinceCode, value)
+        }}
         onChange={(value) => handleWardChange(value as number | undefined)}
-        disabled={disabled || !districtCode}
+        disabled={disabled || !provinceCode}
         allowClear
       />
     </div>

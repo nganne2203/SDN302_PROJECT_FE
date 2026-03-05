@@ -14,10 +14,10 @@ export default defineConfig({
     port: 5173,
     open: true,
     proxy: {
-      '/api/provinces': {
-        target: 'https://provinces.open-api.vn',
+      '/location-api': {
+        target: 'https://provinces.open-api.vn/api/v2',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/provinces/, '/api/v1')
+        rewrite: (path) => path.replace(/^\/location-api/, '')
       }
     }
   }
