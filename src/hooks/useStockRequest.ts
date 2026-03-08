@@ -3,6 +3,7 @@ import useAuth from '@/hooks/useAuth'
 import { USER_ROLES } from '@/constants/constant'
 import stockRequestApi, { type StockRequestQuery } from '@/apis/stockRequest'
 import productApi from '@/apis/product'
+import userApi from '@/apis/user'
 import type { Product, StockRequestRecord, StockRequestStatus } from '@/types/api'
 
 type CacheEntry<T> = { ts: number; data: T }
@@ -39,11 +40,33 @@ export const useStockRequest = () => {
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StockRequestStatus | 'all'>('all')
   const [products, setProducts] = useState<Product[]>([])
+  const [resolvedBranch, setResolvedBranch] = useState<string | null | undefined>(user?.branch)
 
   const query: StockRequestQuery = useMemo(
     () => ({ page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' }),
     []
   )
+
+  useEffect(() => {
+    setResolvedBranch(user?.branch)
+  }, [user?.branch])
+
+  const resolveBranchFromProfile = useCallback(async () => {
+    if (!isManager) return null
+    if (resolvedBranch) return resolvedBranch
+
+    try {
+      const profileResponse = await userApi.getProfile()
+      const latestBranch = profileResponse.data.branch
+      if (latestBranch) {
+        setResolvedBranch(latestBranch)
+        return latestBranch
+      }
+      return null
+    } catch {
+      return null
+    }
+  }, [isManager, resolvedBranch])
 
   const fetchProducts = useCallback(
     async (force = false) => {
@@ -63,14 +86,16 @@ export const useStockRequest = () => {
 
   const fetchRequests = useCallback(
     async (force = false) => {
-      if (isManager && !user?.branch) return
+      const branchId = isManager ? (resolvedBranch || await resolveBranchFromProfile()) : null
+      if (isManager && !branchId) return
+
       const params = {
         ...query,
         page: pagination.current,
         limit: pagination.pageSize,
         status: statusFilter === 'all' ? undefined : statusFilter
       }
-      const cacheKey = buildKey(`stock-request:${isAdmin ? 'admin' : 'manager'}:${user?.branch || ''}`, params)
+      const cacheKey = buildKey(`stock-request:${isAdmin ? 'admin' : 'manager'}:${branchId || ''}`, params)
       const cached = !force ? getCached<{ data: StockRequestRecord[]; pagination: typeof pagination }>(cacheKey) : null
 
       if (cached) {
@@ -83,7 +108,7 @@ export const useStockRequest = () => {
       try {
         const response = isAdmin
           ? await stockRequestApi.getAll(params)
-          : await stockRequestApi.getByBranch(user?.branch || '', params)
+          : await stockRequestApi.getByBranch(branchId || '', params)
         const nextPagination = {
           total: response.pagination?.totalItems || 0,
           current: response.pagination?.currentPage || pagination.current,
@@ -97,7 +122,18 @@ export const useStockRequest = () => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [getCached, isAdmin, isManager, pagination.current, pagination.pageSize, query, setCached, statusFilter, user?.branch]
+    [
+      getCached,
+      isAdmin,
+      isManager,
+      pagination.current,
+      pagination.pageSize,
+      query,
+      resolveBranchFromProfile,
+      resolvedBranch,
+      setCached,
+      statusFilter
+    ]
   )
 
   useEffect(() => {
@@ -110,25 +146,29 @@ export const useStockRequest = () => {
 
   const createRequest = useCallback(
     async (data: { product: string; quantity: number; reason?: string }) => {
-      if (!user?.branch) {
+      const branchId = resolvedBranch || await resolveBranchFromProfile()
+      const normalizedReason = data.reason?.trim()
+
+      if (!branchId) {
         throw new Error('missing_branch')
       }
+
       const response = await stockRequestApi.createStockRequest({
-        branch: user.branch,
+        branch: branchId,
         product: data.product,
         quantity: data.quantity,
-        reason: data.reason
+        ...(normalizedReason ? { reason: normalizedReason } : {})
       })
       setRequests((prev) => [response.data, ...prev])
       cacheRef.current.forEach((entry, key) => {
-        if (key.includes(`stock-request:${isAdmin ? 'admin' : 'manager'}:${user.branch}`)) {
+        if (key.includes(`stock-request:${isAdmin ? 'admin' : 'manager'}:${branchId}`)) {
           const cached = entry.data as { data: StockRequestRecord[]; pagination: typeof pagination }
           setCached(key, { ...cached, data: [response.data, ...cached.data] })
         }
       })
       return response.data
     },
-    [isAdmin, setCached, user?.branch]
+    [isAdmin, resolveBranchFromProfile, resolvedBranch, setCached]
   )
 
   const updateRequestStatus = useCallback(
