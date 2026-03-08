@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Layout, Button, Dropdown, Avatar, Badge } from 'antd'
+import { Layout, Button, Dropdown, Avatar } from 'antd'
 import type { MenuProps } from 'antd'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  BellOutlined,
   UserOutlined,
   LogoutOutlined,
   SettingOutlined
@@ -69,14 +68,6 @@ const ManagementLayout = () => {
           />
 
           <div className='flex items-center gap-4'>
-            <Badge count={5} size='small'>
-              <Button
-                type='text'
-                icon={<BellOutlined />}
-                className='text-lg'
-              />
-            </Badge>
-
             <Dropdown menu={{ items: userMenuItems }} placement='bottomRight' trigger={['click']}>
               <div className='flex items-center gap-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg'>
                 <Avatar

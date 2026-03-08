@@ -26,6 +26,35 @@ const OrderDetailModal = ({
 }: OrderDetailModalProps) => {
   if (!order) return null
 
+  const extractItemServices = (services: unknown[]): Array<{ name: string; price: number }> => {
+    if (!Array.isArray(services)) return []
+
+    return services
+      .map((service) => {
+        const item = service as {
+          name?: string
+          serviceName?: string
+          price?: number
+          servicePrice?: number
+          service?: {
+            name?: string
+            price?: number
+          }
+        }
+
+        const name = item?.name || item?.serviceName || item?.service?.name
+        const rawPrice = item?.price ?? item?.servicePrice ?? item?.service?.price
+        const price = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice)
+
+        if (!name || Number.isNaN(price)) {
+          return null
+        }
+
+        return { name, price }
+      })
+      .filter((item): item is { name: string; price: number } => item !== null)
+  }
+
   const getOrderId = (targetOrder: Order) => {
     const withMongoId = targetOrder as unknown as { _id?: string }
     return withMongoId._id || targetOrder.id || ''
@@ -221,6 +250,7 @@ const OrderDetailModal = ({
                   const itemImage = itemRecord.productImage || getProductImageUrl(itemRecord.product?.images as never) || '/placeholder.png'
                   const itemQuantity = itemRecord.quantity || 0
                   const itemPrice = itemRecord.price || 0
+                  const itemServices = extractItemServices((itemRecord as { services?: unknown[] }).services || [])
                   return (
                     <tr key={itemKey}>
                       <td className="px-4 py-3">
@@ -234,6 +264,18 @@ const OrderDetailModal = ({
                             <p className="text-sm font-medium text-gray-900">
                               {itemName}
                             </p>
+                            {itemServices.length > 0 && (
+                              <div className="mt-1 space-y-0.5">
+                                {itemServices.map((service, index) => (
+                                  <p
+                                    key={`${itemKey}-service-${index}`}
+                                    className="text-xs text-gray-500"
+                                  >
+                                    Dịch vụ: {service.name} ({formatCurrency(service.price)})
+                                  </p>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
