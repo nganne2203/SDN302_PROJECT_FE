@@ -20,7 +20,7 @@ const OrderHistory = () => {
     fetchOrders
   } = useOrder()
 
-  const [activeTab, setActiveTab] = useState<string>('pending')
+  const [activeTab, setActiveTab] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
 
   // Build filter based on active tab
@@ -43,6 +43,7 @@ const OrderHistory = () => {
     } else if (activeTab === 'cancelled') {
       baseFilter.status = 'canceled'
     }
+    // 'all' tab: no status filter → returns all orders sorted by newest
 
     return baseFilter
   }, [activeTab, currentPage])
@@ -120,6 +121,15 @@ const OrderHistory = () => {
   ]
 
   const tabItems = [
+    {
+      key: 'all',
+      label: (
+        <span className="flex items-center gap-2">
+          <Package className="w-4 h-4" />
+          Tất cả
+        </span>
+      )
+    },
     {
       key: 'pending',
       label: (

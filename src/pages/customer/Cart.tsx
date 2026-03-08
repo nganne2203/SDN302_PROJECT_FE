@@ -25,21 +25,40 @@ const Cart = () => {
       dataIndex: 'product',
       key: 'product',
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const pricing = getItemPricing(record.id)?.pricing
+        const productId = record.productId || record.product?._id
+        const pricingData = productId ? getItemPricing(productId) : null
+        const pricing = pricingData?.pricing
+        const pricingQty = pricingData?.quantity ?? record.quantity
         const unitPrice = pricing?.pricePerUnit ?? record.price
         const discountPercent = pricing?.discountPercentage ?? 0
-        const originalUnitPrice = pricing?.originalTotal && record.quantity > 0
-          ? pricing.originalTotal / record.quantity
+        const originalUnitPrice = pricing?.originalTotal && pricingQty > 0
+          ? pricing.originalTotal / pricingQty
           : record.price
         const imageUrl = getProductImageUrl(record.product.images)
 
         return (
           <div className="flex items-center gap-4">
-            <img
-              src={imageUrl || undefined}
-              alt={record.product.name}
-              className="w-20 h-20 object-cover rounded-lg"
-            />
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={record.product.name}
+                className="w-20 h-20 object-cover rounded-lg"
+                onError={(e) => {
+                  const el = e.currentTarget
+                  el.style.display = 'none'
+                  const placeholder = el.nextElementSibling as HTMLElement | null
+                  if (placeholder) placeholder.style.display = 'flex'
+                }}
+              />
+            ) : null}
+            <div
+              className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"
+              style={{ display: imageUrl ? 'none' : 'flex' }}
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
             <div>
               <h4 className="font-medium text-gray-800">{record.product.name}</h4>
               <div className="flex items-center gap-2">
@@ -82,7 +101,8 @@ const Cart = () => {
       key: 'total',
       width: 150,
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const pricing = getItemPricing(record.id)?.pricing
+        const productId = record.productId || record.product?._id
+        const pricing = productId ? getItemPricing(productId)?.pricing : undefined
         const itemTotal = pricing?.totalPrice ?? record.price * record.quantity
         return (
           <span className="font-semibold text-gray-800">

@@ -19,8 +19,13 @@ export const getProductImageUrl = (images: Image[] | Image | string[] | undefine
       // Array of publicId strings (cart API format)
       return `https://res.cloudinary.com/djmbxvsaz/image/upload/${firstItem}.jpg`
     } else if (firstItem && typeof firstItem === 'object' && 'imageUrl' in firstItem) {
-      // Array of Image objects (standard format)
-      return firstItem.imageUrl
+      // Array of Image objects (standard format) — find first with a valid URL
+      const imageObjects = images as Image[]
+      const found = imageObjects.find((img) => img && img.imageUrl)
+      if (found) return found.imageUrl
+      // Fallback: construct URL from publicId
+      const withPublicId = imageObjects.find((img) => img && img.publicId)
+      if (withPublicId) return `https://res.cloudinary.com/djmbxvsaz/image/upload/${withPublicId.publicId}`
     }
   }
   // Handle single Image object (pricing API format)

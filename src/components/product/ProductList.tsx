@@ -4,6 +4,7 @@ import { TableCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Product, PaginationMeta } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 
 interface ProductWithKey extends Record<string, unknown> {
   key: string
@@ -42,13 +43,15 @@ const ProductList = ({
       width: 80,
       render: (_: unknown, record: ProductWithKey) => {
         const product = record as unknown as Product
+        const imgUrl = getProductImageUrl(product.images)
         return (
           <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100">
-            {product.images && product.images.length > 0 ? (
+            {imgUrl ? (
               <img
-                src={product.images[0].imageUrl}
+                src={imgUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
