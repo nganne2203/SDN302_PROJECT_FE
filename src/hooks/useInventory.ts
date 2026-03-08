@@ -19,6 +19,19 @@ const buildKey = (prefix: string, params: Record<string, unknown>) => {
   return `${prefix}:${JSON.stringify(params)}`
 }
 
+const mergeMainInventoryRecord = (current: InventoryRecord, incoming: InventoryRecord): InventoryRecord => ({
+  ...current,
+  ...incoming,
+  product: {
+    ...current.product,
+    ...incoming.product,
+    category: {
+      ...current.product?.category,
+      ...incoming.product?.category
+    }
+  }
+})
+
 export const useInventory = () => {
   const { user } = useAuth()
   const accessToken = useAppSelector((state) => state.auth.accessToken)
@@ -298,11 +311,15 @@ export const useInventory = () => {
   const updateMainInventory = useCallback(
     async (inventoryId: string, data: { quantity?: number; location?: string }) => {
       const response = await inventoryApi.updateInventory(inventoryId, data)
-      setMainInventory((prev) => prev.map((item) => (item._id === response.data._id ? response.data : item)))
+      setMainInventory((prev) => prev.map((item) => (
+        item._id === response.data._id ? mergeMainInventoryRecord(item, response.data) : item
+      )))
       cacheRef.current.forEach((value, key) => {
         if (key.startsWith('main')) {
           const cached = value.data as { data: InventoryRecord[]; pagination: TablePaginationConfig }
-          const updated = cached.data.map((item) => (item._id === response.data._id ? response.data : item))
+          const updated = cached.data.map((item) => (
+            item._id === response.data._id ? mergeMainInventoryRecord(item, response.data) : item
+          ))
           setCached(key, { ...cached, data: updated })
         }
       })
@@ -329,11 +346,15 @@ export const useInventory = () => {
   const adjustMainInventory = useCallback(
     async (productId: string, quantity: number) => {
       const response = await inventoryApi.adjustInventory(productId, quantity)
-      setMainInventory((prev) => prev.map((item) => (item.product?._id === productId ? response.data : item)))
+      setMainInventory((prev) => prev.map((item) => (
+        item.product?._id === productId ? mergeMainInventoryRecord(item, response.data) : item
+      )))
       cacheRef.current.forEach((value, key) => {
         if (key.startsWith('main')) {
           const cached = value.data as { data: InventoryRecord[]; pagination: TablePaginationConfig }
-          const updated = cached.data.map((item) => (item.product?._id === productId ? response.data : item))
+          const updated = cached.data.map((item) => (
+            item.product?._id === productId ? mergeMainInventoryRecord(item, response.data) : item
+          ))
           setCached(key, { ...cached, data: updated })
         }
       })

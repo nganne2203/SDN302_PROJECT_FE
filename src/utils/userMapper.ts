@@ -11,6 +11,8 @@ export function mapBackendUserToUserInfo(user: BackendUser): UserInfo {
     avatarId: avatarPublicId,
     avatar: user.avatar,
     role: user.role,
+    branch: user.branch,
+    isEmailVerified: user.isEmailVerified,
     addresses: user.addresses
   }
 }
