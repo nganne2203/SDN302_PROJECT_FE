@@ -8,6 +8,28 @@ import { toast } from '@/utils/toast'
 import { userApi } from '@/apis/user'
 
 /* eslint-disable no-console */
+const getParamValue = (
+  searchParams: URLSearchParams,
+  hashParams: URLSearchParams,
+  keys: string[]
+): string | null => {
+  for (const key of keys) {
+    const value = searchParams.get(key) || hashParams.get(key)
+    if (value) return value
+  }
+  return null
+}
+
+const parseBooleanParam = (
+  searchParams: URLSearchParams,
+  hashParams: URLSearchParams,
+  keys: string[]
+): boolean => {
+  const value = getParamValue(searchParams, hashParams, keys)
+  if (!value) return false
+  return ['true', '1', 'yes'].includes(value.toLowerCase())
+}
+
 const AuthCallback = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -20,9 +42,10 @@ const AuthCallback = () => {
 
     const handleCallback = async () => {
       try {
-        const accessToken = searchParams.get('accessToken')
-        const isNewUser = searchParams.get('isNewUser') === 'true'
-        const hasPassword = searchParams.get('hasPassword') === 'true'
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+        const accessToken = getParamValue(searchParams, hashParams, ['accessToken', 'access_token'])
+        const isNewUser = parseBooleanParam(searchParams, hashParams, ['isNewUser', 'is_new_user'])
+        const hasPassword = parseBooleanParam(searchParams, hashParams, ['hasPassword', 'has_password'])
 
         if (!accessToken) {
           toast.error('Đăng nhập thất bại: Không tìm thấy token')
@@ -30,9 +53,9 @@ const AuthCallback = () => {
           return
         }
 
-        let refreshToken = getCookie('refreshToken')
+        let refreshToken = getCookie('refreshToken') || getCookie('refresh_token')
         if (!refreshToken) {
-          refreshToken = searchParams.get('refreshToken')
+          refreshToken = getParamValue(searchParams, hashParams, ['refreshToken', 'refresh_token'])
         }
 
         if (!refreshToken) {
@@ -43,7 +66,7 @@ const AuthCallback = () => {
 
         setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
         setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
-        setStorage('hasPassword', String(hasPassword))
+  setStorage(STORAGE_KEYS.HAS_PASSWORD, String(hasPassword))
 
         if (isNewUser && !hasPassword) {
           navigate(ROUTES.SET_PASSWORD, { replace: true, state: { isNewUser, hasPassword } })

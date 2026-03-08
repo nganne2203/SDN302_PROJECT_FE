@@ -71,6 +71,7 @@ const HeaderLayout = () => {
   const userMenuItems = isAuthenticated
     ? [
       { key: 'profile', label: 'Tài khoản', onClick: () => setIsProfileModalOpen(true) },
+      { key: 'change-password', label: <Link to={ROUTES.CHANGE_PASSWORD}>Đổi mật khẩu</Link> },
       { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
       ...(managementItem ? [managementItem] : []),
       { type: 'divider' as const },
@@ -152,6 +153,12 @@ const HeaderLayout = () => {
                   className="block text-gray-600 hover:text-blue-600"
                 >
                   Đơn hàng
+                </Link>
+                <Link
+                  to={ROUTES.CHANGE_PASSWORD}
+                  className="block text-gray-600 hover:text-blue-600"
+                >
+                  Đổi mật khẩu
                 </Link>
                 {user?.role && MANAGEMENT_ROLES.includes(user.role) && (
                   <Link
