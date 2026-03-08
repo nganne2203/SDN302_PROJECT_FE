@@ -21,6 +21,14 @@ const createStoreInventorySchema = z
     message: 'Ngưỡng tối đa phải lớn hơn ngưỡng tối thiểu',
     path: ['maxThreshold']
   })
+  .refine((data) => data.quantity >= data.minThreshold, {
+    message: 'Số lượng không được nhỏ hơn ngưỡng tối thiểu',
+    path: ['quantity']
+  })
+  .refine((data) => data.quantity <= data.maxThreshold, {
+    message: 'Số lượng không được lớn hơn ngưỡng tối đa',
+    path: ['quantity']
+  })
 
 export type CreateStoreInventoryFormValues = z.infer<typeof createStoreInventorySchema>
 

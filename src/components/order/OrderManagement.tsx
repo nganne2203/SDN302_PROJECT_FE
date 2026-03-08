@@ -87,10 +87,17 @@ const OrderManagement = ({
   }
 
   const handleUpdateStatus = async (orderId: string, status: string) => {
-    const success = await updateOrderStatus(orderId, status)
-    if (success) {
+    const updatedOrder = await updateOrderStatus(orderId, status)
+    if (updatedOrder) {
       toast.success('Cập nhật trạng thái đơn hàng thành công')
-      loadOrders()
+      // Update local selectedOrder if the modal is showing this order
+      if (selectedOrder) {
+        const withMongoId = selectedOrder as unknown as { _id?: string }
+        const selectedId = withMongoId._id || selectedOrder.id
+        if (selectedId === orderId) {
+          setSelectedOrder(updatedOrder)
+        }
+      }
     } else {
       toast.error('Không thể cập nhật trạng thái đơn hàng')
     }
@@ -101,10 +108,17 @@ const OrderManagement = ({
       return
     }
 
-    const success = await cancelOrder(orderId, 'Hủy bởi quản trị viên')
-    if (success) {
+    const cancelledOrder = await cancelOrder(orderId, 'Hủy bởi quản trị viên')
+    if (cancelledOrder) {
       toast.success('Hủy đơn hàng thành công')
-      loadOrders()
+      // Update local selectedOrder if the modal is showing this order
+      if (selectedOrder) {
+        const withMongoId = selectedOrder as unknown as { _id?: string }
+        const selectedId = withMongoId._id || selectedOrder.id
+        if (selectedId === orderId) {
+          setSelectedOrder(cancelledOrder)
+        }
+      }
     } else {
       toast.error('Không thể hủy đơn hàng')
     }

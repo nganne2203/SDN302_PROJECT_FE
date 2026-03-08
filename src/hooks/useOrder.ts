@@ -53,7 +53,10 @@ export const useOrder = () => {
   const cancelOrder = useCallback(
     async (id: string, reason?: string) => {
       const result = await dispatch(cancelOrderThunk({ orderId: id, reason }))
-      return cancelOrderThunk.fulfilled.match(result)
+      if (cancelOrderThunk.fulfilled.match(result)) {
+        return result.payload
+      }
+      return null
     },
     [dispatch]
   )
@@ -61,7 +64,10 @@ export const useOrder = () => {
   const updateOrderStatus = useCallback(
     async (orderId: string, status: string) => {
       const result = await dispatch(updateOrderStatusThunk({ orderId, status }))
-      return updateOrderStatusThunk.fulfilled.match(result)
+      if (updateOrderStatusThunk.fulfilled.match(result)) {
+        return result.payload
+      }
+      return null
     },
     [dispatch]
   )
