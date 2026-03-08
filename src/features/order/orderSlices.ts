@@ -10,6 +10,12 @@ import {
   updateOrderStatusThunk
 } from './orderThunks'
 
+// Helper to get order ID - handles both MongoDB _id and id fields
+const getOrderId = (order: Order): string => {
+  const withMongoId = order as unknown as { _id?: string }
+  return withMongoId._id || order.id || ''
+}
+
 const initialState: OrderState = {
   orders: [],
   selectedOrder: null,
@@ -101,11 +107,12 @@ const orderSlice = createSlice({
       })
       .addCase(cancelOrderThunk.fulfilled, (state, action: PayloadAction<Order>) => {
         state.isLoading = false
-        const index = state.orders.findIndex((o) => o.id === action.payload.id)
+        const payloadId = getOrderId(action.payload)
+        const index = state.orders.findIndex((o) => getOrderId(o) === payloadId)
         if (index !== -1) {
           state.orders[index] = action.payload
         }
-        if (state.selectedOrder?.id === action.payload.id) {
+        if (state.selectedOrder && getOrderId(state.selectedOrder) === payloadId) {
           state.selectedOrder = action.payload
         }
       })
@@ -121,11 +128,12 @@ const orderSlice = createSlice({
       })
       .addCase(updateOrderStatusThunk.fulfilled, (state, action: PayloadAction<Order>) => {
         state.isLoading = false
-        const index = state.orders.findIndex((o) => o.id === action.payload.id)
+        const payloadId = getOrderId(action.payload)
+        const index = state.orders.findIndex((o) => getOrderId(o) === payloadId)
         if (index !== -1) {
           state.orders[index] = action.payload
         }
-        if (state.selectedOrder?.id === action.payload.id) {
+        if (state.selectedOrder && getOrderId(state.selectedOrder) === payloadId) {
           state.selectedOrder = action.payload
         }
       })

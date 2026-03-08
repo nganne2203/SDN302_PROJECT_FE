@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { TablePaginationConfig } from 'antd/es/table'
 import { jwtDecode } from 'jwt-decode'
 import useAuth from '@/hooks/useAuth'
@@ -8,6 +9,8 @@ import { branchApi } from '@/apis/branch'
 import storeInventoryApi, { type StoreInventoryQuery, type CreateStoreInventoryPayload } from '@/apis/storeInventory'
 import inventoryApi, { type InventoryQuery } from '@/apis/inventory'
 import type { Branch, InventoryRecord, StoreInventoryRecord, TokenPayload } from '@/types/api'
+import { toast } from '@/utils/toast'
+import { extractApiError } from '@/utils/apiError'
 
 export type BranchView = 'all' | 'out_of_stock' | 'low_stock' | 'need_restock' | 'overstock'
 
@@ -19,11 +22,22 @@ const buildKey = (prefix: string, params: Record<string, unknown>) => {
   return `${prefix}:${JSON.stringify(params)}`
 }
 
+const isForbidden = (error: unknown): boolean => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const resp = error as { response?: { status?: number } }
+    return resp.response?.status === 403
+  }
+  return false
+}
+
 export const useInventory = () => {
   const { user } = useAuth()
   const accessToken = useAppSelector((state) => state.auth.accessToken)
   const isAdmin = user?.role === USER_ROLES.ADMIN
   const isManager = user?.role === USER_ROLES.MANAGER
+  const isStaff = user?.role === USER_ROLES.STAFF
+
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const tokenBranchId = useMemo(() => {
     if (!accessToken) return null
@@ -57,24 +71,47 @@ export const useInventory = () => {
   }, [])
 
   const [branches, setBranches] = useState<Branch[]>([])
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(resolvedBranchId)
-  const [branchView, setBranchView] = useState<BranchView>('all')
-  const [searchText, setSearchText] = useState('')
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(
+    searchParams.get('branchId') || resolvedBranchId
+  )
+  const [branchView, setBranchView] = useState<BranchView>(
+    (searchParams.get('view') as BranchView) || 'all'
+  )
+  const [searchText, setSearchText] = useState(searchParams.get('search') || '')
+  const [mainLowStockOnly, setMainLowStockOnly] = useState(searchParams.get('lowStock') === 'true')
 
   const [branchLoading, setBranchLoading] = useState(false)
   const [mainLoading, setMainLoading] = useState(false)
+  const [branchError, setBranchError] = useState<string | null>(null)
+  const [mainError, setMainError] = useState<string | null>(null)
   const [branchInventory, setBranchInventory] = useState<StoreInventoryRecord[]>([])
   const [mainInventory, setMainInventory] = useState<InventoryRecord[]>([])
+  const [productInventory, setProductInventory] = useState<InventoryRecord | null>(null)
+  const [productInventoryLoading, setProductInventoryLoading] = useState(false)
   const [branchPagination, setBranchPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 10,
+    current: parseInt(searchParams.get('bPage') || '1'),
+    pageSize: parseInt(searchParams.get('bSize') || '10'),
     total: 0
   })
   const [mainPagination, setMainPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 10,
+    current: parseInt(searchParams.get('mPage') || '1'),
+    pageSize: parseInt(searchParams.get('mSize') || '10'),
     total: 0
   })
+
+  // Sync state to URL params
+  useEffect(() => {
+    const params: Record<string, string> = {}
+    if (selectedBranchId) params.branchId = selectedBranchId
+    if (branchView !== 'all') params.view = branchView
+    if (searchText) params.search = searchText
+    if (mainLowStockOnly) params.lowStock = 'true'
+    if (branchPagination.current && branchPagination.current > 1) params.bPage = String(branchPagination.current)
+    if (branchPagination.pageSize && branchPagination.pageSize !== 10) params.bSize = String(branchPagination.pageSize)
+    if (mainPagination.current && mainPagination.current > 1) params.mPage = String(mainPagination.current)
+    if (mainPagination.pageSize && mainPagination.pageSize !== 10) params.mSize = String(mainPagination.pageSize)
+    setSearchParams(params, { replace: true })
+  }, [selectedBranchId, branchView, searchText, mainLowStockOnly, branchPagination.current, branchPagination.pageSize, mainPagination.current, mainPagination.pageSize, setSearchParams])
 
   const branchQuery: StoreInventoryQuery = useMemo(
     () => ({ page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' }),
@@ -93,7 +130,7 @@ export const useInventory = () => {
 
   const fetchBranches = useCallback(
     async (force = false) => {
-      if (!isAdmin) return
+      if (!isAdmin && !isManager && !isStaff) return
       const cacheKey = 'branches'
       const cached = !force ? getCached<Branch[]>(cacheKey) : null
       if (cached) {
@@ -101,16 +138,23 @@ export const useInventory = () => {
         return
       }
 
-      const response = await branchApi.getAllBranches()
-      setBranches(response.data)
-      setCached(cacheKey, response.data)
+      try {
+        const response = await branchApi.getAllBranches()
+        setBranches(response.data)
+        setCached(cacheKey, response.data)
+      } catch (error) {
+        if (isForbidden(error)) {
+          toast.error('Bạn không có quyền thực hiện thao tác này')
+        }
+      }
     },
-    [getCached, isAdmin, setCached]
+    [getCached, isAdmin, isManager, isStaff, setCached]
   )
 
   useEffect(() => {
-    if (!isAdmin) return
-    fetchBranches().catch(() => undefined)
+    if (isAdmin) {
+      fetchBranches().catch(() => undefined)
+    }
   }, [fetchBranches, isAdmin])
 
   useEffect(() => {
@@ -138,10 +182,12 @@ export const useInventory = () => {
           current: cached.pagination.current,
           pageSize: cached.pagination.pageSize
         }))
+        setBranchError(null)
         return
       }
 
       setBranchLoading(true)
+      setBranchError(null)
       try {
         let response
         switch (branchView) {
@@ -170,12 +216,18 @@ export const useInventory = () => {
         setBranchInventory(response.data)
         setBranchPagination((prev) => ({ ...prev, ...pagination }))
         setCached(cacheKey, { data: response.data, pagination })
+      } catch (error) {
+        if (isForbidden(error)) {
+          setBranchError('Bạn không có quyền thực hiện thao tác này')
+        } else {
+          setBranchError(extractApiError(error, 'Không thể tải dữ liệu tồn kho chi nhánh'))
+        }
       } finally {
         setBranchLoading(false)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [branchPagination.current, branchPagination.pageSize, branchQuery, getCached, selectedBranchId, setCached]
+    [branchPagination.current, branchPagination.pageSize, branchQuery, branchView, getCached, selectedBranchId, setCached]
   )
 
   const fetchMainInventory = useCallback(
@@ -186,7 +238,8 @@ export const useInventory = () => {
         page: mainPagination.current,
         limit: mainPagination.pageSize
       }
-      const cacheKey = buildKey('main', query)
+      const prefix = mainLowStockOnly ? 'main-low' : 'main'
+      const cacheKey = buildKey(prefix, query)
       const cached = !force ? getCached<{ data: InventoryRecord[]; pagination: TablePaginationConfig }>(cacheKey) : null
 
       if (cached) {
@@ -197,12 +250,16 @@ export const useInventory = () => {
           current: cached.pagination.current,
           pageSize: cached.pagination.pageSize
         }))
+        setMainError(null)
         return
       }
 
       setMainLoading(true)
+      setMainError(null)
       try {
-        const response = await inventoryApi.getInventories(query)
+        const response = mainLowStockOnly
+          ? await inventoryApi.getLowStock(query)
+          : await inventoryApi.getInventories(query)
         const pagination = {
           total: response.pagination?.totalItems || 0,
           current: response.pagination?.currentPage || mainPagination.current,
@@ -211,12 +268,18 @@ export const useInventory = () => {
         setMainInventory(response.data)
         setMainPagination((prev) => ({ ...prev, ...pagination }))
         setCached(cacheKey, { data: response.data, pagination })
+      } catch (error) {
+        if (isForbidden(error)) {
+          setMainError('Bạn không có quyền thực hiện thao tác này')
+        } else {
+          setMainError(extractApiError(error, 'Không thể tải dữ liệu tồn kho kho tổng'))
+        }
       } finally {
         setMainLoading(false)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [getCached, isAdmin, mainPagination.current, mainPagination.pageSize, mainQuery, setCached]
+    [getCached, isAdmin, mainLowStockOnly, mainPagination.current, mainPagination.pageSize, mainQuery, setCached]
   )
 
   useEffect(() => {
@@ -342,10 +405,41 @@ export const useInventory = () => {
     [setCached]
   )
 
+  const fetchProductInventory = useCallback(
+    async (productId: string) => {
+      setProductInventoryLoading(true)
+      try {
+        const response = await inventoryApi.getInventoryByProduct(productId)
+        setProductInventory(response.data)
+        return response.data
+      } catch (error) {
+        if (isForbidden(error)) {
+          toast.error('Bạn không có quyền thực hiện thao tác này')
+        }
+        setProductInventory(null)
+        return null
+      } finally {
+        setProductInventoryLoading(false)
+      }
+    },
+    []
+  )
+
+  const retryBranch = useCallback(() => {
+    setBranchError(null)
+    fetchBranchInventory(true).catch(() => undefined)
+  }, [fetchBranchInventory])
+
+  const retryMain = useCallback(() => {
+    setMainError(null)
+    fetchMainInventory(true).catch(() => undefined)
+  }, [fetchMainInventory])
+
   return {
     user,
     isAdmin,
     isManager,
+    isStaff,
     branches,
     selectedBranchId,
     setSelectedBranchId,
@@ -353,6 +447,8 @@ export const useInventory = () => {
     setBranchView,
     searchText,
     setSearchText,
+    mainLowStockOnly,
+    setMainLowStockOnly,
     branchInventory,
     mainInventory,
     filteredBranchInventory,
@@ -360,10 +456,13 @@ export const useInventory = () => {
     branchStats,
     branchLoading,
     mainLoading,
+    branchError,
+    mainError,
     branchPagination,
     setBranchPagination,
     mainPagination,
     setMainPagination,
+    fetchBranches,
     fetchBranchInventory,
     fetchMainInventory,
     updateThresholds,
@@ -371,7 +470,12 @@ export const useInventory = () => {
     deleteStoreInventory,
     updateMainInventory,
     createMainInventory,
-    adjustMainInventory
+    adjustMainInventory,
+    productInventory,
+    productInventoryLoading,
+    fetchProductInventory,
+    retryBranch,
+    retryMain
   }
 }
 

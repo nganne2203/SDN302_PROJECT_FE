@@ -1,5 +1,5 @@
-import { Card, Table, Tag, Row, Col, Statistic, Alert, Progress, Tooltip, Space, Tabs, Popconfirm } from 'antd'
-import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Card, Table, Tag, Row, Col, Statistic, Alert, Empty, Progress, Tooltip, Space, Tabs, Popconfirm } from 'antd'
+import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { Branch, StoreInventoryRecord } from '@/types/api'
@@ -23,6 +23,8 @@ interface BranchInventoryPanelProps {
   searchText: string
   onSearchTextChange: (_value: string) => void
   loading: boolean
+  error?: string | null
+  onRetry?: () => void
   pagination: TablePaginationConfig
   onPaginationChange: (_pagination: TablePaginationConfig) => void
   onEditThresholds: (_record: StoreInventoryRecord) => void
@@ -45,6 +47,8 @@ const BranchInventoryPanel = ({
   searchText,
   onSearchTextChange,
   loading,
+  error,
+  onRetry,
   pagination,
   onPaginationChange,
   onEditThresholds,
@@ -208,6 +212,23 @@ const BranchInventoryPanel = ({
         />
       )}
 
+      {error && (
+        <Alert
+          message="Lỗi"
+          description={error}
+          type="error"
+          showIcon
+          className="mb-6"
+          action={
+            onRetry && (
+              <Button size="small" icon={<ReloadOutlined />} onClick={onRetry}>
+                Thử lại
+              </Button>
+            )
+          }
+        />
+      )}
+
       <Row gutter={[16, 16]} className="mb-6">
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
@@ -297,6 +318,14 @@ const BranchInventoryPanel = ({
           scroll={{ x: 900 }}
           rowKey={(record) => record._id}
           size="small"
+          locale={{
+            emptyText: (
+              <Empty
+                description="Chưa có dữ liệu tồn kho chi nhánh"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            )
+          }}
         />
       </Card>
     </>

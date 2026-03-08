@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import useAuth from '@/hooks/useAuth'
 import { USER_ROLES } from '@/constants/constant'
 import stockRequestApi, { type StockRequestQuery } from '@/apis/stockRequest'
 import productApi from '@/apis/product'
 import type { Product, StockRequestRecord, StockRequestStatus } from '@/types/api'
+import { toast } from '@/utils/toast'
+import { extractApiError } from '@/utils/apiError'
 
 type CacheEntry<T> = { ts: number; data: T }
 
@@ -13,10 +16,20 @@ const buildKey = (prefix: string, params: Record<string, unknown>) => {
   return `${prefix}:${JSON.stringify(params)}`
 }
 
+const isForbidden = (error: unknown): boolean => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const resp = error as { response?: { status?: number } }
+    return resp.response?.status === 403
+  }
+  return false
+}
+
 export const useStockRequest = () => {
   const { user } = useAuth()
   const isAdmin = user?.role === USER_ROLES.ADMIN
   const isManager = user?.role === USER_ROLES.MANAGER
+
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const cacheRef = useRef(new Map<string, CacheEntry<unknown>>())
 
@@ -35,10 +48,28 @@ export const useStockRequest = () => {
   }, [])
 
   const [requests, setRequests] = useState<StockRequestRecord[]>([])
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
+  const [pagination, setPagination] = useState({
+    current: parseInt(searchParams.get('page') || '1'),
+    pageSize: parseInt(searchParams.get('size') || '10'),
+    total: 0
+  })
   const [loading, setLoading] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<StockRequestStatus | 'all'>('all')
+  const [error, setError] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<StockRequestStatus | 'all'>(
+    (searchParams.get('status') as StockRequestStatus | 'all') || 'all'
+  )
   const [products, setProducts] = useState<Product[]>([])
+  const [selectedRequest, setSelectedRequest] = useState<StockRequestRecord | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  // Sync state to URL params
+  useEffect(() => {
+    const params: Record<string, string> = {}
+    if (statusFilter !== 'all') params.status = statusFilter
+    if (pagination.current > 1) params.page = String(pagination.current)
+    if (pagination.pageSize !== 10) params.size = String(pagination.pageSize)
+    setSearchParams(params, { replace: true })
+  }, [statusFilter, pagination.current, pagination.pageSize, setSearchParams])
 
   const query: StockRequestQuery = useMemo(
     () => ({ page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' }),
@@ -76,10 +107,12 @@ export const useStockRequest = () => {
       if (cached) {
         setRequests(cached.data)
         setPagination((prev) => ({ ...prev, ...cached.pagination }))
+        setError(null)
         return
       }
 
       setLoading(true)
+      setError(null)
       try {
         const response = isAdmin
           ? await stockRequestApi.getAll(params)
@@ -92,6 +125,12 @@ export const useStockRequest = () => {
         setRequests(response.data)
         setPagination((prev) => ({ ...prev, ...nextPagination }))
         setCached(cacheKey, { data: response.data, pagination: nextPagination })
+      } catch (err) {
+        if (isForbidden(err)) {
+          setError('Bạn không có quyền thực hiện thao tác này')
+        } else {
+          setError(extractApiError(err, 'Không thể tải danh sách yêu cầu nhập kho'))
+        }
       } finally {
         setLoading(false)
       }
@@ -158,6 +197,32 @@ export const useStockRequest = () => {
     [requests]
   )
 
+  const fetchDetail = useCallback(
+    async (requestId: string) => {
+      setDetailLoading(true)
+      try {
+        const response = await stockRequestApi.getDetail(requestId)
+        setSelectedRequest(response.data)
+        return response.data
+      } catch (err) {
+        if (isForbidden(err)) {
+          toast.error('Bạn không có quyền thực hiện thao tác này')
+        } else {
+          toast.error(extractApiError(err, 'Không thể tải chi tiết yêu cầu'))
+        }
+        return null
+      } finally {
+        setDetailLoading(false)
+      }
+    },
+    []
+  )
+
+  const retry = useCallback(() => {
+    setError(null)
+    fetchRequests(true).catch(() => undefined)
+  }, [fetchRequests])
+
   return {
     user,
     isAdmin,
@@ -166,6 +231,7 @@ export const useStockRequest = () => {
     pagination,
     setPagination,
     loading,
+    error,
     statusFilter,
     setStatusFilter,
     products,
@@ -173,7 +239,12 @@ export const useStockRequest = () => {
     approvedCount,
     fetchRequests,
     createRequest,
-    updateRequestStatus
+    updateRequestStatus,
+    selectedRequest,
+    setSelectedRequest,
+    detailLoading,
+    fetchDetail,
+    retry
   }
 }
 
