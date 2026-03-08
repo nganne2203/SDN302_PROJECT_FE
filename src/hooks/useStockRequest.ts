@@ -159,16 +159,11 @@ export const useStockRequest = () => {
         quantity: data.quantity,
         ...(normalizedReason ? { reason: normalizedReason } : {})
       })
-      setRequests((prev) => [response.data, ...prev])
-      cacheRef.current.forEach((entry, key) => {
-        if (key.includes(`stock-request:${isAdmin ? 'admin' : 'manager'}:${branchId}`)) {
-          const cached = entry.data as { data: StockRequestRecord[]; pagination: typeof pagination }
-          setCached(key, { ...cached, data: [response.data, ...cached.data] })
-        }
-      })
+      await fetchRequests(true)
+
       return response.data
     },
-    [isAdmin, resolveBranchFromProfile, resolvedBranch, setCached]
+    [fetchRequests, resolveBranchFromProfile, resolvedBranch]
   )
 
   const updateRequestStatus = useCallback(
