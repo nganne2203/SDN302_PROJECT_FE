@@ -1,4 +1,5 @@
 import { ModalCommon, ButtonCommon, NumberField, SelectField, TextAreaField } from '@/components/common'
+import { formatCurrency } from '@/utils/formatCurrency'
 import type { PricingFormData } from '@/hooks/usePricing'
 
 interface ProductOption {
@@ -14,6 +15,7 @@ interface PricingModalProps {
   formErrors: Record<string, string>
   isSubmitting: boolean
   productOptions: ProductOption[]
+  selectedProductBasePrice: number | null
   onClose: () => void
   onFormChange: (_field: string, _value: string | number | null) => void
   onSubmit: () => void
@@ -26,10 +28,14 @@ const PricingModalComponent = ({
   formErrors,
   isSubmitting,
   productOptions,
+  selectedProductBasePrice,
   onClose,
   onFormChange,
   onSubmit
 }: PricingModalProps) => {
+  const discountPct = formData.discountPercentage ?? 0
+  const showDiscount = selectedProductBasePrice !== null && formData.pricePerUnit > 0
+
   return (
     <ModalCommon
       isOpen={isOpen}
@@ -65,6 +71,11 @@ const PricingModalComponent = ({
           error={formErrors.productId}
           disabled={isEditMode}
         />
+        {selectedProductBasePrice !== null && (
+          <p className="text-sm text-gray-500">
+            Giá gốc: <span className="font-medium text-gray-700">{formatCurrency(selectedProductBasePrice)}</span>
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <NumberField
             label="Số lượng tối thiểu"
@@ -83,23 +94,22 @@ const PricingModalComponent = ({
             placeholder="Bỏ trống nếu không giới hạn"
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           <NumberField
-            label="Giá mỗi sản phẩm"
+            label="Giá mỗi sản phẩm (đ)"
             required
             min={0}
             value={formData.pricePerUnit}
             onChange={(value) => onFormChange('pricePerUnit', typeof value === 'number' ? value : 0)}
             error={formErrors.pricePerUnit}
           />
-          <NumberField
-            label="Giảm giá (%)"
-            min={0}
-            max={100}
-            value={formData.discountPercentage ?? undefined}
-            onChange={(value) => onFormChange('discountPercentage', typeof value === 'number' ? value : null)}
-            error={formErrors.discountPercentage}
-          />
+          {showDiscount && (
+            <p className={`mt-1 text-sm font-medium ${discountPct > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+              {discountPct > 0
+                ? `Giảm ${discountPct}% so với giá gốc`
+                : 'Không có giảm giá (bằng hoặc cao hơn giá gốc)'}
+            </p>
+          )}
         </div>
         <TextAreaField
           label="Mô tả"
