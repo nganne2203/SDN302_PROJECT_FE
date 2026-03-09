@@ -4,10 +4,15 @@ import { extractApiError } from '@/utils/apiError'
 import type { Order, CreateOrderRequest } from '@/types/api'
 import type { FetchOrdersPayload, UpdateOrderStatusPayload, CancelOrderPayload } from './orderTypes'
 
+const getOrderListRequestKey = (params?: OrderFilter) => JSON.stringify(params ?? {})
+const inFlightOrderListRequests = new Set<string>()
+
 export const fetchOrdersThunk = createAsyncThunk<FetchOrdersPayload, OrderFilter | undefined>(
   'order/fetchOrders',
   async (params, { rejectWithValue }) => {
+    const requestKey = getOrderListRequestKey(params)
     try {
+      inFlightOrderListRequests.add(requestKey)
       const response = await orderApi.getMyOrders(params)
       return {
         items: response.data,
@@ -15,14 +20,21 @@ export const fetchOrdersThunk = createAsyncThunk<FetchOrdersPayload, OrderFilter
       }
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tải danh sách đơn hàng'))
+    } finally {
+      inFlightOrderListRequests.delete(requestKey)
     }
+  },
+  {
+    condition: (params) => !inFlightOrderListRequests.has(getOrderListRequestKey(params))
   }
 )
 
 export const fetchAllOrdersThunk = createAsyncThunk<FetchOrdersPayload, OrderFilter | undefined>(
   'order/fetchAllOrders',
   async (params, { rejectWithValue }) => {
+    const requestKey = getOrderListRequestKey(params)
     try {
+      inFlightOrderListRequests.add(requestKey)
       const response = await orderApi.getAllOrders(params)
       return {
         items: response.data,
@@ -30,7 +42,12 @@ export const fetchAllOrdersThunk = createAsyncThunk<FetchOrdersPayload, OrderFil
       }
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tải danh sách đơn hàng'))
+    } finally {
+      inFlightOrderListRequests.delete(requestKey)
     }
+  },
+  {
+    condition: (params) => !inFlightOrderListRequests.has(getOrderListRequestKey(params))
   }
 )
 

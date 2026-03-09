@@ -150,7 +150,19 @@ const ManagementDevice = () => {
         searchValue={(filter.search as string) || ''}
         onSearchChange={(value) => handleSetFilter({ search: value, page: 1 })}
         filter={filter}
-        onFilterChange={(key, value) => handleSetFilter({ [key]: value, page: 1 })}
+        onFilterChange={(key, value) => {
+          if (key === 'sort') {
+            const sortData = value as { field?: string; order?: 'asc' | 'desc' | '' }
+            handleSetFilter({
+              sortBy: sortData.field || 'createdAt',
+              sortOrder: (sortData.order as 'asc' | 'desc') || 'desc',
+              page: 1
+            })
+            return
+          }
+
+          handleSetFilter({ [key]: value, page: 1 })
+        }}
         onPageChange={(page, pageSize) => handleSetFilter({ page, limit: pageSize })}
         onReset={handleClearFilter}
       />

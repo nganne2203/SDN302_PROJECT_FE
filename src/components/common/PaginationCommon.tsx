@@ -54,7 +54,7 @@ const PaginationCommon = ({
     pageSize,
     total,
     onChange,
-    onShowSizeChange: onShowSizeChange || onChange,
+    onShowSizeChange,
     showSizeChanger,
     showQuickJumper,
     showTotal: showTotalConfig,
