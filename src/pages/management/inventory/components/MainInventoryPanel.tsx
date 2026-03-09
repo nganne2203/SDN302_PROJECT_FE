@@ -1,6 +1,6 @@
-import { Card, Table, Space } from 'antd'
+import { Alert, Card, Empty, Switch, Table, Space } from 'antd'
 import { Button } from 'antd'
-import { EditOutlined, PlusOutlined, SwapOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusOutlined, ReloadOutlined, SwapOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { InventoryRecord } from '@/types/api'
@@ -10,10 +10,14 @@ import { InputField } from '@/components/common'
 interface MainInventoryPanelProps {
   data: InventoryRecord[]
   loading: boolean
+  error?: string | null
+  onRetry?: () => void
   pagination: TablePaginationConfig
   onPaginationChange: (_pagination: TablePaginationConfig) => void
   searchText: string
   onSearchTextChange: (_value: string) => void
+  lowStockOnly?: boolean
+  onLowStockToggle?: (_value: boolean) => void
   onEdit: (_record: InventoryRecord) => void
   onCreate: () => void
   onAdjust: (_record: InventoryRecord) => void
@@ -22,10 +26,14 @@ interface MainInventoryPanelProps {
 const MainInventoryPanel = ({
   data,
   loading,
+  error,
+  onRetry,
   pagination,
   onPaginationChange,
   searchText,
   onSearchTextChange,
+  lowStockOnly = false,
+  onLowStockToggle,
   onEdit,
   onCreate,
   onAdjust
@@ -86,6 +94,26 @@ const MainInventoryPanel = ({
     }
   ]
 
+  if (error) {
+    return (
+      <Card>
+        <Alert
+          message="Lỗi"
+          description={error}
+          type="error"
+          showIcon
+          action={
+            onRetry && (
+              <Button size="small" icon={<ReloadOutlined />} onClick={onRetry}>
+                Thử lại
+              </Button>
+            )
+          }
+        />
+      </Card>
+    )
+  }
+
   return (
     <Card
       title="Tồn kho kho tổng"
@@ -95,14 +123,22 @@ const MainInventoryPanel = ({
         </Button>
       }
     >
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap items-end gap-4">
         <InputField
           label="Tìm kiếm"
           value={searchText}
           onChange={(e) => onSearchTextChange(e.target.value)}
           placeholder="Tìm theo tên sản phẩm"
-          className="mb-0"
+          className="mb-0 min-w-[240px]"
         />
+        <div className="flex items-center gap-2 pb-1">
+          <Switch
+            checked={lowStockOnly}
+            onChange={onLowStockToggle}
+            size="small"
+          />
+          <span className="text-sm text-gray-600">Chỉ hiển thị sắp hết hàng</span>
+        </div>
       </div>
       <Table
         columns={columns}
@@ -113,6 +149,14 @@ const MainInventoryPanel = ({
         scroll={{ x: 900 }}
         rowKey={(record) => record._id}
         size="small"
+        locale={{
+          emptyText: (
+            <Empty
+              description={lowStockOnly ? 'Không có sản phẩm sắp hết hàng' : 'Chưa có dữ liệu tồn kho'}
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          )
+        }}
       />
     </Card>
   )

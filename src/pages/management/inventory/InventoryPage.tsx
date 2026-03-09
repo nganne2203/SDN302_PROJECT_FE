@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Tabs, message } from 'antd'
+import { Tabs } from 'antd'
 import useInventory from '@/hooks/useInventory'
 import type { InventoryRecord, StoreInventoryRecord } from '@/types/api'
+import { toast } from '@/utils/toast'
+import { extractApiError } from '@/utils/apiError'
 import BranchInventoryPanel from './components/BranchInventoryPanel'
 import MainInventoryPanel from './components/MainInventoryPanel'
 import ThresholdModal from './components/ThresholdModal'
@@ -24,11 +26,15 @@ const InventoryPage = () => {
     setBranchView,
     searchText,
     setSearchText,
+    mainLowStockOnly,
+    setMainLowStockOnly,
     filteredBranchInventory,
     filteredMainInventory,
     branchStats,
     branchLoading,
     mainLoading,
+    branchError,
+    mainError,
     branchPagination,
     setBranchPagination,
     mainPagination,
@@ -38,7 +44,9 @@ const InventoryPage = () => {
     deleteStoreInventory,
     updateMainInventory,
     createMainInventory,
-    adjustMainInventory
+    adjustMainInventory,
+    retryBranch,
+    retryMain
   } = useInventory()
 
   const [selectedStoreInventory, setSelectedStoreInventory] = useState<StoreInventoryRecord | null>(null)
@@ -94,10 +102,10 @@ const InventoryPage = () => {
         quantity: values.quantity,
         location: values.location
       })
-      message.success('Tạo tồn kho mới thành công')
+      toast.success('Tạo tồn kho mới thành công')
       setCreateModalOpen(false)
-    } catch {
-      message.error('Không thể tạo tồn kho mới')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể tạo tồn kho mới'))
     } finally {
       setCreateSaving(false)
     }
@@ -108,11 +116,11 @@ const InventoryPage = () => {
     try {
       setAdjustSaving(true)
       await adjustMainInventory(adjustInventory.product._id, values.quantity)
-      message.success('Điều chỉnh tồn kho thành công')
+      toast.success('Điều chỉnh tồn kho thành công')
       setAdjustModalOpen(false)
       setAdjustInventory(null)
-    } catch {
-      message.error('Không thể điều chỉnh tồn kho')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể điều chỉnh tồn kho'))
     } finally {
       setAdjustSaving(false)
     }
@@ -132,10 +140,10 @@ const InventoryPage = () => {
         minThreshold: values.minThreshold,
         maxThreshold: values.maxThreshold
       })
-      message.success('Tạo tồn kho chi nhánh thành công')
+      toast.success('Tạo tồn kho chi nhánh thành công')
       setStoreCreateModalOpen(false)
-    } catch {
-      message.error('Không thể tạo tồn kho chi nhánh')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể tạo tồn kho chi nhánh'))
     } finally {
       setStoreCreateSaving(false)
     }
@@ -145,9 +153,9 @@ const InventoryPage = () => {
     if (!selectedBranchId) return
     try {
       await deleteStoreInventory(record._id, selectedBranchId)
-      message.success('Xóa tồn kho chi nhánh thành công')
-    } catch {
-      message.error('Không thể xóa tồn kho chi nhánh')
+      toast.success('Xóa tồn kho chi nhánh thành công')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể xóa tồn kho chi nhánh'))
     }
   }
 
@@ -156,11 +164,11 @@ const InventoryPage = () => {
     try {
       setThresholdSaving(true)
       await updateThresholds(selectedBranchId, selectedStoreInventory.product._id, values)
-      message.success('Cập nhật ngưỡng tồn kho thành công')
+      toast.success('Cập nhật ngưỡng tồn kho thành công')
       setThresholdModalOpen(false)
       setSelectedStoreInventory(null)
-    } catch {
-      message.error('Không thể cập nhật ngưỡng tồn kho')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể cập nhật ngưỡng tồn kho'))
     } finally {
       setThresholdSaving(false)
     }
@@ -171,11 +179,11 @@ const InventoryPage = () => {
     try {
       setMainSaving(true)
       await updateMainInventory(selectedMainInventory._id, values)
-      message.success('Cập nhật tồn kho kho tổng thành công')
+      toast.success('Cập nhật tồn kho kho tổng thành công')
       setMainModalOpen(false)
       setSelectedMainInventory(null)
-    } catch {
-      message.error('Không thể cập nhật tồn kho kho tổng')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể cập nhật tồn kho kho tổng'))
     } finally {
       setMainSaving(false)
     }
@@ -199,10 +207,14 @@ const InventoryPage = () => {
                 <MainInventoryPanel
                   data={filteredMainInventory}
                   loading={mainLoading}
+                  error={mainError}
+                  onRetry={retryMain}
                   pagination={mainPagination}
                   onPaginationChange={setMainPagination}
                   searchText={searchText}
                   onSearchTextChange={setSearchText}
+                  lowStockOnly={mainLowStockOnly}
+                  onLowStockToggle={setMainLowStockOnly}
                   onEdit={handleMainEdit}
                   onCreate={handleCreate}
                   onAdjust={handleAdjustOpen}
@@ -234,6 +246,8 @@ const InventoryPage = () => {
                   searchText={searchText}
                   onSearchTextChange={setSearchText}
                   loading={branchLoading}
+                  error={branchError}
+                  onRetry={retryBranch}
                   pagination={branchPagination}
                   onPaginationChange={setBranchPagination}
                   onEditThresholds={handleThresholdEdit}
@@ -260,6 +274,8 @@ const InventoryPage = () => {
           searchText={searchText}
           onSearchTextChange={setSearchText}
           loading={branchLoading}
+          error={branchError}
+          onRetry={retryBranch}
           pagination={branchPagination}
           onPaginationChange={setBranchPagination}
           onEditThresholds={handleThresholdEdit}

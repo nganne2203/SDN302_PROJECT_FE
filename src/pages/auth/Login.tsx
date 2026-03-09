@@ -14,7 +14,7 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Login = () => {
-  const isCaptchaEnabled = false
+  // const isCaptchaEnabled = false
   const {
     login,
     isLoading,
@@ -143,7 +143,7 @@ const Login = () => {
             </Link>
           </div>
 
-          {isCaptchaEnabled && env.RECAPTCHA_SITE_KEY && (
+          {env.RECAPTCHA_SITE_KEY && (
             <div className="flex justify-center">
               <ReCAPTCHA
                 ref={recaptchaRef}
