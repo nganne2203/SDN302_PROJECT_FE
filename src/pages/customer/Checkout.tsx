@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Form, Input, Radio, Row, Select, Spin, Tooltip, Typography, message } from 'antd'
-import { InfoCircleOutlined } from '@ant-design/icons'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button, Card, Col, Divider, Form, Input, Modal, Radio, Row, Select, Spin, Tooltip, Typography, message } from 'antd'
+import { EnvironmentOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import useCart from '@/hooks/useCart'
+import useUser from '@/hooks/useUser'
 import paymentApi, { type BankInfo, type VnpayCreateRequest } from '@/apis/payment'
 import { orderApi, type CreateCodOrderRequest } from '@/apis/order'
 import cartApi from '@/apis/cart'
 import branchApi from '@/apis/branch'
 import type { Branch, Product } from '@/types/api'
+import type { Address } from '@/features/user/userTypes'
 import { ROUTES } from '@/constants/constant'
 import { stripLocationCodes } from '@/utils/address'
 import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
@@ -58,6 +60,7 @@ const Checkout = () => {
 
   const [form] = Form.useForm<CheckoutFormValues>()
   const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart()
+  const { profile, fetchProfile, updateProfile } = useUser()
 
   const [banks, setBanks] = useState<BankInfo[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
@@ -65,6 +68,10 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMetaLoading, setIsMetaLoading] = useState(true)
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | 'new'>('new')
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false)
+  const [addAddressForm] = Form.useForm()
+  const [isSavingAddress, setIsSavingAddress] = useState(false)
   const {
     provinceOptions,
     districtOptions,
@@ -77,7 +84,75 @@ const Checkout = () => {
     clearWards
   } = useVietnamLocationsOffline()
 
+  // Separate location hook for the add-address modal
+  const {
+    provinceOptions: modalProvinceOptions,
+    wardOptions: modalWardOptions,
+    districtOptions: modalDistrictOptions,
+    loading: modalLocationLoading,
+    fetchProvinces: modalFetchProvinces,
+    fetchDistricts: modalFetchDistricts,
+    fetchWardsByProvince: modalFetchWardsByProvince,
+    clearDistricts: modalClearDistricts,
+    clearWards: modalClearWards
+  } = useVietnamLocationsOffline()
+
+  const userAddresses = useMemo<Address[]>(() => profile?.addresses || [], [profile?.addresses])
+
   const hasItems = cartItems.length > 0
+
+  const fillFormWithAddress = useCallback((address: Address) => {
+    form.setFieldsValue({
+      shippingAddress: {
+        fullname: address.fullname,
+        phone: address.phone,
+        addressLine: address.addressLine,
+        city: address.city,
+        district: address.district,
+        ward: address.ward,
+        provinceCode: address.provinceCode,
+        districtCode: address.districtCode,
+        wardCode: address.wardCode
+      }
+    })
+    setShippingFee(estimateShippingFee(address.city, branches))
+    // Load location dropdowns for the selected address
+    clearDistricts()
+    clearWards()
+    if (address.provinceCode) {
+      fetchDistricts(address.provinceCode, '')
+      fetchWardsByProvince(address.provinceCode, '')
+    }
+  }, [form, branches, clearDistricts, clearWards, fetchDistricts, fetchWardsByProvince])
+
+  const clearShippingForm = useCallback(() => {
+    form.setFieldsValue({
+      shippingAddress: {
+        fullname: '',
+        phone: '',
+        addressLine: '',
+        city: '',
+        district: '',
+        ward: '',
+        provinceCode: undefined,
+        districtCode: undefined,
+        wardCode: undefined
+      }
+    })
+    setShippingFee(INTRA_PROVINCE_FEE)
+    clearDistricts()
+    clearWards()
+  }, [form, clearDistricts, clearWards])
+
+  const handleAddressSelect = useCallback((value: number | 'new') => {
+    setSelectedAddressIndex(value)
+    if (value === 'new') {
+      clearShippingForm()
+    } else {
+      const address = userAddresses[value]
+      if (address) fillFormWithAddress(address)
+    }
+  }, [userAddresses, fillFormWithAddress, clearShippingForm])
 
   // Buy-now totals
   const buyNowServiceTotal = buyNow?.services?.reduce((sum, svc) => sum + (svc.price || 0), 0) ?? 0
@@ -104,11 +179,24 @@ const Checkout = () => {
 
   useEffect(() => {
     loadMeta()
+    fetchProfile()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     fetchProvinces('')
   }, [fetchProvinces])
+
+  // Auto-fill default address when profile loads
+  useEffect(() => {
+    if (userAddresses.length > 0 && branches.length > 0) {
+      const defaultIdx = userAddresses.findIndex((a) => a.isDefault)
+      const idx = defaultIdx >= 0 ? defaultIdx : 0
+      setSelectedAddressIndex(idx)
+      fillFormWithAddress(userAddresses[idx])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAddresses, branches])
 
   useEffect(() => {
     if (!buyNow && !isLoading && !hasItems) {
@@ -192,6 +280,43 @@ const Checkout = () => {
     </Card>
   ), [buyNow, buyNowTotal, cartItems, totalAmount, shippingFee])
 
+  const handleSaveNewAddress = async () => {
+    try {
+      const values = await addAddressForm.validateFields()
+      setIsSavingAddress(true)
+      const newAddress: Address = {
+        fullname: values.fullname,
+        phone: values.phone,
+        addressLine: values.addressLine,
+        city: values.city,
+        district: values.district,
+        ward: values.ward,
+        provinceCode: values.provinceCode,
+        districtCode: values.districtCode,
+        wardCode: values.wardCode,
+        isDefault: userAddresses.length === 0
+      }
+      const updatedAddresses = [...userAddresses, newAddress]
+      const success = await updateProfile({ addresses: updatedAddresses })
+      if (success) {
+        message.success('Đã thêm địa chỉ mới')
+        setShowAddAddressModal(false)
+        addAddressForm.resetFields()
+        await fetchProfile()
+        // Auto-select the newly added address
+        const newIdx = updatedAddresses.length - 1
+        setSelectedAddressIndex(newIdx)
+        fillFormWithAddress(newAddress)
+      } else {
+        message.error('Không thể lưu địa chỉ')
+      }
+    } catch {
+      // validation failed
+    } finally {
+      setIsSavingAddress(false)
+    }
+  }
+
   const handleSubmit = async (values: CheckoutFormValues) => {
     if (!buyNow && !hasItems) {
       message.warning('Giỏ hàng trống')
@@ -266,6 +391,76 @@ const Checkout = () => {
           <Col xs={24} lg={16}>
             <Card variant="borderless" className="shadow-md">
               <Title level={4}>Thông tin giao hàng</Title>
+
+              {/* Address Selector */}
+              {userAddresses.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Text strong className="flex items-center gap-1">
+                      <EnvironmentOutlined /> Chọn địa chỉ đã lưu
+                    </Text>
+                    <Button
+                      type="link"
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        setShowAddAddressModal(true)
+                        modalFetchProvinces('')
+                      }}
+                      className="!p-0"
+                    >
+                      Thêm địa chỉ mới
+                    </Button>
+                  </div>
+                  <Select
+                    className="w-full"
+                    value={selectedAddressIndex}
+                    onChange={handleAddressSelect}
+                  >
+                    {userAddresses.map((addr, idx) => (
+                      <Select.Option key={idx} value={idx}>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{addr.fullname}</span>
+                          <span className="text-gray-400">|</span>
+                          <span className="text-gray-500">{addr.phone}</span>
+                          <span className="text-gray-400">|</span>
+                          <span className="text-gray-500 truncate">
+                            {addr.addressLine}, {addr.ward}, {addr.district}, {addr.city}
+                          </span>
+                          {addr.isDefault && (
+                            <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              Mặc định
+                            </span>
+                          )}
+                        </div>
+                      </Select.Option>
+                    ))}
+                    <Select.Option value="new">
+                      <span className="text-blue-600 font-medium">+ Nhập địa chỉ khác</span>
+                    </Select.Option>
+                  </Select>
+                  <Divider className="!my-4" />
+                </div>
+              )}
+
+              {userAddresses.length === 0 && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center justify-between">
+                  <Text className="text-yellow-700 text-sm">
+                    Bạn chưa có địa chỉ nào được lưu. Thêm địa chỉ để sử dụng cho lần sau.
+                  </Text>
+                  <Button
+                    type="link"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setShowAddAddressModal(true)
+                      modalFetchProvinces('')
+                    }}
+                    className="!p-0"
+                  >
+                    Thêm địa chỉ
+                  </Button>
+                </div>
+              )}
+
               <Form
                 layout="vertical"
                 form={form}
@@ -488,6 +683,134 @@ const Checkout = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Add Address Modal */}
+      <Modal
+        title="Thêm địa chỉ mới"
+        open={showAddAddressModal}
+        onCancel={() => {
+          setShowAddAddressModal(false)
+          addAddressForm.resetFields()
+        }}
+        onOk={handleSaveNewAddress}
+        okText="Lưu địa chỉ"
+        cancelText="Hủy"
+        confirmLoading={isSavingAddress}
+        destroyOnClose
+      >
+        <Form form={addAddressForm} layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fullname"
+                label="Họ và tên"
+                rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+              >
+                <Input placeholder="Nguyễn Văn A" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="phone"
+                label="Số điện thoại"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập số điện thoại' },
+                  { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ' }
+                ]}
+              >
+                <Input placeholder="0912345678" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="addressLine"
+            label="Địa chỉ"
+            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
+          >
+            <Input placeholder="123 Nguyễn Trãi" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="city"
+                label="Tỉnh/Thành phố"
+                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
+              >
+                <Select
+                  placeholder="Chọn tỉnh/thành phố"
+                  options={modalProvinceOptions}
+                  showSearch
+                  filterOption={(input, option) => {
+                    const label = String(option?.label || '')
+                    return normalizeText(label).includes(normalizeText(input))
+                  }}
+                  loading={modalLocationLoading.provinces}
+                  onChange={(value) => {
+                    const selected = modalProvinceOptions.find((item) => item.value === value)
+                    addAddressForm.setFieldsValue({
+                      city: selected?.label || '',
+                      district: '',
+                      ward: '',
+                      provinceCode: value,
+                      districtCode: undefined,
+                      wardCode: undefined
+                    })
+                    modalClearDistricts()
+                    modalClearWards()
+                    if (value) {
+                      modalFetchDistricts(value, '')
+                      modalFetchWardsByProvince(value, '')
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="ward"
+                label="Phường/Xã"
+                rules={[{ required: true, message: 'Vui lòng chọn phường/xã' }]}
+              >
+                <Select
+                  placeholder="Chọn phường/xã"
+                  options={modalWardOptions}
+                  showSearch
+                  filterOption={(input, option) => {
+                    const label = String(option?.label || '')
+                    return normalizeText(label).includes(normalizeText(input))
+                  }}
+                  loading={modalLocationLoading.wards}
+                  onSearch={(value) => {
+                    const provinceCode = addAddressForm.getFieldValue('provinceCode')
+                    if (provinceCode) {
+                      modalFetchWardsByProvince(provinceCode, value)
+                    }
+                  }}
+                  onChange={(value) => {
+                    const selected = modalWardOptions.find((item) => item.value === value)
+                    const inferredDistrictCode = value ? String(value).slice(0, 3) : undefined
+                    const selectedDistrict = modalDistrictOptions.find((item) => item.value === inferredDistrictCode)
+                    addAddressForm.setFieldsValue({
+                      district: selectedDistrict?.label || '',
+                      districtCode: inferredDistrictCode,
+                      ward: selected?.label || '',
+                      wardCode: value
+                    })
+                  }}
+                  disabled={!addAddressForm.getFieldValue('provinceCode')}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="district" hidden><Input /></Form.Item>
+          <Form.Item name="provinceCode" hidden><Input /></Form.Item>
+          <Form.Item name="districtCode" hidden><Input /></Form.Item>
+          <Form.Item name="wardCode" hidden><Input /></Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }
