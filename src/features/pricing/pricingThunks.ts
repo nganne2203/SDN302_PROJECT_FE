@@ -11,10 +11,15 @@ import type {
   FetchPricingsPayload
 } from './pricingTypes'
 
+const getPricingListRequestKey = (filter?: PricingFilter) => JSON.stringify(filter ?? {})
+const inFlightPricingListRequests = new Set<string>()
+
 export const fetchPricingsThunk = createAsyncThunk<FetchPricingsPayload, PricingFilter | undefined>(
   'pricing/fetchPricings',
   async (filter, { rejectWithValue }) => {
+    const requestKey = getPricingListRequestKey(filter)
     try {
+      inFlightPricingListRequests.add(requestKey)
       const response = await pricingApi.getPricings(filter)
       return {
         items: response.data,
@@ -22,7 +27,12 @@ export const fetchPricingsThunk = createAsyncThunk<FetchPricingsPayload, Pricing
       }
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tải danh sách bảng giá'))
+    } finally {
+      inFlightPricingListRequests.delete(requestKey)
     }
+  },
+  {
+    condition: (filter) => !inFlightPricingListRequests.has(getPricingListRequestKey(filter))
   }
 )
 

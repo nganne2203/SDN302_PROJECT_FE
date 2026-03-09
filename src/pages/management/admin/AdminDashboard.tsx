@@ -78,12 +78,12 @@ const AdminDashboard = () => {
       title: 'Khách hàng',
       key: 'customer',
       render: (_: unknown, record: RecentOrder) =>
-        record.customer?.fullname ?? record.customer?.email ?? '—'
+        record.customer ?? '—'
     },
     {
       title: 'Chi nhánh',
       key: 'branch',
-      render: (_: unknown, record: RecentOrder) => record.branch?.name ?? '—'
+      render: (_: unknown, record: RecentOrder) => record.branch ?? '—'
     },
     {
       title: 'Tổng tiền',
@@ -386,7 +386,7 @@ const AdminDashboard = () => {
         <Card className="mt-6" title="Đơn hàng gần đây">
           <Table
             columns={recentOrderColumns}
-            dataSource={recentOrders.map((o) => ({ ...o, key: o._id }))}
+            dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
             pagination={false}
             size="small"
             locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
