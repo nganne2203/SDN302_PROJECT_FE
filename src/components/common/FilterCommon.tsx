@@ -82,7 +82,7 @@ const FilterCommon = ({
 }: FilterCommonProps) => {
   const handleSortToggle = () => {
     if (!sortBy) return
-    const newOrder: SortOrder = sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? '' : 'asc'
+    const newOrder: SortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
     onSortChange?.(sortBy, newOrder)
   }
 
