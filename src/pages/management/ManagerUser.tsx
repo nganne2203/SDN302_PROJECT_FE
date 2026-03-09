@@ -1,12 +1,17 @@
 import { Controller } from 'react-hook-form'
+import { useCallback } from 'react'
 import { useManagerUserPage } from '@/hooks/useManagerUserPage'
 import UserHeader from '@/components/user/UserHeader'
 import UserFilterComponent from '@/components/user/UserFilter'
 import UserListComponent from '@/components/user/UserList'
 import UserDetailModal from '@/components/user/UserDetailModal'
 import { ModalCommon, ButtonCommon, InputField, SelectField } from '@/components/common'
+import { USER_ROLES } from '@/constants/constant'
+import useAuth from '@/hooks/useAuth'
+import type { User } from '@/features/user/userTypes'
 
 const ManagerUserPage = () => {
+  const { user: currentUser } = useAuth()
   const {
     users,
     filter,
@@ -34,6 +39,10 @@ const ManagerUserPage = () => {
     roleFilterOptions
   } = useManagerUserPage()
 
+  const canEditUser = useCallback((user: User) => {
+    return user.role === USER_ROLES.STAFF && user.branch === currentUser?.branch
+  }, [currentUser?.branch])
+
   const { control, formState: { errors } } = formMethods
 
   return (
@@ -59,6 +68,7 @@ const ManagerUserPage = () => {
         onPageChange={handlePageChange}
         onViewUser={handleViewUser}
         onEditUser={handleOpenEdit}
+        canEditUser={canEditUser}
       />
 
       <ModalCommon
@@ -156,7 +166,7 @@ const ManagerUserPage = () => {
         isOpen={isDetailModalOpen}
         user={selectedUser}
         onClose={handleCloseDetail}
-        onEdit={handleEditFromDetail}
+        onEdit={selectedUser && canEditUser(selectedUser) ? handleEditFromDetail : undefined}
       />
     </div>
   )

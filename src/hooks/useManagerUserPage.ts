@@ -52,6 +52,11 @@ export const useManagerUserPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const lastFetchParamsRef = useRef<string>('')
 
+  // Clear shared filter state when page mounts
+  useEffect(() => {
+    handleClearFilter()
+  }, [handleClearFilter])
+
   const formMethods = useForm<ManagerUserForm>({
     resolver: zodResolver(managerUserSchema),
     defaultValues: {
@@ -188,12 +193,12 @@ export const useManagerUserPage = () => {
     }
     try {
       if (isEditMode && selectedUser) {
+        const isStaffRole = data.role === USER_ROLES.STAFF
         const result = await updateUser(selectedUser._id, {
           fullname: data.fullname,
           email: data.email,
           phone: data.phone || undefined,
-          role: data.role as UserRole,
-          branch: currentUser?.branch || undefined
+          branch: isStaffRole ? (currentUser?.branch || undefined) : undefined
         })
         if (result.type.includes('fulfilled')) {
           toast.success('Cập nhật người dùng thành công')

@@ -14,6 +14,35 @@ import { ROUTES } from '@/constants/constant'
 
 // Module-level cache to avoid re-fetching across renders / card remounts
 const pricingCache = new Map<string, PricingCalculation | null>()
+const pricingInFlight = new Map<string, Promise<PricingCalculation | null>>()
+
+const fetchPricingOnce = (productId: string): Promise<PricingCalculation | null> => {
+  if (pricingCache.has(productId)) {
+    return Promise.resolve(pricingCache.get(productId) ?? null)
+  }
+
+  const existingRequest = pricingInFlight.get(productId)
+  if (existingRequest) {
+    return existingRequest
+  }
+
+  const request = pricingApi.calculatePrice(productId, 1)
+    .then((res) => {
+      const data = res.data ?? null
+      pricingCache.set(productId, data)
+      return data
+    })
+    .catch(() => {
+      pricingCache.set(productId, null)
+      return null
+    })
+    .finally(() => {
+      pricingInFlight.delete(productId)
+    })
+
+  pricingInFlight.set(productId, request)
+  return request
+}
 
 interface ProductCardProps {
   product: Product
@@ -30,15 +59,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
-    if (pricingCache.has(product._id)) return
-    pricingApi.calculatePrice(product._id, 1)
-      .then(res => {
-        pricingCache.set(product._id, res.data ?? null)
-        setPricingInfo(res.data ?? null)
-      })
-      .catch(() => {
-        pricingCache.set(product._id, null)
-      })
+    let isCancelled = false
+
+    fetchPricingOnce(product._id).then((data) => {
+      if (!isCancelled) {
+        setPricingInfo(data)
+      }
+    })
+
+    return () => {
+      isCancelled = true
+    }
   }, [product._id])
 
   const effectivePrice = pricingInfo?.pricing?.pricePerUnit ?? product.price
