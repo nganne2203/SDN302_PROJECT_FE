@@ -24,8 +24,6 @@ interface PricingFilterProps {
 const PricingFilterComponent = ({
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
   onReset,
   productOptions
 }: PricingFilterProps) => {
@@ -53,13 +51,10 @@ const PricingFilterComponent = ({
       filters={filterFields}
       filterValues={filter as Record<string, unknown>}
       onFilterChange={onFilterChange}
-      page={pagination?.page || 1}
-      limit={pagination?.limit || 10}
-      total={pagination?.total || 0}
-      onPageChange={onPageChange}
-      showPagination={true}
+      showPagination={false}
       onReset={onReset}
       showReset={true}
+      compact
     />
   )
 }

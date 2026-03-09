@@ -7,6 +7,27 @@ import type { Product } from '@/types/api'
 import type { PricingFilter, PricingRule } from '@/features/pricing/pricingTypes'
 import type { BulkTierForm } from '@/components/pricing/PricingBulkModal'
 
+let cachedPricingProducts: Product[] | null = null
+let cachedPricingProductsPromise: Promise<Product[]> | null = null
+
+const loadPricingProducts = async (): Promise<Product[]> => {
+  if (cachedPricingProducts) return cachedPricingProducts
+  if (cachedPricingProductsPromise) return cachedPricingProductsPromise
+
+  cachedPricingProductsPromise = productApi
+    .getAllProducts()
+    .then((response) => {
+      cachedPricingProducts = response.data || []
+      return cachedPricingProducts
+    })
+    .catch(() => [])
+    .finally(() => {
+      cachedPricingProductsPromise = null
+    })
+
+  return cachedPricingProductsPromise
+}
+
 const bulkTierSchema = z.object({
   minQuantity: z.number().min(1, 'Số lượng tối thiểu không hợp lệ'),
   maxQuantity: z.number().min(1, 'Số lượng tối đa không hợp lệ').nullable().optional(),
@@ -96,15 +117,10 @@ export const usePricingManagement = () => {
     let active = true
 
     const loadProducts = async () => {
-      const applyIfActive = (fn: () => void) => {
-        if (active) {
-          fn()
-        }
-      }
-
+      const applyIfActive = (fn: () => void) => { if (active) fn() }
       try {
-        const response = await productApi.getAllProducts()
-        applyIfActive(() => setProducts(response.data || []))
+        const productData = await loadPricingProducts()
+        applyIfActive(() => setProducts(productData))
       } catch {
         applyIfActive(() => setProducts([]))
       } finally {

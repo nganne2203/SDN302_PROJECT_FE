@@ -16,8 +16,8 @@ export const getProductImageUrl = (images: Image[] | Image | string[] | undefine
 
     const firstItem = images[0]
     if (typeof firstItem === 'string') {
-      // Array of publicId strings (cart API format)
-      return `https://res.cloudinary.com/djmbxvsaz/image/upload/${firstItem}.jpg`
+      // Array of publicId strings (cart/order/product APIs)
+      return `https://res.cloudinary.com/djmbxvsaz/image/upload/${firstItem}`
     } else if (firstItem && typeof firstItem === 'object' && 'imageUrl' in firstItem) {
       // Array of Image objects (standard format) — find first with a valid URL
       const imageObjects = images as Image[]
