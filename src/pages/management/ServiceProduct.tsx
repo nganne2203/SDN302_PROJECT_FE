@@ -166,6 +166,7 @@ const ManagementServiceProduct = () => {
         <ServiceProductList
           data={services}
           loading={listLoading}
+          canManage={Boolean(isAdmin)}
           pagination={{
             page: pagination?.currentPage || 1,
             limit: pagination?.pageSize || 10,

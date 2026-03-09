@@ -10,6 +10,7 @@ interface UserFilterProps {
   onSearchChange: (value: string) => void
   filter: UserFilter
   onFilterChange: (key: string, value: unknown) => void
+  roleOptions?: Array<{ label: string; value: string }>
   pagination?: {
     page: number
     limit: number
@@ -24,8 +25,18 @@ const UserFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
+  roleOptions,
   onReset
 }: UserFilterProps) => {
+  const defaultRoleOptions = [
+    { label: ROLE_LABELS[USER_ROLES.ADMIN], value: USER_ROLES.ADMIN },
+    { label: ROLE_LABELS[USER_ROLES.MANAGER], value: USER_ROLES.MANAGER },
+    { label: ROLE_LABELS[USER_ROLES.STAFF], value: USER_ROLES.STAFF },
+    { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER }
+  ]
+
+  const resolvedRoleOptions = roleOptions && roleOptions.length > 0 ? roleOptions : defaultRoleOptions
+
   const filterFields: FilterField[] = [
     {
       key: 'role',
@@ -33,10 +44,7 @@ const UserFilterComponent = ({
       type: 'select',
       options: [
         { label: 'Tất cả', value: '' },
-        { label: ROLE_LABELS[USER_ROLES.ADMIN], value: USER_ROLES.ADMIN },
-        { label: ROLE_LABELS[USER_ROLES.MANAGER], value: USER_ROLES.MANAGER },
-        { label: ROLE_LABELS[USER_ROLES.STAFF], value: USER_ROLES.STAFF },
-        { label: ROLE_LABELS[USER_ROLES.CUSTOMER], value: USER_ROLES.CUSTOMER }
+        ...resolvedRoleOptions
       ]
     },
     {
