@@ -17,7 +17,8 @@ const ServiceProductList = ({
   onPageChange,
   onEdit,
   onDelete,
-  onStatusChange
+  onStatusChange,
+  canManage
 }: {
   data: ServiceProduct[]
   loading: boolean
@@ -26,6 +27,7 @@ const ServiceProductList = ({
   onEdit: (item: ServiceProduct) => void
   onDelete: (item: ServiceProduct) => void
   onStatusChange: (id: string, status: boolean) => void
+  canManage?: boolean
 }) => {
   const dataWithKeys: ServiceProductWithKey[] = data.map((item) => ({
     ...item,
@@ -130,7 +132,10 @@ const ServiceProductList = ({
       sortable: true,
       render: (value) => <span className='text-gray-500'>{dayjs(value as string).format('DD/MM/YYYY')}</span>
     },
-    {
+  ]
+
+  if (canManage) {
+    columns.push({
       key: 'actions',
       title: 'Hành động',
       width: 150,
@@ -167,8 +172,8 @@ const ServiceProductList = ({
           </Popconfirm>
         </Space>
       )
-    }
-  ]
+    })
+  }
 
   return (
     <TableCommon<ServiceProductWithKey>

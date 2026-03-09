@@ -59,13 +59,45 @@ export const cartApi = {
     quantity: number,
     services?: CartServicePayload[]
   ): Promise<ApiResponse<CartItem>> => {
-    const response = await apiClient.post<ApiResponse<CartItem>>(
-      API_ENDPOINTS.CART.ADD,
-      { productId, quantity, services }
-    )
-    invalidateCartCache()
-    emitCartChanged({ type: 'sync' })
-    return response.data
+    const payload = { productId, quantity, services }
+
+    if (import.meta.env.DEV) {
+      console.log('[cartApi.addToCart] request payload', {
+        productId,
+        quantity,
+        services,
+        servicesShape: Array.isArray(services)
+          ? services.map((item) => ({
+            type: typeof item,
+            keys: item && typeof item === 'object' ? Object.keys(item) : []
+          }))
+          : services
+      })
+    }
+
+    try {
+      const response = await apiClient.post<ApiResponse<CartItem>>(
+        API_ENDPOINTS.CART.ADD,
+        payload
+      )
+      invalidateCartCache()
+      emitCartChanged({ type: 'sync' })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        const axiosError = error as {
+          response?: { data?: unknown; status?: number }
+          message?: string
+        }
+        console.log('[cartApi.addToCart] request failed', {
+          payload,
+          status: axiosError.response?.status,
+          errorData: axiosError.response?.data,
+          message: axiosError.message
+        })
+      }
+      throw error
+    }
   },
 
   updateCartItemQuantity: async (productId: string, quantity: number): Promise<ApiResponse<CartItem>> => {

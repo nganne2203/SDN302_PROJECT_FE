@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
 import type { Branch, Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
@@ -450,26 +451,21 @@ const ProductDetail = ({
               >
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
                   {(() => {
-                    const rimgs = Array.isArray(relatedProduct.images)
-                      ? relatedProduct.images
-                      : relatedProduct.images
-                        ? [relatedProduct.images]
-                        : []
-                    const first = rimgs[0] as string | { imageUrl: string } | undefined
-                    const firstUrl = first ? (typeof first === 'string' ? first : first.imageUrl) : null
-                    return firstUrl ? (
-                    <img
-                      src={firstUrl}
-                      alt={relatedProduct.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )
+                    const imgUrl = getProductImageUrl(relatedProduct.images)
+                    return imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )
                   })()}
                 </div>
                 <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">

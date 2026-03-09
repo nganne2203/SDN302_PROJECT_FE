@@ -5,9 +5,7 @@ import {
   type RouteObject
 } from 'react-router-dom'
 import { ROUTES, MANAGEMENT_ROLES, USER_ROLES } from '@/constants/constant'
-import { getStorage } from '@/utils/storage'
-import { STORAGE_KEYS } from '@/constants/constant'
-import type { UserRole } from '@/types/api'
+import { useAppSelector } from '@/apps/hooks'
 
 // Lazy load pages for better performance
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
@@ -28,9 +26,12 @@ const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 const Checkout = lazy(() => import('@/pages/customer/Checkout'))
 const PaymentResult = lazy(() => import('@/pages/customer/PaymentResult'))
+const PaymentRedirect = lazy(() => import('@/pages/customer/PaymentRedirect'))
+const PaymentError = lazy(() => import('@/pages/customer/PaymentError'))
 const OrderHistory = lazy(() =>
   import('@/pages/customer/OrderHistory') as Promise<{ default: ComponentType }>
 )
+const OrderDetailPage = lazy(() => import('@/pages/customer/OrderDetailPage'))
 
 // Lazy loaded components - Management pages
 const ManagementLayout = lazy(
@@ -83,34 +84,11 @@ const withCustomerLayout = (Component: ComponentType): ReactNode => (
 )
 
 /**
- * Get current user from storage
- */
-const getCurrentUser = (): { role: UserRole } | null => {
-  try {
-    const userStr = getStorage(STORAGE_KEYS.USER_INFO)
-    if (userStr) {
-      return JSON.parse(userStr)
-    }
-  } catch {
-    return null
-  }
-  return null
-}
-
-/**
- * Check if user is authenticated
- */
-const isAuthenticated = (): boolean => {
-  return !!getStorage(STORAGE_KEYS.ACCESS_TOKEN)
-}
-
-/**
  * Protected Route Wrapper - Requires authentication
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
-    console.log(isAuthenticated)
-
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
   return <>{children}</>
@@ -120,8 +98,8 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
  * Guest Route Wrapper - Only for non-authenticated users
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
-  if (isAuthenticated()) {
-    const user = getCurrentUser()
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  if (isAuthenticated) {
     if (user && MANAGEMENT_ROLES.includes(user.role)) {
       return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
     }
@@ -134,11 +112,11 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
  * Management Route Wrapper - Only for Admin, Manager, Staff
  */
 const ManagementRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  const user = getCurrentUser()
   if (!user || !MANAGEMENT_ROLES.includes(user.role)) {
     return <Navigate to={ROUTES.HOME} replace />
   }
@@ -150,11 +128,11 @@ const ManagementRoute = ({ children }: { children: ReactNode }) => {
  * Admin Only Route Wrapper
  */
 const AdminRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  const user = getCurrentUser()
   if (!user || user.role !== USER_ROLES.ADMIN) {
     return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
@@ -166,11 +144,11 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
  * Admin + Manager Route Wrapper
  */
 const AdminManagerRoute = ({ children }: { children: ReactNode }) => {
-  if (!isAuthenticated()) {
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  const user = getCurrentUser()
   if (!user || (user.role !== USER_ROLES.ADMIN && user.role !== USER_ROLES.MANAGER)) {
     return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
   }
@@ -212,10 +190,30 @@ export const routes: RouteObject[] = [
     element: withCustomerLayout(PaymentResult)
   },
   {
+    path: ROUTES.PAYMENT_SUCCESS,
+    element: withCustomerLayout(PaymentRedirect)
+  },
+  {
+    path: ROUTES.PAYMENT_FAILED,
+    element: withCustomerLayout(PaymentRedirect)
+  },
+  {
+    path: ROUTES.PAYMENT_ERROR,
+    element: withCustomerLayout(PaymentError)
+  },
+  {
     path: ROUTES.ORDERS,
     element: (
       <ProtectedRoute>
         {withCustomerLayout(OrderHistory)}
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: ROUTES.ORDER_DETAIL,
+    element: (
+      <ProtectedRoute>
+        {withCustomerLayout(OrderDetailPage)}
       </ProtectedRoute>
     )
   },

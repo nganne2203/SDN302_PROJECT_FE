@@ -39,6 +39,17 @@ interface BackendItem {
   services: unknown[]
 }
 
+interface BackendServiceLike {
+  name?: string
+  serviceName?: string
+  price?: number
+  servicePrice?: number
+  service?: {
+    name?: string
+    price?: number
+  }
+}
+
 interface BackendShippingAddress {
   fullname: string
   phone: string
@@ -99,6 +110,25 @@ const DELIVERY_STATUS_MAP: Record<string, { label: string; color: string }> = {
   failed: { label: 'Giao thất bại', color: 'error' }
 }
 
+const extractItemServices = (services: unknown[]): Array<{ name: string; price: number }> => {
+  if (!Array.isArray(services)) return []
+
+  return services
+    .map((service) => {
+      const item = service as BackendServiceLike
+      const name = item?.name || item?.serviceName || item?.service?.name
+      const rawPrice = item?.price ?? item?.servicePrice ?? item?.service?.price
+      const price = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice)
+
+      if (!name || Number.isNaN(price)) {
+        return null
+      }
+
+      return { name, price }
+    })
+    .filter((item): item is { name: string; price: number } => item !== null)
+}
+
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -153,6 +183,8 @@ const OrderDetailPage = () => {
       key: 'product',
       render: (_: unknown, item: BackendItem) => {
         const imgUrl = getProductImageUrl(item.product.images as never)
+        const selectedServices = extractItemServices(item.services)
+
         return (
           <div className="flex items-center gap-3">
             {imgUrl ? (
@@ -164,9 +196,20 @@ const OrderDetailPage = () => {
             ) : (
               <div className="w-12 h-12 rounded bg-gray-100 flex-shrink-0" />
             )}
-            <span className="font-medium text-gray-800 line-clamp-2">
-              {item.product.name}
-            </span>
+            <div>
+              <span className="font-medium text-gray-800 line-clamp-2 block">
+                {item.product.name}
+              </span>
+              {selectedServices.length > 0 && (
+                <div className="mt-1 space-y-0.5">
+                  {selectedServices.map((service, index) => (
+                    <div key={`${item._id}-service-${index}`} className="text-xs text-gray-500">
+                      Dịch vụ: {service.name} ({formatCurrency(service.price)})
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )
       }
@@ -229,7 +272,7 @@ const OrderDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 space-y-5">
+      <div className="max-w-4xl mx-auto px-4 space-y-6">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
@@ -252,7 +295,7 @@ const OrderDetailPage = () => {
         </div>
 
         {/* ── Items table ── */}
-        <Card title="Sản phẩm đặt hàng" variant="borderless" className="shadow-sm">
+        <Card title="Sản phẩm đặt hàng" variant="borderless" className="shadow-sm rounded-xl">
           <Table
             dataSource={order.items}
             rowKey={(item) => item._id}
@@ -286,10 +329,12 @@ const OrderDetailPage = () => {
           </div>
         </Card>
 
-        <Row gutter={[16, 16]}>
+        
+
+        <Row gutter={[16, 16]} className="mt-2">
           {/* ── Shipping address ── */}
           <Col xs={24} md={14}>
-            <Card title="Thông tin giao hàng" variant="borderless" className="shadow-sm h-full">
+            <Card title="Thông tin giao hàng" variant="borderless" className="shadow-sm rounded-xl h-full">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Người nhận">{addr.fullname}</Descriptions.Item>
                 <Descriptions.Item label="Số điện thoại">{addr.phone}</Descriptions.Item>
@@ -338,7 +383,7 @@ const OrderDetailPage = () => {
 
           {/* ── Payment & branch ── */}
           <Col xs={24} md={10}>
-            <Card title="Thanh toán & Chi nhánh" variant="borderless" className="shadow-sm h-full">
+            <Card title="Thanh toán & Chi nhánh" variant="borderless" className="shadow-sm rounded-xl h-full">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Phương thức">
                   {PAYMENT_METHOD_MAP[payMethodKey] ?? order.paymentMethod}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { message } from 'antd'
 import { z } from 'zod'
 import cartApi from '@/apis/cart'
@@ -15,6 +15,18 @@ export const useCart = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isPricingLoading, setIsPricingLoading] = useState(false)
   const [pricingMap, setPricingMap] = useState<Record<string, PricingCalculation | null>>({})
+
+  // Refs to avoid stale closures and enable debouncing
+  const cartItemsRef = useRef<CartItem[]>([])
+  const pendingTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const pendingQuantitiesRef = useRef<Record<string, number>>({})
+  // Prevents the loadPricing effect from re-running on optimistic quantity updates
+  const skipNextPricingRef = useRef(false)
+
+  // Keep cartItemsRef in sync so debounce callbacks have fresh data without stale closure
+  useEffect(() => {
+    cartItemsRef.current = cartItems
+  }, [cartItems])
 
   const loadCart = useCallback(async (isActive: () => boolean) => {
     const applyIfActive = (fn: () => void) => {
@@ -74,21 +86,21 @@ export const useCart = () => {
             const resolvedProductId = item.productId || item.product?._id
 
             if (!resolvedProductId) {
-              return { id: item.id, data: null }
+              return { productId: resolvedProductId as string, data: null }
             }
 
             try {
               const response = await pricingApi.calculatePrice(resolvedProductId, item.quantity)
-              return { id: item.id, data: response.data }
+              return { productId: resolvedProductId as string, data: response.data }
             } catch {
-              return { id: item.id, data: null }
+              return { productId: resolvedProductId as string, data: null }
             }
           })
         )
 
         const nextMap: Record<string, PricingCalculation | null> = {}
         results.forEach((result) => {
-          nextMap[result.id] = result.data
+          if (result.productId) nextMap[result.productId] = result.data
         })
         applyIfActive(() => setPricingMap(nextMap))
       } finally {
@@ -98,6 +110,12 @@ export const useCart = () => {
   }, [])
 
   useEffect(() => {
+    // Skip full reprice when cartItems changed only due to an optimistic quantity update.
+    // The debounced updateQuantity handler will reprice just the affected item instead.
+    if (skipNextPricingRef.current) {
+      skipNextPricingRef.current = false
+      return
+    }
     let active = true
     const isActive = () => active
     loadPricing(cartItems, isActive)
@@ -113,22 +131,52 @@ export const useCart = () => {
       message.error(parsed.error.issues[0]?.message || 'Số lượng không hợp lệ')
       return false
     }
+    const newQty = parsed.data
 
-    try {
-      await cartApi.updateCartItemQuantity(productId, parsed.data)
-      setCartItems((prev) =>
-        prev.map((item) => (
-          item.productId === productId || item.product?._id === productId
-            ? { ...item, quantity: parsed.data }
-            : item
-        ))
+    // 1. Optimistic update — reflect new quantity in UI immediately, no API call yet
+    skipNextPricingRef.current = true
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.productId === productId || item.product?._id === productId
+          ? { ...item, quantity: newQty }
+          : item
       )
-      return true
-    } catch {
-      message.error('Cập nhật số lượng thất bại')
-      return false
+    )
+
+    // 2. Debounce the actual API call — cancel previous pending call for this product
+    pendingQuantitiesRef.current[productId] = newQty
+    if (pendingTimersRef.current[productId]) {
+      clearTimeout(pendingTimersRef.current[productId])
     }
-  }, [])
+
+    pendingTimersRef.current[productId] = setTimeout(async () => {
+      const finalQty = pendingQuantitiesRef.current[productId]
+      if (finalQty === undefined) return
+      delete pendingTimersRef.current[productId]
+      delete pendingQuantitiesRef.current[productId]
+
+      try {
+        await cartApi.updateCartItemQuantity(productId, finalQty)
+        // 3. Reprice only the changed item, not the whole cart
+        const item = cartItemsRef.current.find(
+          (i) => i.productId === productId || i.product?._id === productId
+        )
+        if (item) {
+          pricingApi.calculatePrice(productId, finalQty)
+            .then((res) => setPricingMap((prev) => ({ ...prev, [productId]: res.data })))
+            .catch(() => setPricingMap((prev) => ({ ...prev, [productId]: null })))
+        }
+      } catch {
+        message.error('Cập nhật số lượng thất bại')
+        // Rollback: reload fresh cart state from server
+        let active = true
+        loadCart(() => active)
+        setTimeout(() => { active = false }, 10000)
+      }
+    }, 600)
+
+    return true
+  }, [loadCart])
 
   const removeItem = useCallback(async (productId: string) => {
     try {
@@ -151,14 +199,16 @@ export const useCart = () => {
 
   const totalAmount = useMemo(() => (
     cartItems.reduce((sum, item) => {
-      const pricing = pricingMap[item.id]?.pricing
+      const pid = item.productId || item.product?._id
+      const pricing = pid ? pricingMap[pid]?.pricing : undefined
       const itemTotal = pricing?.totalPrice ?? item.price * item.quantity
       return sum + itemTotal
     }, 0)
   ), [cartItems, pricingMap])
 
+  // pricingMap is keyed by productId
   const getItemPricing = useCallback(
-    (itemId: string) => pricingMap[itemId] ?? null,
+    (productId: string) => pricingMap[productId] ?? null,
     [pricingMap]
   )
 

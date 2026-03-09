@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Badge, Dropdown, Input } from 'antd'
+import type { MenuProps } from 'antd'
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -14,6 +15,7 @@ import cartApi from '@/apis/cart'
 
 const HeaderLayout = () => {
   const { isAuthenticated, user, logout } = useAuth()
+  const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
@@ -65,22 +67,50 @@ const HeaderLayout = () => {
   }, [fetchCartCount])
 
   const managementItem = user?.role && MANAGEMENT_ROLES.includes(user.role)
-    ? { key: 'management', label: <Link to={ROUTES.MANAGEMENT.DASHBOARD}>Quản lý hệ thống</Link> }
+    ? { key: 'management', label: 'Quản lý hệ thống' }
     : null
 
   const userMenuItems = isAuthenticated
     ? [
-      { key: 'profile', label: 'Tài khoản', onClick: () => setIsProfileModalOpen(true) },
-      { key: 'change-password', label: <Link to={ROUTES.CHANGE_PASSWORD}>Đổi mật khẩu</Link> },
-      { key: 'orders', label: <Link to={ROUTES.ORDERS}>Đơn hàng</Link> },
+      { key: 'profile', label: 'Tài khoản' },
+      { key: 'change-password', label: 'Đổi mật khẩu' },
+      { key: 'orders', label: 'Đơn hàng' },
       ...(managementItem ? [managementItem] : []),
       { type: 'divider' as const },
-      { key: 'logout', label: 'Đăng xuất', onClick: logout }
+      { key: 'logout', label: 'Đăng xuất' }
     ]
     : [
-      { key: 'login', label: <Link to={ROUTES.LOGIN}>Đăng nhập</Link> },
-      { key: 'register', label: <Link to={ROUTES.REGISTER}>Đăng ký</Link> }
+      { key: 'login', label: 'Đăng nhập' },
+      { key: 'register', label: 'Đăng ký' }
     ]
+
+  const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
+    switch (key) {
+      case 'profile':
+        setIsProfileModalOpen(true)
+        break
+      case 'change-password':
+        navigate(ROUTES.CHANGE_PASSWORD)
+        break
+      case 'orders':
+        navigate(ROUTES.ORDERS)
+        break
+      case 'management':
+        navigate(ROUTES.MANAGEMENT.DASHBOARD)
+        break
+      case 'logout':
+        void logout()
+        break
+      case 'login':
+        navigate(ROUTES.LOGIN)
+        break
+      case 'register':
+        navigate(ROUTES.REGISTER)
+        break
+      default:
+        break
+    }
+  }
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -107,7 +137,10 @@ const HeaderLayout = () => {
                 <ShoppingCartOutlined className="text-2xl text-gray-600 hover:text-blue-600" />
               </Badge>
             </Link>
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Dropdown
+              menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
+              placement="bottomRight"
+            >
               <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600">
                 <UserOutlined className="text-xl" />
                 {isAuthenticated && <span>{user?.fullname}</span>}
