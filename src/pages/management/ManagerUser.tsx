@@ -30,7 +30,8 @@ const ManagerUserPage = () => {
     handleEditFromDetail,
     formMethods,
     onSubmit,
-    roleOptions
+    roleOptions,
+    roleFilterOptions
   } = useManagerUserPage()
 
   const { control, formState: { errors } } = formMethods
@@ -44,6 +45,7 @@ const ManagerUserPage = () => {
         onSearchChange={handleSearchChange}
         filter={filter}
         onFilterChange={handleFilterChange}
+        roleOptions={roleFilterOptions}
         pagination={filterPagination}
         onPageChange={handlePageChange}
         onReset={handleClearFilter}
@@ -143,6 +145,7 @@ const ManagerUserPage = () => {
                 onChange={field.onChange}
                 options={roleOptions}
                 error={errors.role?.message}
+                disabled={isEditMode}
               />
             )}
           />
