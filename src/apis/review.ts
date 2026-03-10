@@ -31,7 +31,7 @@ export interface CreateReviewRequest {
   orderId?: string
   rating: number
   comment?: string
-  images?: string[]
+  images?: File[]
 }
 
 export interface UpdateReviewRequest {
@@ -51,9 +51,18 @@ export interface ReviewFilter {
 export const reviewApi = {
   // Create a review
   createReview: async (data: CreateReviewRequest): Promise<ApiResponse<Review>> => {
+    const formData = new FormData()
+    formData.append('productId', data.productId)
+    if (data.orderId) formData.append('orderId', data.orderId)
+    formData.append('rating', String(data.rating))
+    if (data.comment) formData.append('comment', data.comment)
+    if (data.images) {
+      data.images.forEach((file) => formData.append('images', file))
+    }
     const response = await apiClient.post<ApiResponse<Review>>(
       API_ENDPOINTS.REVIEW.CREATE,
-      data
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     )
     return response.data
   },

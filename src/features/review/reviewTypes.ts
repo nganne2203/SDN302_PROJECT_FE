@@ -31,7 +31,7 @@ export interface CreateReviewRequest {
   orderId?: string
   rating: number
   comment?: string
-  images?: string[]
+  images?: File[]
 }
 
 export interface UpdateReviewRequest {
