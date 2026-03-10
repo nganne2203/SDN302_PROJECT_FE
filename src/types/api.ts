@@ -204,7 +204,7 @@ export interface Product {
   price: number;
   images: Image[] | Image | string[]; // Support multiple formats from different APIs
   material?: string;
-  compatibility?: string[];
+  compatibility?: (string | { _id: string; name: string })[];
   ratingAvg: number;
   ratingCount: number;
   isActive: boolean;
