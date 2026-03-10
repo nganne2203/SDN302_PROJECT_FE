@@ -24,6 +24,7 @@ interface UserListProps {
   onPageChange: (page: number, pageSize: number) => void
   onViewUser?: (user: User) => void
   onEditUser?: (user: User) => void
+  canEditUser?: (user: User) => boolean
   hideStatusToggle?: boolean
 }
 
@@ -35,6 +36,7 @@ const UserListComponent = ({
   onPageChange,
   onViewUser,
   onEditUser,
+  canEditUser,
   hideStatusToggle = false
 }: UserListProps) => {
   const usersWithKeys: UserWithKey[] = users.map(user => ({
@@ -111,7 +113,7 @@ const UserListComponent = ({
               />
             </Tooltip>
           )}
-          {onEditUser && (
+          {onEditUser && (!canEditUser || canEditUser(record as unknown as User)) && (
             <Tooltip title="Chỉnh sửa">
               <Button
                 type="primary"

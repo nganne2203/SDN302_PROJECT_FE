@@ -80,7 +80,6 @@ const OrderDetailModal = ({
       addressLine?: string
       address?: string
       ward?: string
-      district?: string
       city?: string
       province?: string
     }
@@ -88,7 +87,6 @@ const OrderDetailModal = ({
     const parts = [
       shipping?.addressLine || shipping?.address,
       shipping?.ward,
-      shipping?.district,
       shipping?.city || shipping?.province
     ].filter(Boolean)
 

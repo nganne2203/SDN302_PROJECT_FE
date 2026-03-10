@@ -55,7 +55,6 @@ interface BackendShippingAddress {
   phone: string
   addressLine: string
   city: string
-  district: string
   ward: string
 }
 
@@ -105,6 +104,7 @@ const PAYMENT_METHOD_MAP: Record<string, string> = {
 const DELIVERY_STATUS_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: 'Chờ giao', color: 'default' },
   picked_up: { label: 'Đã lấy hàng', color: 'processing' },
+  shipping: { label: 'Đang vận chuyển', color: 'blue' },
   in_transit: { label: 'Đang vận chuyển', color: 'blue' },
   delivered: { label: 'Đã giao', color: 'success' },
   failed: { label: 'Giao thất bại', color: 'error' }
@@ -339,7 +339,7 @@ const OrderDetailPage = () => {
                 <Descriptions.Item label="Người nhận">{addr.fullname}</Descriptions.Item>
                 <Descriptions.Item label="Số điện thoại">{addr.phone}</Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ">
-                  {[addr.addressLine, addr.ward, addr.district, addr.city]
+                  {[addr.addressLine, addr.ward, addr.city]
                     .filter(Boolean)
                     .join(', ')}
                 </Descriptions.Item>

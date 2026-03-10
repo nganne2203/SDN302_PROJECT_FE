@@ -63,20 +63,14 @@ export interface DashboardPerformance {
 }
 
 export interface RecentOrder {
-  _id: string
+  _id?: string
   orderNumber: string
-  customer?: {
-    _id: string
-    fullname: string
-    email: string
-  }
+  customer?: string
   totalAmount: number
   status: string
+  paymentMethod?: string
   createdAt: string
-  branch?: {
-    _id: string
-    name: string
-  }
+  branch?: string
 }
 
 export interface DashboardData {

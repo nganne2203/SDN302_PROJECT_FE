@@ -40,10 +40,8 @@ const emptyAddress: Address = {
   phone: '',
   addressLine: '',
   city: '',
-  district: '',
   ward: '',
   provinceCode: undefined,
-  districtCode: undefined,
   wardCode: undefined,
   isDefault: false
 }
@@ -252,7 +250,6 @@ const UserFormModal = ({
           const combinedAddress = combineAddress({
             addressLine: addr.addressLine,
             ward: addr.ward,
-            district: addr.district,
             city: addr.city
           })
 
@@ -262,7 +259,6 @@ const UserFormModal = ({
             // Keep components for potential future use
             addressLine: addr.addressLine,
             city: addr.city,
-            district: addr.district,
             ward: addr.ward
           }
         })
@@ -540,23 +536,16 @@ const UserFormModal = ({
 
                       <LocationSelectGroupOffline
                         provinceCode={address.provinceCode}
-                        districtCode={address.districtCode}
                         wardCode={address.wardCode}
                         onChange={(changes) => {
                           if ('province' in changes) {
                             handleAddressChange(index, 'city', changes.province || '')
-                          }
-                          if ('district' in changes) {
-                            handleAddressChange(index, 'district', changes.district || '')
                           }
                           if ('ward' in changes) {
                             handleAddressChange(index, 'ward', changes.ward || '')
                           }
                           if ('provinceCode' in changes) {
                             handleAddressChange(index, 'provinceCode', changes.provinceCode)
-                          }
-                          if ('districtCode' in changes) {
-                            handleAddressChange(index, 'districtCode', changes.districtCode)
                           }
                           if ('wardCode' in changes) {
                             handleAddressChange(index, 'wardCode', changes.wardCode)

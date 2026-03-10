@@ -176,13 +176,6 @@ const ProfileContentRight = ({
                       )}
                     />
                     <FieldCustom.Controlled
-                      name={`addresses.${index}.districtCode`}
-                      control={control}
-                      render={({ value, onChange }) => (
-                        <input type='hidden' value={(value as string | undefined) ?? ''} onChange={onChange} />
-                      )}
-                    />
-                    <FieldCustom.Controlled
                       name={`addresses.${index}.wardCode`}
                       control={control}
                       render={({ value, onChange }) => (
@@ -263,10 +256,8 @@ const ProfileContentRight = ({
                     phone: '',
                     addressLine: '',
                     city: '',
-                    district: '',
                     ward: '',
                     provinceCode: undefined,
-                    districtCode: undefined,
                     wardCode: undefined,
                     isDefault: true
                   })

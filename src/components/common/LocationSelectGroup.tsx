@@ -4,10 +4,8 @@ import useVietnamLocations from '@/hooks/useVietnamLocations'
 
 type LocationChange = Partial<{
   province: string
-  district: string
   ward: string
   provinceCode: number | undefined
-  districtCode: number | undefined
   wardCode: number | undefined
 }>
 
@@ -51,8 +49,6 @@ const LocationSelectGroup = ({
     onChange({
       province: selected?.label || '',
       provinceCode: value,
-      district: '',
-      districtCode: undefined,
       ward: '',
       wardCode: undefined
     })
@@ -65,8 +61,6 @@ const LocationSelectGroup = ({
   const handleWardChange = (value?: number) => {
     const selected = wardOptions.find((item) => item.value === value)
     onChange({
-      district: selected?.districtName || selected?.label || '',
-      districtCode: selected?.districtCode,
       ward: selected?.label || '',
       wardCode: value
     })

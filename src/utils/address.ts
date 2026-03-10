@@ -1,4 +1,4 @@
-export type LocationCodeFields = 'provinceCode' | 'districtCode' | 'wardCode'
+export type LocationCodeFields = 'provinceCode' | 'districtCode' | 'wardCode' | 'district'
 
 export const stripLocationCodes = <T extends Record<string, unknown>>(
   data: T
@@ -7,6 +7,7 @@ export const stripLocationCodes = <T extends Record<string, unknown>>(
   delete rest.provinceCode
   delete rest.districtCode
   delete rest.wardCode
+  delete rest.district
   return rest
 }
 

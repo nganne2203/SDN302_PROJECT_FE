@@ -1,11 +1,15 @@
 import { useState } from 'react'
-import { Alert, message } from 'antd'
+import { Alert, Button } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import useStockRequest from '@/hooks/useStockRequest'
+import { toast } from '@/utils/toast'
+import { extractApiError } from '@/utils/apiError'
 import StockRequestStats from './components/StockRequestStats'
 import StockRequestFilters from './components/StockRequestFilters'
 import StockRequestTable from './components/StockRequestTable'
 import StockRequestCreateModal from './components/StockRequestCreateModal'
 import StockRequestActionModal, { type StockRequestAction } from './components/StockRequestActionModal'
+import StockRequestDetailModal from './components/StockRequestDetailModal'
 import type { StockRequestRecord } from '@/types/api'
 
 const StockRequestPage = () => {
@@ -16,34 +20,41 @@ const StockRequestPage = () => {
     pagination,
     setPagination,
     loading,
+    error,
     statusFilter,
     setStatusFilter,
     products,
     pendingCount,
     approvedCount,
     createRequest,
-    updateRequestStatus
+    updateRequestStatus,
+    selectedRequest,
+    setSelectedRequest,
+    detailLoading,
+    fetchDetail,
+    retry
   } = useStockRequest()
 
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [actionModalOpen, setActionModalOpen] = useState(false)
   const [actionType, setActionType] = useState<StockRequestAction>('approve')
-  const [selectedRequest, setSelectedRequest] = useState<StockRequestRecord | null>(null)
+  const [actionRecord, setActionRecord] = useState<StockRequestRecord | null>(null)
   const [actionSaving, setActionSaving] = useState(false)
   const [createSaving, setCreateSaving] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
 
   const handleCreate = async (values: { product: string; quantity: number; reason?: string }) => {
     try {
       setCreateSaving(true)
       await createRequest(values)
-      message.success('Tạo yêu cầu nhập kho thành công')
+      toast.success('Tạo yêu cầu nhập kho thành công')
       setCreateModalOpen(false)
-    } catch (error) {
-      if (error instanceof Error && error.message === 'missing_branch') {
-        message.error('Bạn chưa được gắn chi nhánh')
+    } catch (err) {
+      if (err instanceof Error && err.message === 'missing_branch') {
+        toast.error('Bạn chưa được gắn chi nhánh')
         return
       }
-      message.error('Không thể tạo yêu cầu nhập kho')
+      toast.error(extractApiError(err, 'Không thể tạo yêu cầu nhập kho'))
     } finally {
       setCreateSaving(false)
     }
@@ -51,22 +62,27 @@ const StockRequestPage = () => {
 
   const openAction = (type: StockRequestAction, record: StockRequestRecord) => {
     setActionType(type)
-    setSelectedRequest(record)
+    setActionRecord(record)
     setActionModalOpen(true)
   }
 
   const handleAction = async (values: { note?: string }) => {
-    if (!selectedRequest) return
+    if (!actionRecord) return
     try {
       setActionSaving(true)
-      await updateRequestStatus(selectedRequest._id, actionType, values.note)
-      message.success(actionType === 'approve' ? 'Đã duyệt yêu cầu' : 'Đã từ chối yêu cầu')
+      await updateRequestStatus(actionRecord._id, actionType, values.note)
+      toast.success(actionType === 'approve' ? 'Đã duyệt yêu cầu' : 'Đã từ chối yêu cầu')
       setActionModalOpen(false)
-    } catch {
-      message.error(actionType === 'approve' ? 'Không thể duyệt yêu cầu' : 'Không thể từ chối yêu cầu')
+    } catch (err) {
+      toast.error(extractApiError(err, actionType === 'approve' ? 'Không thể duyệt yêu cầu' : 'Không thể từ chối yêu cầu'))
     } finally {
       setActionSaving(false)
     }
+  }
+
+  const handleViewDetail = async (record: StockRequestRecord) => {
+    setDetailModalOpen(true)
+    await fetchDetail(record._id)
   }
 
   return (
@@ -95,6 +111,21 @@ const StockRequestPage = () => {
         />
       )}
 
+      {error && (
+        <Alert
+          message="Lỗi"
+          description={error}
+          type="error"
+          showIcon
+          className="mb-6"
+          action={
+            <Button size="small" icon={<ReloadOutlined />} onClick={retry}>
+              Thử lại
+            </Button>
+          }
+        />
+      )}
+
       <StockRequestFilters
         isManager={isManager}
         statusFilter={statusFilter}
@@ -119,6 +150,7 @@ const StockRequestPage = () => {
         isAdmin={isAdmin}
         onApprove={(record) => openAction('approve', record)}
         onReject={(record) => openAction('reject', record)}
+        onViewDetail={handleViewDetail}
       />
 
       <StockRequestCreateModal
@@ -135,6 +167,17 @@ const StockRequestPage = () => {
         actionType={actionType}
         onSubmit={handleAction}
         isSubmitting={actionSaving}
+      />
+
+      <StockRequestDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => {
+          setDetailModalOpen(false)
+          setSelectedRequest(null)
+        }}
+        request={selectedRequest}
+        loading={detailLoading}
+        isAdmin={isAdmin}
       />
     </div>
   )

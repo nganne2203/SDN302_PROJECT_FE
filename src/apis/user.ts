@@ -14,7 +14,6 @@ export interface UpdateProfileRequest {
     phone: string
     addressLine: string
     city: string
-    district: string
     ward: string
     isDefault: boolean
   }>

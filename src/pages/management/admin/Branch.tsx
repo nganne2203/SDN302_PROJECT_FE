@@ -58,7 +58,7 @@ const BranchesManagement = () => {
     if (lastFetchParamsRef.current === paramsKey) return
 
     lastFetchParamsRef.current = paramsKey
-    fetchBranches(filterParams)
+    fetchBranches(filterParams, true)
   }, [filter, fetchBranches])
 
   // Clear error when modal closes
