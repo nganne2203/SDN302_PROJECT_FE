@@ -90,12 +90,6 @@ const BranchInventoryPanel = ({
       render: (_: string, record) => record.product?.name || '-'
     },
     {
-      title: 'Danh mục',
-      dataIndex: ['product', 'category', 'name'],
-      key: 'category',
-      render: (_: string, record) => record.product?.category?.name || '-'
-    },
-    {
       title: 'Tồn kho',
       key: 'stockStatus',
       render: (_: unknown, record) => {

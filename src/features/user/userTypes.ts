@@ -17,10 +17,8 @@ export interface Address {
   phone: string;
   addressLine: string;
   city: string;
-  district: string;
   ward: string;
   provinceCode?: string;
-  districtCode?: string;
   wardCode?: string;
   isDefault: boolean;
 }

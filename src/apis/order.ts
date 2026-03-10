@@ -13,10 +13,8 @@ export interface CreateCodOrderRequest {
     phone: string
     addressLine: string
     city: string
-    district: string
     ward: string
     provinceCode?: string
-    districtCode?: string
     wardCode?: string
   }
   paymentMethod: 'cod'

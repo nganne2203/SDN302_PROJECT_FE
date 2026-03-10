@@ -60,6 +60,8 @@ export const useStockRequest = () => {
     (searchParams.get('status') as StockRequestStatus | 'all') || 'all'
   )
   const [products, setProducts] = useState<Product[]>([])
+  const [selectedRequest, setSelectedRequest] = useState<StockRequestRecord | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [resolvedBranch, setResolvedBranch] = useState<string | null | undefined>(user?.branch)
 
   const query: StockRequestQuery = useMemo(

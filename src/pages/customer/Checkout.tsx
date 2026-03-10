@@ -74,7 +74,6 @@ const Checkout = () => {
   const [isSavingAddress, setIsSavingAddress] = useState(false)
   const {
     provinceOptions,
-    districtOptions,
     wardOptions,
     loading: locationLoading,
     fetchProvinces,
@@ -88,7 +87,6 @@ const Checkout = () => {
   const {
     provinceOptions: modalProvinceOptions,
     wardOptions: modalWardOptions,
-    districtOptions: modalDistrictOptions,
     loading: modalLocationLoading,
     fetchProvinces: modalFetchProvinces,
     fetchDistricts: modalFetchDistricts,
@@ -108,10 +106,8 @@ const Checkout = () => {
         phone: address.phone,
         addressLine: address.addressLine,
         city: address.city,
-        district: address.district,
         ward: address.ward,
         provinceCode: address.provinceCode,
-        districtCode: address.districtCode,
         wardCode: address.wardCode
       }
     })
@@ -132,10 +128,8 @@ const Checkout = () => {
         phone: '',
         addressLine: '',
         city: '',
-        district: '',
         ward: '',
         provinceCode: undefined,
-        districtCode: undefined,
         wardCode: undefined
       }
     })
@@ -289,10 +283,8 @@ const Checkout = () => {
         phone: values.phone,
         addressLine: values.addressLine,
         city: values.city,
-        district: values.district,
         ward: values.ward,
         provinceCode: values.provinceCode,
-        districtCode: values.districtCode,
         wardCode: values.wardCode,
         isDefault: userAddresses.length === 0
       }
@@ -424,7 +416,7 @@ const Checkout = () => {
                           <span className="text-gray-500">{addr.phone}</span>
                           <span className="text-gray-400">|</span>
                           <span className="text-gray-500 truncate">
-                            {addr.addressLine}, {addr.ward}, {addr.district}, {addr.city}
+                            {addr.addressLine}, {addr.ward}, {addr.city}
                           </span>
                           {addr.isDefault && (
                             <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full whitespace-nowrap">
@@ -518,10 +510,8 @@ const Checkout = () => {
                           form.setFieldsValue({
                             shippingAddress: {
                               city: cityLabel,
-                              district: '',
                               ward: '',
                               provinceCode: value,
-                              districtCode: undefined,
                               wardCode: undefined
                             }
                           })
@@ -559,12 +549,8 @@ const Checkout = () => {
                         }}
                         onChange={(value) => {
                           const selected = wardOptions.find((item) => item.value === value)
-                          const inferredDistrictCode = value ? String(value).slice(0, 3) : undefined
-                          const selectedDistrict = districtOptions.find((item) => item.value === inferredDistrictCode)
                           form.setFieldsValue({
                             shippingAddress: {
-                              district: selectedDistrict?.label || '',
-                              districtCode: inferredDistrictCode,
                               ward: selected?.label || '',
                               wardCode: value
                             }
@@ -576,14 +562,7 @@ const Checkout = () => {
                   </Col>
                 </Row>
 
-                <Form.Item name={['shippingAddress', 'district']} hidden>
-                  <Input />
-                </Form.Item>
-
                 <Form.Item name={['shippingAddress', 'provinceCode']} hidden>
-                  <Input />
-                </Form.Item>
-                <Form.Item name={['shippingAddress', 'districtCode']} hidden>
                   <Input />
                 </Form.Item>
                 <Form.Item name={['shippingAddress', 'wardCode']} hidden>
@@ -751,10 +730,8 @@ const Checkout = () => {
                     const selected = modalProvinceOptions.find((item) => item.value === value)
                     addAddressForm.setFieldsValue({
                       city: selected?.label || '',
-                      district: '',
                       ward: '',
                       provinceCode: value,
-                      districtCode: undefined,
                       wardCode: undefined
                     })
                     modalClearDistricts()
@@ -790,11 +767,7 @@ const Checkout = () => {
                   }}
                   onChange={(value) => {
                     const selected = modalWardOptions.find((item) => item.value === value)
-                    const inferredDistrictCode = value ? String(value).slice(0, 3) : undefined
-                    const selectedDistrict = modalDistrictOptions.find((item) => item.value === inferredDistrictCode)
                     addAddressForm.setFieldsValue({
-                      district: selectedDistrict?.label || '',
-                      districtCode: inferredDistrictCode,
                       ward: selected?.label || '',
                       wardCode: value
                     })
@@ -805,9 +778,7 @@ const Checkout = () => {
             </Col>
           </Row>
 
-          <Form.Item name="district" hidden><Input /></Form.Item>
           <Form.Item name="provinceCode" hidden><Input /></Form.Item>
-          <Form.Item name="districtCode" hidden><Input /></Form.Item>
           <Form.Item name="wardCode" hidden><Input /></Form.Item>
         </Form>
       </Modal>
