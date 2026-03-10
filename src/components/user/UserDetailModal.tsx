@@ -276,7 +276,7 @@ const UserDetailModal = ({
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{address.phone}</p>
                   <p className="text-sm text-gray-600">
-                    {address.addressLine}, {address.ward}, {address.district},{' '}
+                    {address.addressLine}, {address.ward},{' '}
                     {address.city}
                   </p>
                 </div>

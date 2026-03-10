@@ -1,10 +1,9 @@
-import { Alert, Card, Empty, Switch, Table, Space } from 'antd'
+import { Alert, Card, Empty, Switch, Table, Space, Tag, Input } from 'antd'
 import { Button } from 'antd'
-import { EditOutlined, PlusOutlined, ReloadOutlined, SwapOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusOutlined, ReloadOutlined, SwapOutlined, SearchOutlined, WarningOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { InventoryRecord } from '@/types/api'
-import { InputField } from '@/components/common'
 
 /* eslint-disable no-unused-vars */
 interface MainInventoryPanelProps {
@@ -43,38 +42,65 @@ const MainInventoryPanel = ({
       title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
       key: 'productName',
-      render: (_: string, record) => record.product?.name || '-'
+      ellipsis: true,
+      render: (_: string, record) => (
+        <span className="font-medium text-gray-800">{record.product?.name || '-'}</span>
+      )
     },
     {
       title: 'Danh mục',
       dataIndex: ['product', 'category', 'name'],
       key: 'category',
-      render: (_: string, record) => record.product?.category?.name || '-'
+      width: 180,
+      render: (_: string, record) => record.product?.category?.name
+        ? <Tag color="blue">{record.product.category.name}</Tag>
+        : '-'
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
-      key: 'quantity'
+      key: 'quantity',
+      width: 110,
+      align: 'center',
+      render: (value: number) => {
+        const isLow = value <= 10
+        return (
+          <span className={`font-semibold ${isLow ? 'text-red-500' : 'text-gray-700'}`}>
+            {isLow && <WarningOutlined className="mr-1" />}
+            {value}
+          </span>
+        )
+      }
     },
     {
       title: 'Vị trí',
       dataIndex: 'location',
       key: 'location',
-      render: (value?: string) => value || '-'
+      width: 150,
+      render: (value?: string) => value
+        ? <Tag color="geekblue">{value}</Tag>
+        : '-'
     },
     {
       title: 'Cập nhật',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
-      render: (value: string) => dayjs(value).format('DD/MM/YYYY')
+      width: 120,
+      align: 'center',
+      render: (value: string) => (
+        <span className="text-gray-500 text-sm">{dayjs(value).format('DD/MM/YYYY')}</span>
+      )
     },
     {
       title: 'Hành động',
       key: 'action',
+      width: 180,
+      align: 'center',
+      fixed: 'right',
       render: (_: unknown, record: InventoryRecord) => (
         <Space size="small">
           <Button
-            type="default"
+            type="primary"
             size="small"
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
@@ -82,7 +108,6 @@ const MainInventoryPanel = ({
             Sửa
           </Button>
           <Button
-            type="default"
             size="small"
             icon={<SwapOutlined />}
             onClick={() => onAdjust(record)}
@@ -116,22 +141,24 @@ const MainInventoryPanel = ({
 
   return (
     <Card
-      title="Tồn kho kho tổng"
+      title={<span className="text-lg font-semibold">Tồn kho kho tổng</span>}
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
           Tạo mới
         </Button>
       }
+      className="shadow-sm"
     >
-      <div className="mb-4 flex flex-wrap items-end gap-4">
-        <InputField
-          label="Tìm kiếm"
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <Input
+          allowClear
+          prefix={<SearchOutlined className="text-gray-400" />}
           value={searchText}
           onChange={(e) => onSearchTextChange(e.target.value)}
           placeholder="Tìm theo tên sản phẩm"
-          className="mb-0 min-w-[240px]"
+          style={{ maxWidth: 280 }}
         />
-        <div className="flex items-center gap-2 pb-1">
+        <div className="flex items-center gap-2">
           <Switch
             checked={lowStockOnly}
             onChange={onLowStockToggle}
@@ -146,9 +173,9 @@ const MainInventoryPanel = ({
         loading={loading}
         pagination={pagination}
         onChange={onPaginationChange}
-        scroll={{ x: 900 }}
         rowKey={(record) => record._id}
-        size="small"
+        size="middle"
+        scroll={{ x: 'max-content' }}
         locale={{
           emptyText: (
             <Empty

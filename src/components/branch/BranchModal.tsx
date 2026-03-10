@@ -8,10 +8,8 @@ interface ExtendedBranchFormData {
   name: string
   addressLine: string
   city: string
-  district: string
   ward: string
   provinceCode?: string
-  districtCode?: string
   wardCode?: string
 }
 
@@ -42,10 +40,8 @@ const BranchModalComponent = ({
     name: initialData?.name || '',
     addressLine: '',
     city: '',
-    district: '',
     ward: '',
     provinceCode: undefined,
-    districtCode: undefined,
     wardCode: undefined
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -67,10 +63,8 @@ const BranchModalComponent = ({
           name: initialData.name,
           addressLine: addressComponents.addressLine || '',
           city: addressComponents.city || '',
-          district: addressComponents.district || '',
           ward: addressComponents.ward || '',
           provinceCode: addressComponents.provinceCode,
-          districtCode: addressComponents.districtCode,
           wardCode: addressComponents.wardCode
         })
       } else {
@@ -79,10 +73,8 @@ const BranchModalComponent = ({
           name: '',
           addressLine: '',
           city: '',
-          district: '',
           ward: '',
           provinceCode: undefined,
-          districtCode: undefined,
           wardCode: undefined
         })
       }
@@ -127,7 +119,6 @@ const BranchModalComponent = ({
     const combinedAddress = combineAddress({
       addressLine: formData.addressLine,
       ward: formData.ward,
-      district: formData.district,
       city: formData.city
     })
 
@@ -195,7 +186,6 @@ const BranchModalComponent = ({
           </label>
           <LocationSelectGroupOffline
             provinceCode={formData.provinceCode}
-            districtCode={formData.districtCode}
             wardCode={formData.wardCode}
             onChange={handleLocationChange}
             disabled={!canManage}

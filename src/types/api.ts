@@ -63,10 +63,8 @@ export interface RegisterRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     provinceCode?: number;
-    districtCode?: number;
     wardCode?: number;
     isDefault: boolean;
   }>;
@@ -378,10 +376,8 @@ export interface ShippingAddress {
   fullName: string;
   phoneNumber: string;
   province: string;
-  district: string;
   ward: string;
   provinceCode?: number;
-  districtCode?: number;
   wardCode?: number;
   address: string;
 }
@@ -406,10 +402,8 @@ export interface CreateUserRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     provinceCode?: number;
-    districtCode?: number;
     wardCode?: number;
     isDefault: boolean;
   }>;
@@ -428,7 +422,6 @@ export interface UpdateUserRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     isDefault: boolean;
   }>;
