@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Card, Row, Col, Statistic, Table, Button, Tag, Progress, Space, Alert, Spin } from 'antd'
 import {
   ShoppingCartOutlined,
@@ -49,9 +50,22 @@ const STOCK_STATUS_LABEL: Record<string, string> = {
 const formatCurrency = (v: number) => v.toLocaleString('vi-VN') + ' ₫'
 
 const ManagerDashboard = () => {
-  const navigate = useNavigate()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const branchId = user?.branch ?? null
+
+  const [branchName, setBranchName] = useState<string>('—')
+  useEffect(() => {
+    if (branchId) {
+      import('@/apis/branch').then(({ branchApi }) => {
+        branchApi.getBranchById(branchId).then(res => {
+          setBranchName(res.data?.name ?? '—')
+        }).catch(() => setBranchName('—'))
+      })
+    } else {
+      setBranchName('—')
+    }
+  }, [branchId])
 
   const {
     data: ordersData,
@@ -157,7 +171,7 @@ const ManagerDashboard = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Dashboard Quản Lý Chi Nhánh</h1>
         <p className="text-gray-500">
-          Xin chào, {user?.fullname}! Bạn đang quản lý: <strong>{user?.branch ? 'Chi nhánh' : '—'}</strong>
+          Xin chào, {user?.fullname}! Bạn đang quản lý: <strong>{branchName}</strong>
         </p>
       </div>
 

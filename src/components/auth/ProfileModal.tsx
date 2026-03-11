@@ -5,6 +5,8 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { useCallback, useEffect, useState, useRef } from 'react'
 import toast from '@/utils/toast'
 import useUser from '@/hooks/useUser'
+import { useAppDispatch, useAppSelector } from '@/apps/hooks'
+import { setCredentials } from '@/features/auth/authSlices'
 import ProfileHeader from './ProfileHeader'
 import ProfileContentLeft from './ProfileContentLeft'
 import ProfileContentRight from './ProfileContentRight'
@@ -28,6 +30,8 @@ const normalizeLocationName = (value: string): string => {
 
 const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
   const { profile, updateProfile, isLoading, fetchProfile } = useUser()
+  const dispatch = useAppDispatch()
+  const { accessToken, refreshToken } = useAppSelector((state) => state.auth)
   const [isEditMode, setIsEditMode] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -90,7 +94,15 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
       avatar: profile.avatarId || ''
     })
     setAvatarPreview(profile.avatar)
-  }, [profile, reset])
+
+    if (profile && accessToken && refreshToken) {
+      dispatch(setCredentials({
+        user: profile,
+        accessToken,
+        refreshToken
+      }))
+    }
+  }, [profile, reset, dispatch, accessToken, refreshToken])
 
   const handleAvatarUpload = useCallback(
     async (file: File) => {
@@ -100,7 +112,6 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
         let { publicId } = response.data
         const { imageUrl } = response.data
 
-        // Strip 'uploads/' prefix if present
         if (publicId.startsWith('uploads/')) {
           publicId = publicId.replace(/^uploads\//, '')
         }
@@ -141,11 +152,12 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
       if (result) {
         setIsEditMode(false)
         toast.success('Cập nhật thông tin thành công')
+        fetchProfile()
       } else {
         toast.error('Cập nhật thông tin thất bại')
       }
     },
-    [updateProfile]
+    [updateProfile, fetchProfile]
   )
 
   const handleButtonClick = () => {

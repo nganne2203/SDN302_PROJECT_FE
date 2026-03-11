@@ -135,6 +135,9 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState<BackendOrder | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [cancelModalVisible, setCancelModalVisible] = useState(false)
+  const [cancelReason, setCancelReason] = useState("")
+  const [cancelError, setCancelError] = useState("")
 
   const loadOrder = () => {
     if (!id) return
@@ -154,27 +157,34 @@ const OrderDetailPage = () => {
   const canCancel = ['pending', 'confirmed'].includes((order?.orderStatus ?? '').toLowerCase())
 
   const handleCancel = () => {
-    Modal.confirm({
-      title: 'Hủy đơn hàng',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Bạn có chắc muốn hủy đơn hàng này không?',
-      okText: 'Hủy đơn',
-      okType: 'danger',
-      cancelText: 'Không',
-      onOk: async () => {
-        if (!id) return
-        setIsCancelling(true)
-        try {
-          await orderApi.cancelOrder(id)
-          message.success('Đã hủy đơn hàng thành công')
-          loadOrder()
-        } catch {
-          message.error('Không thể hủy đơn hàng')
-        } finally {
-          setIsCancelling(false)
-        }
-      }
-    })
+    setCancelModalVisible(true)
+    setCancelReason("")
+    setCancelError("")
+  }
+
+  const handleCancelOrder = async () => {
+    const trimmedReason = cancelReason.trim()
+    if (!trimmedReason) {
+      setCancelError("Vui lòng nhập lý do hủy đơn hàng.")
+      return
+    }
+    if (trimmedReason.length < 10) {
+      setCancelError("Lý do hủy phải có ít nhất 10 ký tự.")
+      return
+    }
+    if (!id) return
+    setIsCancelling(true)
+    setCancelError("")
+    try {
+      await orderApi.cancelOrder(id, cancelReason)
+      message.success("Đã hủy đơn hàng thành công")
+      setCancelModalVisible(false)
+      loadOrder()
+    } catch {
+      message.error("Không thể hủy đơn hàng")
+    } finally {
+      setIsCancelling(false)
+    }
   }
 
   const itemColumns = [
@@ -408,16 +418,50 @@ const OrderDetailPage = () => {
 
         {/* ── Cancel action ── */}
         {canCancel && (
-          <div className="flex justify-end">
-            <Button
-              danger
-              size="large"
-              loading={isCancelling}
-              onClick={handleCancel}
+          <>
+            <div className="flex justify-end">
+              <Button
+                danger
+                size="large"
+                onClick={handleCancel}
+              >
+                Hủy đơn hàng
+              </Button>
+            </div>
+            <Modal
+              title="Hủy đơn hàng"
+              open={cancelModalVisible}
+              onCancel={() => setCancelModalVisible(false)}
+              footer={[
+                <Button key="cancel" onClick={() => setCancelModalVisible(false)}>
+                  Không
+                </Button>,
+                <Button
+                  key="submit"
+                  danger
+                  loading={isCancelling}
+                  onClick={handleCancelOrder}
+                >
+                  Hủy đơn
+                </Button>
+              ]}
             >
-              Hủy đơn hàng
-            </Button>
-          </div>
+              <div className="mb-2">Bạn có chắc muốn hủy đơn hàng này không?</div>
+              <div className="mb-2">
+                <label htmlFor="cancelReason" className="block mb-1 font-medium">Lý do hủy <span className="text-red-500">*</span></label>
+                <textarea
+                  id="cancelReason"
+                  rows={3}
+                  className="w-full border rounded px-2 py-1"
+                  value={cancelReason}
+                  onChange={e => setCancelReason(e.target.value)}
+                  placeholder="Nhập lý do hủy đơn hàng..."
+                  disabled={isCancelling}
+                />
+                {cancelError && <div className="text-red-500 text-sm mt-1">{cancelError}</div>}
+              </div>
+            </Modal>
+          </>
         )}
 
       </div>
