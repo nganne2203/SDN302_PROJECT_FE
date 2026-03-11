@@ -327,6 +327,9 @@ export interface CartItem {
   product: Product;
   quantity: number;
   price: number;
+  services?: { serviceId: string; name: string; price: number }[];
+  serviceFee?: number;
+  totalPrice?: number;
 }
 
 export interface Cart {
