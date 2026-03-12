@@ -77,7 +77,7 @@ const ProductDetail = ({
   const discountPercent = pricingInfo?.discountPercentage ?? 0
   const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
   const totalPrice = productTotal + serviceTotal * quantity
-  const isOutOfStock = !isStockLoading && branchStock !== null && branchStock === 0
+  const isOutOfStock = !isStockLoading && selectedBranchId !== null && (branchStock === null || branchStock === 0)
   const maxQuantity = branchStock !== null && branchStock > 0 ? branchStock : 99
   const selectedBranch = branches.find((branch) => branch._id === selectedBranchId)
 
@@ -251,7 +251,7 @@ const ProductDetail = ({
                 {isStockLoading ? (
                   <span className='text-gray-500'>Đang kiểm tra tồn kho...</span>
                 ) : branchStock === null ? (
-                  <span className='text-gray-400'>Chưa cập nhật</span>
+                  <span className='text-red-600'>Hết hàng</span>
                 ) : branchStock > 0 ? (
                   <span className='text-green-600'>Còn hàng ({branchStock} sản phẩm)</span>
                 ) : (
