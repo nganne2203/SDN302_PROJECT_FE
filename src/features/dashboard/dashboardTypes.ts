@@ -37,7 +37,7 @@ export interface DashboardOrders {
   confirmed: number
   shipped: number
   delivered: number
-  canceled: number
+  cancelled: number
   activeTransactions: number
 }
 

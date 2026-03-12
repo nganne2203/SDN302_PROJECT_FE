@@ -49,6 +49,15 @@ const ORDER_STATUS_LABEL: Record<string, string> = {
 
 const formatCurrency = (value: number) => value.toLocaleString('vi-VN') + ' ₫'
 
+const statCardStyles = {
+  body: {
+    height: 148,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'space-between'
+  }
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -147,7 +156,7 @@ const AdminDashboard = () => {
         {/* Row 1: Key overview metrics */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Tổng doanh thu"
                 value={overview?.totalRevenue ?? 0}
@@ -160,7 +169,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Tổng đơn hàng"
                 value={overview?.totalOrders ?? 0}
@@ -172,7 +181,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Sản phẩm đã bán"
                 value={overview?.totalProductsSold ?? products?.totalSold ?? 0}
@@ -186,7 +195,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Khách hàng mới"
                 value={customers?.newCustomers ?? 0}
@@ -201,7 +210,7 @@ const AdminDashboard = () => {
         {/* Row 2: Secondary metrics */}
         <Row gutter={[16, 16]} className="mt-4">
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Đơn chờ xác nhận"
                 value={orders?.pending ?? 0}
@@ -212,7 +221,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Đơn đã giao"
                 value={orders?.delivered ?? 0}
@@ -223,7 +232,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Sản phẩm sắp hết"
                 value={products?.lowStock ?? 0}
@@ -235,7 +244,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Tỷ lệ hoàn thành"
                 value={performance?.completionRate ?? 0}
@@ -251,7 +260,7 @@ const AdminDashboard = () => {
         {/* Row 3: Order status breakdown */}
         <Row gutter={[16, 16]} className="mt-4">
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Đã xác nhận"
                 value={orders?.confirmed ?? 0}
@@ -262,7 +271,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Đang giao"
                 value={orders?.shipped ?? 0}
@@ -273,10 +282,10 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Đã hủy"
-                value={orders?.canceled ?? 0}
+                value={orders?.cancelled ?? 0}
                 prefix={<StopOutlined className="text-red-400" />}
                 styles={{ content: { color: '#ff4d4f' } }}
               />
@@ -284,7 +293,7 @@ const AdminDashboard = () => {
           </Col>
 
           <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
+            <Card styles={statCardStyles}>
               <Statistic
                 title="Doanh thu TB / đơn"
                 value={overview?.averageOrderValue ?? 0}
@@ -298,7 +307,7 @@ const AdminDashboard = () => {
 
         {/* Branch Performance Table */}
         <Card
-          className="mt-6"
+          className="my-6"
           title="Hiệu suất chi nhánh"
           extra={
             <Select
@@ -348,8 +357,8 @@ const AdminDashboard = () => {
                   dataIndex: 'status',
                   key: 'status',
                   render: (status: string) => (
-                    <Tag color={status === 'active' ? 'success' : 'error'}>
-                      {status === 'active' ? 'Hoạt động' : 'Tạm dừng'}
+                    <Tag color={status === 'Hoạt động' ? 'success' : 'error'}>
+                      {status === 'Hoạt động' ? 'Hoạt động' : 'Tạm dừng'}
                     </Tag>
                   )
                 }
@@ -383,7 +392,7 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Recent Orders Table */}
-        <Card className="mt-6" title="Đơn hàng gần đây">
+        <Card className="my-6" title="Đơn hàng gần đây">
           <Table
             columns={recentOrderColumns}
             dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
@@ -394,7 +403,7 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Quick navigation */}
-        <Card className="mt-6" title="Quản lý nhanh">
+        <Card className="my-6" title="Quản lý nhanh">
           <Row gutter={[16, 16]}>
             {[
               { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },

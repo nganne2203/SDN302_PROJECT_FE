@@ -28,14 +28,14 @@ const ORDER_STATUS_COLOR: Record<string, string> = {
   confirmed: 'processing',
   shipped: 'blue',
   delivered: 'success',
-  canceled: 'error'
+  cancelled: 'error'
 }
 const ORDER_STATUS_LABEL: Record<string, string> = {
   pending: 'Chờ xử lý',
   confirmed: 'Đã xác nhận',
   shipped: 'Đang vận chuyển',
   delivered: 'Đã giao',
-  canceled: 'Đã hủy'
+  cancelled: 'Đã hủy'
 }
 const STOCK_STATUS_COLOR: Record<string, string> = {
   pending: 'warning',
@@ -264,7 +264,7 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Đơn đã hủy"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'canceled').length}
+              value={orders.filter(o => (o as unknown as { status: string }).status === 'cancelled').length}
               prefix={<StopOutlined className="text-red-400" />}
               styles={{ content: { color: '#ff4d4f' } }}
             />

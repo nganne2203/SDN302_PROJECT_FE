@@ -24,7 +24,8 @@ const BranchesManagement = () => {
     handleClearFilter,
     handleSetSelectedBranch,
     handleClearError,
-    validateBranchForm
+    validateBranchForm,
+    deleteBranch
   } = useBranch()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -201,6 +202,23 @@ const BranchesManagement = () => {
     [handleSetFilter]
   )
 
+  const handleDeleteBranch = useCallback(
+    async (id: string) => {
+      if (!canManage) {
+        toast.error('Bạn không có quyền thao tác chi nhánh')
+        return
+      }
+
+      const result = await deleteBranch(id)
+      if (result.type.includes('fulfilled')) {
+        toast.success('Xóa chi nhánh thành công')
+      } else if (result.payload) {
+        toast.error(result.payload as string)
+      }
+    },
+    [canManage, deleteBranch]
+  )
+
   return (
     <div className="p-2">
       <BranchHeader onAddClick={() => handleOpenModal()} canManage={canManage} />
@@ -230,6 +248,7 @@ const BranchesManagement = () => {
         }}
         onEdit={handleOpenModal}
         onUpdateStatus={handleUpdateStatus}
+        onDelete={handleDeleteBranch}
         onPageChange={handlePageChange}
       />
 
