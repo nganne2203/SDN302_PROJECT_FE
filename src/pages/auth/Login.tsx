@@ -14,7 +14,7 @@ import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
 
 const Login = () => {
-  // const isCaptchaEnabled = false
+  const isCaptchaEnabled = true
   const {
     login,
     isLoading,
@@ -51,6 +51,10 @@ const Login = () => {
   const onSubmit = useCallback(
     async (data: LoginFormData) => {
       if (isLoading) return
+      if (isCaptchaEnabled && !recaptchaToken) {
+        toast.error('Vui lòng xác minh bạn không phải là robot')
+        return
+      }
 
       const result = await login({
         ...data,
@@ -71,7 +75,7 @@ const Login = () => {
         toast.error(result.message || 'Đăng nhập thất bại')
       }
     },
-    [isLoading, recaptchaToken, login, showOTPModal]
+    [isLoading, recaptchaToken, login, showOTPModal, isCaptchaEnabled]
   )
 
   const handleFormSubmit = useCallback(
