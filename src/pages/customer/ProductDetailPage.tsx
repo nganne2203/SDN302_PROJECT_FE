@@ -43,7 +43,7 @@ const ProductDetailPage = () => {
   const [services, setServices] = useState<ServiceProduct[]>([])
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
 
-  const [quantity, setQuantity] = useState(1)
+  const [quantity, setQuantity] = useState(0)
 
   const [pricingData, setPricingData] = useState<PricingCalculation | null>(
     null
@@ -196,9 +196,9 @@ const ProductDetailPage = () => {
       const servicesPayload = selectedServiceIds.map((id) => ({
         serviceId: id
       }))
-
-      await cartApi.addToCart(productId, qty, servicesPayload)
-
+      // Nếu quantity đang là 0 thì set thành 1
+      if (quantity === 0) setQuantity(1)
+      await cartApi.addToCart(productId, qty === 0 ? 1 : qty, servicesPayload)
       toast.success('Đã thêm vào giỏ hàng')
     } catch {
       toast.error('Thêm vào giỏ hàng thất bại')
