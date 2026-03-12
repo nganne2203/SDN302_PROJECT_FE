@@ -35,8 +35,7 @@ const ManagerUserPage = () => {
     handleEditFromDetail,
     formMethods,
     onSubmit,
-    roleOptions,
-    roleFilterOptions
+    roleOptions
   } = useManagerUserPage()
 
   const canEditUser = useCallback((user: User) => {
@@ -54,7 +53,7 @@ const ManagerUserPage = () => {
         onSearchChange={handleSearchChange}
         filter={filter}
         onFilterChange={handleFilterChange}
-        roleOptions={roleFilterOptions}
+        roleOptions={roleOptions}
         pagination={filterPagination}
         onPageChange={handlePageChange}
         onReset={handleClearFilter}

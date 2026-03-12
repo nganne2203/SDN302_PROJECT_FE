@@ -198,7 +198,7 @@ export const useManagerUserPage = () => {
           fullname: data.fullname,
           email: data.email,
           phone: data.phone || undefined,
-          branch: isStaffRole ? (currentUser?.branch || undefined) : undefined
+          branch: isStaffRole ? currentUser?.branch?._id : undefined
         })
         if (result.type.includes('fulfilled')) {
           toast.success('Cập nhật người dùng thành công')
@@ -214,8 +214,9 @@ export const useManagerUserPage = () => {
           password: data.password!,
           phone: data.phone || undefined,
           role: data.role as UserRole,
-          branch: data.role === USER_ROLES.STAFF ? (currentUser?.branch || undefined) : undefined
+          branch: data.role === USER_ROLES.STAFF ? currentUser?.branch?._id : undefined
         })
+
         if (result.type.includes('fulfilled')) {
           toast.success('Tạo người dùng thành công')
           handleCloseForm()

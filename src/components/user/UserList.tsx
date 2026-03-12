@@ -39,7 +39,17 @@ const UserListComponent = ({
   canEditUser,
   hideStatusToggle = false
 }: UserListProps) => {
-  const usersWithKeys: UserWithKey[] = users.map(user => ({
+  // Lọc không hiển thị tài khoản của chính mình nếu là admin, manager, staff
+  // currentUser truyền qua props hoặc lấy từ useAuth (nên truyền qua props để component thuần)
+  // Giả sử có currentUser prop
+  const currentUser = (window as any).currentUser || null;
+  const filteredUsers = users.filter(user => {
+    if (!currentUser) return true;
+    // Ẩn tài khoản của chính mình nếu là admin, manager, staff
+    if (["admin", "manager", "staff"].includes(currentUser.role) && user._id === currentUser._id) return false;
+    return true;
+  });
+  const usersWithKeys: UserWithKey[] = filteredUsers.map(user => ({
     ...user,
     key: user._id
   }))
@@ -123,7 +133,7 @@ const UserListComponent = ({
               />
             </Tooltip>
           )}
-          {!hideStatusToggle && onUpdateStatus && (
+          {!hideStatusToggle && onUpdateStatus && record.role === "staff" && (!currentUser || record._id !== currentUser._id) && (
             <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
               <Button
                 size="small"
