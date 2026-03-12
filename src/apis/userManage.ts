@@ -80,7 +80,7 @@ export const userManageApi = {
   },
 
   updateUserStatus: async (id: string, data: UpdateUserStatusRequest): Promise<ApiResponse<User>> => {
-    const response = await apiClient.put<ApiResponse<User>>(
+    const response = await apiClient.patch<ApiResponse<User>>(
       API_ENDPOINTS.USER.UPDATE_STATUS(id),
       data
     )
