@@ -11,7 +11,8 @@ import {
   updateBranchThunk,
   updateBranchStatusThunk,
   assignBranchManagerThunk,
-  removeBranchManagerThunk
+  removeBranchManagerThunk,
+  deleteBranchThunk
 } from '@/features/branch/branchThunks'
 import { setFilter, clearFilter, setSelectedBranch, clearError } from '@/features/branch/branchSlices'
 
@@ -78,6 +79,11 @@ export const useBranch = () => {
     [dispatch]
   )
 
+  const deleteBranch = useCallback(
+    async (id: string) => dispatch(deleteBranchThunk(id)),
+    [dispatch]
+  )
+
   const handleSetFilter = useCallback(
     (newFilter: Record<string, unknown>) => {
       dispatch(setFilter(newFilter))
@@ -141,7 +147,8 @@ export const useBranch = () => {
     handleClearFilter,
     handleSetSelectedBranch,
     handleClearError,
-    validateBranchForm
+    validateBranchForm,
+    deleteBranch
   }
 }
 

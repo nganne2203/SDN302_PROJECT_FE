@@ -69,7 +69,7 @@ const OrderList = ({
       confirmed: 'shipped',
       shipped: 'delivered',
       delivered: null,
-      canceled: null
+      cancelled: null
     }
     return statusFlow[normalizeStatus(currentStatus)]
   }
@@ -168,7 +168,7 @@ const OrderList = ({
           canManage &&
           nextStatus &&
           onUpdateStatus &&
-          currentStatus !== 'canceled' &&
+          currentStatus !== 'cancelled' &&
           currentStatus !== 'delivered'
         const canCancel =
           canManage &&

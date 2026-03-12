@@ -6,7 +6,7 @@ import { extractApiError } from '@/utils/apiError'
 export interface ManagerOrdersFilter {
   page?: number
   limit?: number
-  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'
+  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
   sortBy?: 'createdAt' | 'totalAmount' | 'orderNumber'
   sortOrder?: 'asc' | 'desc'
 }

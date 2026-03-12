@@ -41,7 +41,7 @@ const OrderHistory = () => {
     } else if (activeTab === 'completed') {
       baseFilter.status = 'delivered'
     } else if (activeTab === 'cancelled') {
-      baseFilter.status = 'canceled'
+      baseFilter.status = 'cancelled'
     }
     // 'all' tab: no status filter → returns all orders sorted by newest
 
