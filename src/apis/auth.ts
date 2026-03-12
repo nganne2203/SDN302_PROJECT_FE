@@ -16,6 +16,7 @@ import type {
   ChangePasswordRequest,
   RefreshTokenRequest
 } from '@/types/api'
+import { STORAGE_KEYS } from '@/constants/constant'
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<ApiResponse<AuthTokens>> => {
@@ -94,7 +95,17 @@ export const authApi = {
   },
 
   logout: async (): Promise<SimpleResponse> => {
-    const response = await apiClient.post<SimpleResponse>(API_ENDPOINTS.AUTH.LOGOUT)
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+
+    if (!refreshToken) {
+      throw new Error('Không tìm thấy refresh token')
+    }
+
+    const response = await apiClient.post(
+      API_ENDPOINTS.AUTH.LOGOUT,
+      { refreshToken }
+    )
+
     return response.data
   },
 
