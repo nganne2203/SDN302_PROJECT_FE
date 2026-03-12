@@ -76,6 +76,11 @@ export const branchApi = {
   removeManager: async (id: string): Promise<ApiResponse<Branch>> => {
     const response = await apiClient.patch<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.REMOVE_MANAGER(id))
     return response.data
+  },
+
+  deleteBranch: async (id: string): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete<ApiResponse<null>>(API_ENDPOINTS.BRANCH.DELETE(id))
+    return response.data
   }
 }
 

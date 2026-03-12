@@ -32,7 +32,7 @@ export interface CreateOfflineOrderRequest {
 export interface OrderFilter {
   page?: number
   limit?: number
-  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'
+  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
   sortBy?: 'createdAt' | 'totalAmount' | 'orderNumber'
   sortOrder?: 'asc' | 'desc'
   search?: string

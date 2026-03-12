@@ -21,7 +21,7 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
         label: 'Đã giao',
         className: 'bg-green-100 text-green-800 border-green-200'
       },
-      canceled: {
+      cancelled: {
         label: 'Đã hủy',
         className: 'bg-red-100 text-red-800 border-red-200'
       }

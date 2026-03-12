@@ -111,7 +111,7 @@ const OrderDetailModal = ({
       confirmed: 'shipped',
       shipped: 'delivered',
       delivered: null,
-      canceled: null
+      cancelled: null
     }
     return statusFlow[normalizeStatus(currentStatus)]
   }
@@ -132,7 +132,7 @@ const OrderDetailModal = ({
     canManage &&
     nextStatus &&
     onUpdateStatus &&
-    currentStatus !== 'canceled' &&
+    currentStatus !== 'cancelled' &&
     currentStatus !== 'delivered'
   const canCancel =
     canManage &&

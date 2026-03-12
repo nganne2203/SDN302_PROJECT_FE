@@ -22,7 +22,7 @@ const OrderFilterComponent = ({ filter, onFilterChange, onReset }: OrderFilterPr
         { label: 'Đã xác nhận', value: 'confirmed' },
         { label: 'Đang giao', value: 'shipped' },
         { label: 'Đã giao', value: 'delivered' },
-        { label: 'Đã hủy', value: 'canceled' }
+        { label: 'Đã hủy', value: 'cancelled' }
       ],
       allowClear: true
     }

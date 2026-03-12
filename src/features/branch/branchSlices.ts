@@ -9,7 +9,8 @@ import {
   updateBranchThunk,
   updateBranchStatusThunk,
   assignBranchManagerThunk,
-  removeBranchManagerThunk
+  removeBranchManagerThunk,
+  deleteBranchThunk
 } from './branchThunks'
 
 const initialState: BranchState = {
@@ -157,6 +158,14 @@ const branchSlice = createSlice({
         state.cache = markCacheAsStale()
       })
       .addCase(removeBranchManagerThunk.rejected, (state, action) => {
+        state.error = action.payload as string
+      })
+      .addCase(deleteBranchThunk.fulfilled, (state, action: PayloadAction<string>) => {
+        state.branches = state.branches.filter(b => b._id !== action.payload)
+        if (state.selectedBranch?._id === action.payload) state.selectedBranch = null
+        state.cache = markCacheAsStale()
+      })
+      .addCase(deleteBranchThunk.rejected, (state, action) => {
         state.error = action.payload as string
       })
   }
