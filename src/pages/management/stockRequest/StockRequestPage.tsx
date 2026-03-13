@@ -42,6 +42,7 @@ const StockRequestPage = () => {
   const [actionSaving, setActionSaving] = useState(false)
   const [createSaving, setCreateSaving] = useState(false)
   const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [detailActionSaving, setDetailActionSaving] = useState(false)
 
   const handleCreate = async (values: { product: string; quantity: number; reason?: string }) => {
     try {
@@ -83,6 +84,36 @@ const StockRequestPage = () => {
   const handleViewDetail = async (record: StockRequestRecord) => {
     setDetailModalOpen(true)
     await fetchDetail(record._id)
+  }
+
+  const handleDetailApprove = async (note?: string) => {
+    if (!selectedRequest) return
+    try {
+      setDetailActionSaving(true)
+      await updateRequestStatus(selectedRequest._id, 'approve', note)
+      toast.success('Đã duyệt yêu cầu')
+      setDetailModalOpen(false)
+      setSelectedRequest(null)
+    } catch (err) {
+      toast.error(extractApiError(err, 'Không thể duyệt yêu cầu'))
+    } finally {
+      setDetailActionSaving(false)
+    }
+  }
+
+  const handleDetailReject = async (note: string) => {
+    if (!selectedRequest) return
+    try {
+      setDetailActionSaving(true)
+      await updateRequestStatus(selectedRequest._id, 'reject', note)
+      toast.success('Đã từ chối yêu cầu')
+      setDetailModalOpen(false)
+      setSelectedRequest(null)
+    } catch (err) {
+      toast.error(extractApiError(err, 'Không thể từ chối yêu cầu'))
+    } finally {
+      setDetailActionSaving(false)
+    }
   }
 
   return (
@@ -178,6 +209,9 @@ const StockRequestPage = () => {
         request={selectedRequest}
         loading={detailLoading}
         isAdmin={isAdmin}
+        onApprove={isAdmin ? handleDetailApprove : undefined}
+        onReject={isAdmin ? handleDetailReject : undefined}
+        isActioning={detailActionSaving}
       />
     </div>
   )

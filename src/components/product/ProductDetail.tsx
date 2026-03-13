@@ -77,7 +77,7 @@ const ProductDetail = ({
   const discountPercent = pricingInfo?.discountPercentage ?? 0
   const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
   const totalPrice = productTotal + serviceTotal * quantity
-  const isOutOfStock = !isStockLoading && branchStock !== null && branchStock === 0
+  const isOutOfStock = !isStockLoading && selectedBranchId !== null && (branchStock === null || branchStock === 0)
   const maxQuantity = branchStock !== null && branchStock > 0 ? branchStock : 99
   const selectedBranch = branches.find((branch) => branch._id === selectedBranchId)
 
@@ -251,7 +251,7 @@ const ProductDetail = ({
                 {isStockLoading ? (
                   <span className='text-gray-500'>Đang kiểm tra tồn kho...</span>
                 ) : branchStock === null ? (
-                  <span className='text-gray-400'>Chưa cập nhật</span>
+                  <span className='text-red-600'>Hết hàng</span>
                 ) : branchStock > 0 ? (
                   <span className='text-green-600'>Còn hàng ({branchStock} sản phẩm)</span>
                 ) : (
@@ -356,30 +356,32 @@ const ProductDetail = ({
               )}
             </div>
 
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Giá sản phẩm:</span>
-                <span>{formatCurrency(productTotal)}</span>
-              </div>
-              {discountPercent > 0 && pricingInfo && (
-                <div className="flex justify-between text-xs text-green-600">
-                  <span>Tiet kiem:</span>
-                  <span>{formatCurrency(pricingInfo.savings)}</span>
+            {quantity > 0 && (
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Giá sản phẩm:</span>
+                  <span>{formatCurrency(productTotal)}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Dịch vụ bổ sung:</span>
-                <span>{formatCurrency(serviceTotal)}</span>
+                {discountPercent > 0 && pricingInfo && (
+                  <div className="flex justify-between text-xs text-green-600">
+                    <span>Tiet kiem:</span>
+                    <span>{formatCurrency(pricingInfo.savings)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Dịch vụ bổ sung:</span>
+                  <span>{formatCurrency(serviceTotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Số lượng:</span>
+                  <span>{quantity}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-blue-600">
+                  <span>Tổng cộng:</span>
+                  <span>{formatCurrency(totalPrice)}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Số lượng:</span>
-                <span>{quantity}</span>
-              </div>
-              <div className="flex justify-between font-semibold text-blue-600">
-                <span>Tổng cộng:</span>
-                <span>{formatCurrency(totalPrice)}</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -93,6 +93,7 @@ export const useInventory = () => {
   const [mainInventory, setMainInventory] = useState<InventoryRecord[]>([])
   const [productInventory, setProductInventory] = useState<InventoryRecord | null>(null)
   const [productInventoryLoading, setProductInventoryLoading] = useState(false)
+  const [lowStockTotal, setLowStockTotal] = useState(0)
   const [branchPagination, setBranchPagination] = useState<TablePaginationConfig>({
     current: parseInt(searchParams.get('bPage') || '1'),
     pageSize: parseInt(searchParams.get('bSize') || '10'),
@@ -292,6 +293,13 @@ export const useInventory = () => {
   }, [fetchBranchInventory])
 
   useEffect(() => {
+    if (!selectedBranchId) { setLowStockTotal(0); return }
+    storeInventoryApi.getLowStock(selectedBranchId, { page: 1, limit: 1 })
+      .then((res) => setLowStockTotal(res.pagination?.totalItems || 0))
+      .catch(() => setLowStockTotal(0))
+  }, [selectedBranchId])
+
+  useEffect(() => {
     fetchMainInventory().catch(() => undefined)
   }, [fetchMainInventory])
 
@@ -308,7 +316,7 @@ export const useInventory = () => {
   }, [mainInventory, searchText])
 
   const branchStats = useMemo(() => {
-    const lowStock = branchInventory.filter((item) => item.quantity < item.minThreshold).length
+    const lowStock = lowStockTotal
     const outOfStock = branchInventory.filter((item) => item.quantity <= 0).length
     const optimal = branchInventory.filter((item) => {
       if (item.quantity <= 0) return false
@@ -317,7 +325,7 @@ export const useInventory = () => {
       return true
     }).length
     return { lowStock, outOfStock, optimal }
-  }, [branchInventory])
+  }, [branchInventory, lowStockTotal])
 
   const updateThresholds = useCallback(
     async (branchId: string, productId: string, data: { minThreshold?: number; maxThreshold?: number }) => {

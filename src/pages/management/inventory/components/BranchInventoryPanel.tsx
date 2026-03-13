@@ -2,10 +2,12 @@ import { Card, Table, Tag, Row, Col, Statistic, Alert, Empty, Progress, Tooltip,
 import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
+import { useNavigate } from 'react-router-dom'
 import type { Branch, StoreInventoryRecord } from '@/types/api'
 import type { BranchView } from '@/hooks/useInventory'
 import { InputField, SelectField } from '@/components/common'
 import { Button } from 'antd'
+import { ROUTES } from '@/constants/constant'
 
 /* eslint-disable no-unused-vars */
 interface BranchInventoryPanelProps {
@@ -55,6 +57,7 @@ const BranchInventoryPanel = ({
   onCreate,
   onDelete
 }: BranchInventoryPanelProps) => {
+  const navigate = useNavigate()
   const getBranchStatus = (record: StoreInventoryRecord) => {
     if (record.quantity <= 0) return 'out_of_stock'
     if (record.quantity < record.minThreshold) return 'low_stock'
@@ -196,13 +199,18 @@ const BranchInventoryPanel = ({
         />
       )}
 
-      {selectedBranchId && branchStats.lowStock > 0 && (
+      {!isAdmin && selectedBranchId && branchStats.lowStock > 0 && (
         <Alert
           message={`Cảnh báo: ${branchStats.lowStock} sản phẩm dưới ngưỡng tối thiểu`}
           description="Vui lòng tạo yêu cầu nhập kho hoặc cập nhật ngưỡng tồn kho"
           type="warning"
           showIcon
           className="mb-6"
+          action={
+            <Button size="small" type="primary" onClick={() => navigate(ROUTES.MANAGEMENT.STOCK_REQUESTS)}>
+              Tạo yêu cầu nhập kho
+            </Button>
+          }
         />
       )}
 
