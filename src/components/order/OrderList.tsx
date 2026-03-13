@@ -5,7 +5,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order, PaginationMeta } from '@/types/api'
 import type { TableColumn } from '@/components/common/TableCommon'
 import { formatCurrency } from '@/utils/formatCurrency'
-
+import { isOrderPaid } from '@/utils/orderPayment'
 interface OrderListProps {
   orders: Order[]
   pagination: PaginationMeta | null
@@ -132,11 +132,9 @@ const OrderList = ({
         <div>
           <div className="text-sm text-gray-900">{order.paymentMethod}</div>
           <div className="text-xs">
-            {String(order.paymentStatus || '').toUpperCase() === 'PAID' ? (
-              <span className="text-green-600">Đã thanh toán</span>
-            ) : (
-              <span className="text-yellow-600">Chưa thanh toán</span>
-            )}
+            {isOrderPaid(order)
+              ? <span className="text-green-600">Đã thanh toán</span>
+              : <span className="text-yellow-600">Chưa thanh toán</span>}
           </div>
         </div>
       )

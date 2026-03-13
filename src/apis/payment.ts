@@ -12,6 +12,8 @@ export interface PaymentRecord {
   status: 'pending' | 'success' | 'failed' | 'refunded' | 'cancelled'
   transactionId?: string
   providerData?: Record<string, unknown>
+  paidAt?: string
+  failureReason?: string
   createdAt: string
   updatedAt: string
 }

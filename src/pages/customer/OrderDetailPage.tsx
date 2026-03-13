@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   Button,
@@ -15,6 +15,7 @@ import {
 } from 'antd'
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { orderApi } from '@/apis/order'
+import paymentApi, { type PaymentRecord } from '@/apis/payment'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
@@ -93,6 +94,18 @@ interface BackendOrder {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+const normalizeLower = (value?: string | null) => (typeof value === 'string' ? value.trim().toLowerCase() : '')
+
+const isDeliveredOrder = (target: BackendOrder | null): boolean => {
+  if (!target) return false
+  return normalizeLower(target.orderStatus) === 'delivered' || normalizeLower(target.delivery?.status) === 'delivered'
+}
+
+const isFinalPaymentStatus = (status?: string | null): boolean => {
+  const normalized = normalizeLower(status)
+  return normalized === 'success' || normalized === 'failed' || normalized === 'cancelled' || normalized === 'refunded'
+}
+
 const PAYMENT_METHOD_MAP: Record<string, string> = {
   cod: 'Thanh toán khi nhận hàng (COD)',
   vnpay: 'VNPay',
@@ -133,18 +146,40 @@ const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [order, setOrder] = useState<BackendOrder | null>(null)
+  const [payment, setPayment] = useState<PaymentRecord | null>(null)
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelModalVisible, setCancelModalVisible] = useState(false)
   const [cancelReason, setCancelReason] = useState("")
   const [cancelError, setCancelError] = useState("")
 
+  const pollingTimerRef = useRef<number | null>(null)
+
+  const loadPayment = async (orderId: string) => {
+    setIsPaymentLoading(true)
+    try {
+      const res = await paymentApi.getPaymentByOrder(orderId)
+      setPayment(res.data ?? null)
+    } catch {
+      setPayment(null)
+    } finally {
+      setIsPaymentLoading(false)
+    }
+  }
+
   const loadOrder = () => {
     if (!id) return
     setIsLoading(true)
     orderApi
       .getOrderById(id)
-      .then((res) => setOrder(res.data as unknown as BackendOrder))
+      .then((res) => {
+        const nextOrder = res.data as unknown as BackendOrder
+        setOrder(nextOrder)
+        if (nextOrder?._id) {
+          loadPayment(nextOrder._id)
+        }
+      })
       .catch(() => message.error('Không thể tải thông tin đơn hàng'))
       .finally(() => setIsLoading(false))
   }
@@ -153,6 +188,55 @@ const OrderDetailPage = () => {
     loadOrder()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  useEffect(() => {
+    // Poll only for COD orders until payment becomes final, so user sees paidAt without manual refresh.
+    if (!id || !order?._id) return
+
+    const payMethodKey = normalizeLower(order.paymentMethod)
+    if (payMethodKey !== 'cod') return
+
+    if (isFinalPaymentStatus(payment?.status)) return
+
+    const intervalMs = 7000
+
+    const tick = async () => {
+      try {
+        const [orderRes, paymentRes] = await Promise.all([
+          orderApi.getOrderById(id),
+          paymentApi.getPaymentByOrder(order._id)
+        ])
+
+        const nextOrder = orderRes.data as unknown as BackendOrder
+        setOrder(nextOrder)
+        setPayment(paymentRes.data ?? null)
+
+        const nextPaymentStatus = paymentRes.data?.status
+        if (isFinalPaymentStatus(nextPaymentStatus)) {
+          if (pollingTimerRef.current) {
+            window.clearInterval(pollingTimerRef.current)
+            pollingTimerRef.current = null
+          }
+        }
+      } catch {
+        // ignore transient polling errors
+      }
+    }
+
+    tick()
+
+    if (pollingTimerRef.current) {
+      window.clearInterval(pollingTimerRef.current)
+    }
+    pollingTimerRef.current = window.setInterval(tick, intervalMs)
+
+    return () => {
+      if (pollingTimerRef.current) {
+        window.clearInterval(pollingTimerRef.current)
+        pollingTimerRef.current = null
+      }
+    }
+  }, [id, order?._id, order?.paymentMethod, payment?.status])
 
   const canCancel = ['pending', 'confirmed'].includes((order?.orderStatus ?? '').toLowerCase())
 
@@ -279,6 +363,29 @@ const OrderDetailPage = () => {
     label: delivery?.status ?? '—',
     color: 'default'
   }
+  const paymentStatusKey = (payment?.status ?? '').toLowerCase()
+  const paymentTagColor =
+    paymentStatusKey === 'success'
+      ? 'success'
+      : paymentStatusKey === 'pending'
+        ? 'warning'
+        : paymentStatusKey
+          ? 'error'
+          : 'default'
+  const paymentLabel =
+    paymentStatusKey === 'success'
+      ? 'Đã thanh toán'
+      : paymentStatusKey === 'pending'
+        ? 'Chưa thanh toán'
+        : paymentStatusKey === 'failed'
+          ? 'Thanh toán thất bại'
+          : paymentStatusKey === 'cancelled'
+            ? 'Đã hủy thanh toán'
+            : paymentStatusKey === 'refunded'
+              ? 'Đã hoàn tiền'
+              : 'N/A'
+  const paidAtText = payment?.paidAt ? new Date(payment.paidAt).toLocaleString('vi-VN') : ''
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -397,6 +504,24 @@ const OrderDetailPage = () => {
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Phương thức">
                   {PAYMENT_METHOD_MAP[payMethodKey] ?? order.paymentMethod}
+                </Descriptions.Item>
+                <Descriptions.Item label="Thanh toán">
+                  <div className="flex items-center gap-2">
+                    <Tag color={paymentTagColor}>
+                      {payMethodKey === 'cod' ? `COD: ${paymentLabel}` : paymentLabel}
+                    </Tag>
+                    {paymentStatusKey === 'success' && paidAtText && (
+                      <span className="text-xs text-gray-500">
+                        ({paidAtText})
+                      </span>
+                    )}
+                    {paymentStatusKey !== 'success' && payment?.failureReason && (
+                      <span className="text-xs text-red-500">
+                        {payment.failureReason}
+                      </span>
+                    )}
+                    {isPaymentLoading && <span className="text-xs text-gray-400">...</span>}
+                  </div>
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày đặt">
                   {order.createdAt
