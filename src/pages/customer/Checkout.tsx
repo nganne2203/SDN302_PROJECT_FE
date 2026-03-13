@@ -33,13 +33,18 @@ import paymentApi, {
 import { orderApi, type CreateCodOrderRequest } from '@/apis/order';
 import cartApi from '@/apis/cart';
 import branchApi from '@/apis/branch';
-import type { Branch, Product } from '@/types/api';
+import type { Branch, CartItem, Product } from '@/types/api';
 import type { Address } from '@/features/user/userTypes';
 import { ROUTES } from '@/constants/constant';
 import { stripLocationCodes } from '@/utils/address';
 import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline';
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes';
 import type { PricingCalculation } from '@/features/pricing/pricingTypes';
+import {
+  normalizeCartBackupItems,
+  saveBuyNowCartBackup,
+  type CartBackupItem
+} from '@/utils/cartBackup';
 
 const { Title, Text } = Typography;
 
@@ -461,10 +466,54 @@ const Checkout = () => {
     }
 
     setIsSubmitting(true);
+
+    // Buy-now currently reuses cart-based checkout APIs by temporarily replacing the cart.
+    // To avoid losing the user's existing cart:
+    // - normalize a backup before clearing anything
+    // - for VNPay, persist backup and restore in PaymentResult (because PaymentResult clears cart on success)
+    let cartBackup: CartBackupItem[] = []
+    let didReplaceCart = false
+    let isRedirectingToVnpay = false
+
+    const restoreCartFromBackup = async () => {
+      if (!buyNow || cartBackup.length === 0) return
+
+      try {
+        await cartApi.clearCart()
+      } catch {
+        // ignore
+      }
+
+      for (const item of cartBackup) {
+        try {
+          await cartApi.addToCart(item.productId, item.quantity, item.services)
+        } catch {
+          // best-effort
+        }
+      }
+    }
     try {
       if (buyNow) {
+        // Backup current cart (prefer BE), normalize productId from either `productId` or `product._id`.
+        let latestItems: unknown[] = cartItems as unknown[]
+        try {
+          const latestCart = await cartApi.getCart()
+          latestItems = (latestCart.data?.items as unknown[]) || []
+        } catch {
+          // fallback to current hook state
+        }
+
+        const normalized = normalizeCartBackupItems(latestItems)
+        const originalCount = Array.isArray(latestItems) ? latestItems.length : 0
+        if (originalCount > 0 && normalized.length !== originalCount) {
+          message.error('Không thể lưu giỏ hàng hiện tại để xử lý mua ngay. Vui lòng thử lại.')
+          return
+        }
+        cartBackup = normalized
+
         // Buy-now: set cart to exactly this item before payment
         await cartApi.clearCart();
+        didReplaceCart = true;
         const servicesPayload = buyNow.serviceIds.map((serviceId) => ({
           serviceId,
         }));
@@ -485,6 +534,12 @@ const Checkout = () => {
           message: values.message,
         };
         await orderApi.createCodOrder(codPayload);
+
+        if (buyNow && didReplaceCart) {
+          await restoreCartFromBackup();
+          didReplaceCart = false;
+        }
+
         message.success(
           'Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.',
         );
@@ -500,6 +555,11 @@ const Checkout = () => {
         const response = await paymentApi.createVnpayPayment(vnpayPayload);
         const paymentUrl = response.data?.paymentUrl;
         if (paymentUrl) {
+          if (buyNow && didReplaceCart) {
+            // Defer restore until PaymentResult so its clearCart doesn't wipe restored items.
+            saveBuyNowCartBackup(cartBackup)
+            isRedirectingToVnpay = true
+          }
           window.location.href = paymentUrl;
         } else {
           message.error('Không nhận được liên kết thanh toán');
@@ -512,6 +572,10 @@ const Checkout = () => {
           : 'Tạo thanh toán VNPay thất bại',
       );
     } finally {
+      // If something failed after we replaced the cart for buy-now, restore it.
+      if (buyNow && didReplaceCart && !isRedirectingToVnpay) {
+        await restoreCartFromBackup();
+      }
       setIsSubmitting(false);
     }
   };

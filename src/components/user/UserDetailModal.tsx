@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useBranch } from '@/hooks/useBranch'
 import { useEffect, useState } from 'react'
+import { getAvatarUrl, resolveAvatarUrl } from '@/utils/getAvatar'
 
 /* eslint-disable no-unused-vars */
 interface UserDetailModalProps {
@@ -58,6 +59,7 @@ const UserDetailModal = ({
 }: UserDetailModalProps) => {
   const { fetchBranchById } = useBranch()
   const [branchInfo, setBranchInfo] = useState<Branch | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(() => getAvatarUrl(user))
 
   useEffect(() => {
     if (isOpen && user?.branch) {
@@ -71,6 +73,24 @@ const UserDetailModal = ({
     }
   }, [isOpen, user?.branch, fetchBranchById])
 
+  useEffect(() => {
+    let isMounted = true
+
+    // Reset to any already-resolved URL first, then resolve publicId via backend if needed.
+    const syncUrl = getAvatarUrl(user)
+    setAvatarUrl(syncUrl)
+
+    if (!isOpen || syncUrl) return () => { isMounted = false }
+
+    resolveAvatarUrl(user).then((resolved) => {
+      if (isMounted) setAvatarUrl(resolved)
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [isOpen, user])
+
   if (!user) {
     return (
       <ModalCommon
@@ -78,6 +98,8 @@ const UserDetailModal = ({
         onClose={onClose}
         title="Chi tiết người dùng"
         size="lg"
+        top={20}
+        zIndex={2000}
       >
         <div className="p-4 text-center text-gray-500">
           Không có dữ liệu người dùng
@@ -92,6 +114,8 @@ const UserDetailModal = ({
       onClose={onClose}
       title="Chi tiết người dùng"
       size="lg"
+      top={20}
+      zIndex={2000}
       footer={
         <div className="flex justify-end gap-2">
           <ButtonCommon variant="outline" onClick={onClose}>
@@ -108,9 +132,9 @@ const UserDetailModal = ({
       <div className="space-y-1">
         {/* Avatar and Basic Info */}
         <div className="flex items-center gap-4 p-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg mb-4">
-          {user.avatar ? (
+          {avatarUrl ? (
             <img
-              src={user.avatar}
+              src={avatarUrl}
               alt={user.fullname}
               className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
             />

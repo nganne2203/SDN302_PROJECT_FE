@@ -348,7 +348,12 @@ export interface Order {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
+  paymentStatus?: PaymentStatus | string;
+  payment?: {
+    status?: string;
+    paidAt?: string;
+    failureReason?: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

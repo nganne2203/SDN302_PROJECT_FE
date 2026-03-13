@@ -4,7 +4,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
-
+import { isOrderPaid } from '@/utils/orderPayment'
 interface OrderDetailModalProps {
   order: Order | null
   isOpen: boolean
@@ -194,9 +194,9 @@ const OrderDetailModal = ({
               <div className="text-right">
                 <p className="text-sm text-gray-600">Trạng thái</p>
                 <p className={`font-medium ${
-                  String(order.paymentStatus || '').toUpperCase() === 'PAID' ? 'text-green-600' : 'text-yellow-600'
+                  isOrderPaid(order) ? 'text-green-600' : 'text-yellow-600'
                 }`}>
-                  {String(order.paymentStatus || '').toUpperCase() === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                  {isOrderPaid(order) ? 'Đã thanh toán' : 'Chưa thanh toán'}
                 </p>
               </div>
             </div>
