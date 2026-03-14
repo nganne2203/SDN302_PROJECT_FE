@@ -192,13 +192,16 @@ const ProductDetailPage = () => {
       return;
     }
 
+    
+    if (qty <= 0) {
+      toast.warning('Vui lòng chọn số lượng sản phẩm')
+      return
+    }
     try {
       const servicesPayload = selectedServiceIds.map((id) => ({
         serviceId: id
       }))
-      // Nếu quantity đang là 0 thì set thành 1
-      if (quantity === 0) setQuantity(1)
-      await cartApi.addToCart(productId, qty === 0 ? 1 : qty, servicesPayload)
+      await cartApi.addToCart(productId, qty, servicesPayload)
       toast.success('Đã thêm vào giỏ hàng')
     } catch {
       toast.error('Thêm vào giỏ hàng thất bại')
@@ -215,6 +218,11 @@ const ProductDetailPage = () => {
       return
     }
 
+    
+    if (qty <= 0) {
+      toast.warning('Vui lòng chọn số lượng sản phẩm')
+      return
+    }
     navigate(ROUTES.CHECKOUT, {
       state: {
         buyNow: {

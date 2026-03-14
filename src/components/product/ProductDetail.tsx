@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
 import type { Branch, Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -52,6 +52,11 @@ const ProductDetail = ({
   onBuyNow
 }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0)
+  const [quantityInput, setQuantityInput] = useState(String(quantity))
+
+  useEffect(() => {
+    setQuantityInput(String(quantity))
+  }, [quantity])
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'warranty'>('description')
 
   const imageUrls = useMemo(() => {
@@ -149,18 +154,6 @@ const ProductDetail = ({
             <div className="flex items-start justify-between gap-4">
               <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                 {categoryName}
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </button>
-                <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 8a3 3 0 10-2.83-4H12a3 3 0 000 6h.17A3 3 0 0015 8zm-6 8a3 3 0 10-2.83-4H6a3 3 0 000 6h.17A3 3 0 009 16zm9 0a3 3 0 10-2.83-4H12a3 3 0 000 6h.17A3 3 0 0018 16z" />
-                  </svg>
-                </button>
               </div>
             </div>
 
@@ -261,27 +254,76 @@ const ProductDetail = ({
 
               <div className="flex items-center gap-4">
                 <span className="text-gray-700 font-medium">Số lượng:</span>
+
                 <div className={`flex items-center border rounded-lg ${isOutOfStock ? 'border-gray-200 opacity-50' : 'border-gray-300'}`}>
+
                   <button
-                    onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+                    onClick={() => {
+                      const next = Math.max(1, quantity - 1)
+                      onQuantityChange(next)
+                      setQuantityInput(String(next))
+                    }}
                     disabled={isOutOfStock}
                     className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
-                    -
+      -
                   </button>
-                  <span className="px-6 py-2 border-x border-gray-300 font-medium">
-                    {quantity}
-                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={quantityInput}
+                    disabled={isOutOfStock}
+                    onChange={(e) => {
+                      const val = e.target.value
+
+                      if (/^\d*$/.test(val)) {
+                        setQuantityInput(val)
+
+                        if (val !== '') {
+                          const num = Number(val)
+                          if (num >= 1 && num <= maxQuantity) {
+                            onQuantityChange(num)
+                          }
+                        }
+                      }
+                    }}
+                    onBlur={() => {
+                      let num = Number(quantityInput)
+
+                      if (!quantityInput || isNaN(num) || num < 1) {
+                        num = 1
+                      }
+
+                      if (num > maxQuantity) {
+                        num = maxQuantity
+                      }
+
+                      setQuantityInput(String(num))
+                      onQuantityChange(num)
+                    }}
+                    className="w-16 text-center border-x border-gray-300 py-2 outline-none"
+                  />
+
                   <button
-                    onClick={() => onQuantityChange(Math.min(maxQuantity, quantity + 1))}
+                    onClick={() => {
+                      const next = Math.min(maxQuantity, quantity + 1)
+                      onQuantityChange(next)
+                      setQuantityInput(String(next))
+                    }}
                     disabled={isOutOfStock}
                     className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
-                    +
+      +
                   </button>
+
                 </div>
+
                 {!isOutOfStock && branchStock !== null && (
-                  <span className="text-xs text-gray-500">Tối đa: {branchStock}</span>
+                  <span className="text-xs text-gray-500">
+      Tối đa: {branchStock}
+                  </span>
                 )}
               </div>
 
@@ -291,7 +333,7 @@ const ProductDetail = ({
                   size="lg"
                   className="flex-1 !bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900 disabled:!bg-gray-400 disabled:!border-gray-400 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || quantity <= 0}
                 >
                   {isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
                 </ButtonCommon>
@@ -300,7 +342,7 @@ const ProductDetail = ({
                   size="lg"
                   className="flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBuyNow}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || quantity <= 0}
                 >
                   Mua ngay
                 </ButtonCommon>

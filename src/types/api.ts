@@ -348,7 +348,12 @@ export interface Order {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
+  paymentStatus?: PaymentStatus | string;
+  payment?: {
+    status?: string;
+    paidAt?: string;
+    failureReason?: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -373,7 +378,19 @@ export type PaymentMethod =
   | 'BANK_TRANSFER'
   | 'CREDIT_CARD'
   | 'E_WALLET';
-export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+// BE now returns lowercase payment status strings on order detail/list.
+// Keep legacy uppercase variants for backward compatibility.
+export type PaymentStatus =
+  | 'pending'
+  | 'success'
+  | 'failed'
+  | 'refunded'
+  | 'canceled'
+  | 'cancelled'
+  | 'PENDING'
+  | 'PAID'
+  | 'FAILED'
+  | 'REFUNDED';
 
 export interface ShippingAddress {
   fullName: string;

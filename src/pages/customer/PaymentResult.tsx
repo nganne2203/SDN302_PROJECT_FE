@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import paymentApi from '@/apis/payment'
 import { ROUTES } from '@/constants/constant'
 import cartApi from '@/apis/cart'
+import { clearBuyNowCartBackup, loadBuyNowCartBackup } from '@/utils/cartBackup'
 
 const PaymentResult = () => {
   const location = useLocation()
@@ -11,6 +12,29 @@ const PaymentResult = () => {
   const [status, setStatus] = useState<'success' | 'pending' | 'error'>('pending')
   const [description, setDescription] = useState('Đang kiểm tra trạng thái thanh toán...')
   const didHandleSuccessRef = useRef(false)
+  const didHandleErrorRef = useRef(false)
+
+  const buyNowBackup = useMemo(() => loadBuyNowCartBackup(), [])
+
+  const restoreCartBackup = async () => {
+    if (!buyNowBackup || buyNowBackup.length === 0) return
+
+    try {
+      await cartApi.clearCart()
+    } catch {
+      // ignore clear cart failure
+    }
+
+    for (const item of buyNowBackup) {
+      try {
+        await cartApi.addToCart(item.productId, item.quantity, item.services)
+      } catch {
+        // best-effort restore
+      }
+    }
+
+    clearBuyNowCartBackup()
+  }
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search])
   const orderNumber = useMemo(
@@ -49,7 +73,11 @@ const PaymentResult = () => {
     didHandleSuccessRef.current = true
     const handleSuccess = async () => {
       try {
-        await cartApi.clearCart()
+        if (buyNowBackup && buyNowBackup.length > 0) {
+          await restoreCartBackup()
+        } else {
+          await cartApi.clearCart()
+        }
       } catch {
         // ignore clear cart failure
       } finally {
@@ -57,7 +85,15 @@ const PaymentResult = () => {
       }
     }
     handleSuccess()
-  }, [status, navigate])
+  }, [status, navigate, buyNowBackup])
+
+  useEffect(() => {
+    if (status !== 'error' || didHandleErrorRef.current) return
+    if (!buyNowBackup || buyNowBackup.length === 0) return
+    didHandleErrorRef.current = true
+    restoreCartBackup()
+      .catch(() => undefined)
+  }, [status, buyNowBackup])
 
   if (!orderNumber) {
     return (

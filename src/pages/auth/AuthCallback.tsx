@@ -45,7 +45,8 @@ const AuthCallback = () => {
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
         const accessToken = getParamValue(searchParams, hashParams, ['accessToken', 'access_token'])
         const isNewUser = parseBooleanParam(searchParams, hashParams, ['isNewUser', 'is_new_user'])
-        const hasPassword = parseBooleanParam(searchParams, hashParams, ['hasPassword', 'has_password'])
+        const hasPasswordRaw = getParamValue(searchParams, hashParams, ['hasPassword', 'has_password'])
+        const hasPassword = hasPasswordRaw ? ['true', '1', 'yes'].includes(hasPasswordRaw.toLowerCase()) : false
 
         if (!accessToken) {
           toast.error('Đăng nhập thất bại: Không tìm thấy token')
@@ -66,9 +67,14 @@ const AuthCallback = () => {
 
         setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
         setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
-  setStorage(STORAGE_KEYS.HAS_PASSWORD, String(hasPassword))
+        // Only persist hasPassword if backend explicitly provides it.
+        if (hasPasswordRaw !== null) {
+          setStorage(STORAGE_KEYS.HAS_PASSWORD, String(hasPassword))
+        }
 
-        if (isNewUser && !hasPassword) {
+        // Do not force Set Password here unless backend explicitly flags this as needed.
+        // (Some environments don't require password setup for Google login users.)
+        if (isNewUser && hasPasswordRaw !== null && !hasPassword) {
           navigate(ROUTES.SET_PASSWORD, { replace: true, state: { isNewUser, hasPassword } })
           return
         }

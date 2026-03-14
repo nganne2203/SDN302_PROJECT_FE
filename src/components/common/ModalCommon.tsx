@@ -14,6 +14,9 @@ interface ModalCommonProps {
   footer?: ReactNode
   closable?: boolean
   maskClosable?: boolean
+  centered?: boolean
+  top?: number
+  zIndex?: number
 }
 
 const ModalCommon = ({
@@ -25,7 +28,10 @@ const ModalCommon = ({
   className = '',
   footer = null,
   closable = true,
-  maskClosable = true
+  maskClosable = true,
+  centered = false,
+  top,
+  zIndex = 3000
 }: ModalCommonProps) => {
   const getWidth = (): number => {
     switch (size) {
@@ -53,6 +59,9 @@ const ModalCommon = ({
       destroyOnHidden
       closable={closable}
       maskClosable={maskClosable}
+      centered={centered}
+      style={top === undefined ? undefined : { top }}
+      zIndex={zIndex}
       closeIcon={<X className="w-5 h-5" />}
     >
       {children}

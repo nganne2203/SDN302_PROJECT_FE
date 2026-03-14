@@ -13,6 +13,7 @@ import ProfileContentRight from './ProfileContentRight'
 import uploadApi from '@/apis/upload'
 import type { UpdateProfilePayload } from '@/features/user/userTypes'
 import { vietnamAddressService } from '@/services/vietnamAddressService'
+import { getAvatarUrl } from '@/utils/getAvatar'
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -211,7 +212,7 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
             <ProfileContentLeft
               control={control}
               disabled={!isEditMode}
-              avatarUrl={avatarPreview || profile?.avatar}
+              avatarUrl={getAvatarUrl(profile, avatarPreview)}
               onAvatarUpload={handleAvatarUpload}
               uploading={uploadingAvatar}
             />

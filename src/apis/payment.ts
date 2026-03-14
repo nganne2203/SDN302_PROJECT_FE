@@ -9,9 +9,11 @@ export interface PaymentRecord {
   userId: string
   amount: number
   method: string
-  status: 'pending' | 'success' | 'failed' | 'refunded' | 'cancelled'
+  status: 'pending' | 'success' | 'failed' | 'refunded' | 'canceled' | 'cancelled'
   transactionId?: string
   providerData?: Record<string, unknown>
+  paidAt?: string
+  failureReason?: string
   createdAt: string
   updatedAt: string
 }
@@ -47,7 +49,6 @@ export interface PaymentFilter {
 }
 
 export const paymentApi = {
-  // Get list of supported banks
   getBanks: async (): Promise<ApiResponse<BankInfo[]>> => {
     const response = await apiClient.get<ApiResponse<BankInfo[]>>(
       API_ENDPOINTS.PAYMENT.BANKS
@@ -55,7 +56,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Get VNPay return (query params handled by backend redirect)
   getVnpayReturn: async (params: Record<string, string>): Promise<ApiResponse<unknown>> => {
     const response = await apiClient.get<ApiResponse<unknown>>(
       API_ENDPOINTS.PAYMENT.VNPAY_RETURN,
@@ -64,7 +64,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Create VNPay payment URL
   createVnpayPayment: async (data: VnpayCreateRequest): Promise<ApiResponse<{
     paymentUrl: string
     orderId: string
@@ -85,7 +84,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Get my payment history
   getMyPayments: async (filter?: PaymentFilter): Promise<PaginatedResponse<PaymentRecord>> => {
     const response = await apiClient.get<PaginatedResponse<PaymentRecord>>(
       API_ENDPOINTS.PAYMENT.MY_PAYMENTS,
@@ -94,7 +92,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Query transaction status by order number
   queryTransactionStatus: async (orderNumber: string): Promise<ApiResponse<PaymentRecord>> => {
     const response = await apiClient.get<ApiResponse<PaymentRecord>>(
       API_ENDPOINTS.PAYMENT.STATUS(orderNumber)
@@ -102,7 +99,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Check payment result by order number
   checkPaymentResult: async (orderNumber: string): Promise<ApiResponse<PaymentRecord>> => {
     const response = await apiClient.get<ApiResponse<PaymentRecord>>(
       API_ENDPOINTS.PAYMENT.CHECK(orderNumber)
@@ -110,7 +106,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Get payment by order ID
   getPaymentByOrder: async (orderId: string): Promise<ApiResponse<PaymentRecord>> => {
     const response = await apiClient.get<ApiResponse<PaymentRecord>>(
       API_ENDPOINTS.PAYMENT.BY_ORDER(orderId)
@@ -118,7 +113,6 @@ export const paymentApi = {
     return response.data
   },
 
-  // Cancel payment
   cancelPayment: async (orderId: string): Promise<ApiResponse<PaymentRecord>> => {
     const response = await apiClient.post<ApiResponse<PaymentRecord>>(
       API_ENDPOINTS.PAYMENT.CANCEL(orderId)

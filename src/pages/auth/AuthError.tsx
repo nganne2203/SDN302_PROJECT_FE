@@ -1,17 +1,92 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ROUTES } from '@/constants/constant'
+import { ROUTES, STORAGE_KEYS, MANAGEMENT_ROLES } from '@/constants/constant'
 import { toast } from '@/utils/toast'
 import { getErrorFromUrl } from '@/utils/googleAuthError'
+import authApi from '@/apis/auth'
+import { getStorage, setStorage } from '@/utils/storage'
+import { userApi } from '@/apis/user'
+import { useAppDispatch } from '@/apps/hooks'
+import { setCredentials } from '@/features/auth/authSlices'
+
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null
+  }
+  return null
+}
 
 const AuthError = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const errorMessage = getErrorFromUrl(searchParams)
+  const dispatch = useAppDispatch()
+  const didTryRecoverRef = useRef(false)
 
   useEffect(() => {
     toast.error(errorMessage)
   }, [errorMessage])
+
+  useEffect(() => {
+    if (didTryRecoverRef.current) return
+    didTryRecoverRef.current = true
+
+    // If the backend mistakenly redirected to /auth/error even though it already issued tokens,
+    // try to recover the session so the user can continue (and reach Set Password when needed).
+    const tryRecover = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+      const accessTokenFromUrl = searchParams.get('accessToken') || searchParams.get('access_token') || hashParams.get('accessToken') || hashParams.get('access_token')
+      const refreshTokenFromUrl = searchParams.get('refreshToken') || searchParams.get('refresh_token') || hashParams.get('refreshToken') || hashParams.get('refresh_token')
+
+      const existingAccessToken = getStorage(STORAGE_KEYS.ACCESS_TOKEN)
+      const existingRefreshToken =
+        getStorage(STORAGE_KEYS.REFRESH_TOKEN) ||
+        getCookie('refreshToken') ||
+        getCookie('refresh_token')
+
+      let accessToken = accessTokenFromUrl || existingAccessToken
+      let refreshToken = refreshTokenFromUrl || existingRefreshToken
+
+      // Persist tokens found on URL if present.
+      if (accessTokenFromUrl) setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessTokenFromUrl)
+      if (refreshTokenFromUrl) setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshTokenFromUrl)
+
+      // If we only have refreshToken (cookie), refresh to get a new accessToken.
+      if (!accessToken) {
+        if (!refreshToken) return
+        try {
+          const refreshed = await authApi.refreshToken({ refreshToken })
+          accessToken = refreshed.data.accessToken
+          refreshToken = refreshed.data.refreshToken
+
+          setStorage(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+          setStorage(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+        } catch {
+          return
+        }
+      }
+
+      try {
+        const profileResponse = await userApi.getProfile()
+        const user = profileResponse.data
+        setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(user))
+
+        dispatch(setCredentials({
+          user,
+          accessToken,
+          refreshToken
+        }))
+
+        navigate(MANAGEMENT_ROLES.includes(user.role) ? ROUTES.MANAGEMENT.DASHBOARD : ROUTES.HOME, { replace: true })
+      } catch {
+        // Ignore recovery failures; user can still retry login.
+      }
+    }
+
+    void tryRecover()
+  }, [dispatch, navigate])
 
   const handleRetry = () => {
     navigate(ROUTES.LOGIN, { replace: true })
