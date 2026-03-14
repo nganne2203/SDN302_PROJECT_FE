@@ -61,7 +61,7 @@ export const fetchProductByIdThunk = createAsyncThunk<
     }
 
     try {
-      const response = await productApi.getProductById(id)
+      const response = await productApi.getProductForOrder(id)
       return response.data
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tải thông tin sản phẩm'))

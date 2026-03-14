@@ -5,6 +5,7 @@ import { Edit, Trash2, Power } from 'lucide-react'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import dayjs from 'dayjs'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import { SERVICE_PRODUCT_TYPE_COLORS, getServiceProductTypeLabel } from '@/constants/constant'
 
 interface ServiceProductWithKey extends ServiceProduct {
   [key: string]: unknown
@@ -84,19 +85,16 @@ const ServiceProductList = ({
       key: 'type',
       title: 'Loại',
       dataIndex: 'type',
-      width: 120,
-      render: (value) => {
-        const colors: Record<string, string> = {
-          printing: 'bg-blue-50 text-blue-700 border-blue-200',
-          warranty: 'bg-purple-50 text-purple-700 border-purple-200',
-          other: 'bg-gray-50 text-gray-700 border-gray-200'
-        }
-        return (
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[value as string] || colors.other}`}>
-            {value === 'printing' ? 'In ấn' : value === 'warranty' ? 'Bảo hành' : 'Khác'}
-          </span>
-        )
-      }
+      width: 140,
+      render: (value) => (
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+            SERVICE_PRODUCT_TYPE_COLORS[value as string] || SERVICE_PRODUCT_TYPE_COLORS.other
+          }`}
+        >
+          {getServiceProductTypeLabel(value as string)}
+        </span>
+      )
     },
     {
       key: 'price',

@@ -7,7 +7,8 @@ import type {
   CreateReviewRequest,
   UpdateReviewRequest,
   FetchReviewsPayload,
-  ReviewStats
+  ReviewStats,
+  ReviewEligibility
 } from './reviewTypes'
 import type { Review } from './reviewTypes'
 
@@ -44,13 +45,13 @@ export const fetchProductReviewStatsThunk = createAsyncThunk<
 
 // Check if user can review
 export const checkCanReviewThunk = createAsyncThunk<
-  boolean,
+  ReviewEligibility,
   string,
   { rejectValue: string }
 >('review/checkCanReview', async (productId, { rejectWithValue }) => {
   try {
     const res = await reviewApi.canReview(productId)
-    return res.data.canReview
+    return res.data
   } catch (error) {
     return rejectWithValue(extractApiError(error, 'Không thể kiểm tra quyền đánh giá'))
   }
