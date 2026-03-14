@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 import { useMemo, useState, useEffect } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
 import { SERVICE_PRODUCT_TYPE_COLORS, getServiceProductTypeLabel } from '@/constants/constant'
@@ -48,6 +46,7 @@ const ProductDetail = ({
   onQuantityChange,
   selectedServices,
   pricingData,
+  // eslint-disable-next-line no-unused-vars
   isPricingLoading: _isPricingLoading = false,
   onAddToCart,
   onBuyNow
@@ -472,16 +471,6 @@ const ProductDetail = ({
                   ? product.compatibility.map((c: { name: string } | string) => typeof c === 'string' ? c : c.name).join(', ')
                   : 'Đang cập nhật'}
               </div>
-            </div>
-          )}
-          {false && activeTab === 'reviews' && (
-            <div>
-              <p>Chưa có đánh giá chi tiết. Hãy là người đầu tiên đánh giá sản phẩm này.</p>
-            </div>
-          )}
-          {false && activeTab === 'warranty' && (
-            <div>
-              <p>Sản phẩm được bảo hành chính hãng 12 tháng tại tất cả các chi nhánh.</p>
             </div>
           )}
         </div>

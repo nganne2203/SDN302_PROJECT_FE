@@ -10,7 +10,7 @@ export interface Review {
   orderId?: string
   rating: number
   comment?: string
-  images?: string[]
+  images?: Array<{ publicId: string; imageUrl: string }>
   isVerifiedPurchase: boolean
   createdAt: string
   updatedAt: string
@@ -38,7 +38,7 @@ export interface CreateReviewRequest {
 export interface UpdateReviewRequest {
   rating?: number
   comment?: string
-  images?: string[]
+  images?: File[]
 }
 
 export interface ReviewFilter {
@@ -121,9 +121,16 @@ export const reviewApi = {
 
   // Update review
   updateReview: async (id: string, data: UpdateReviewRequest): Promise<ApiResponse<Review>> => {
+    const formData = new FormData()
+    if (typeof data.rating === 'number') formData.append('rating', String(data.rating))
+    if (data.comment !== undefined) formData.append('comment', data.comment)
+    if (data.images?.length) {
+      data.images.forEach((file) => formData.append('images', file))
+    }
     const response = await apiClient.patch<ApiResponse<Review>>(
       API_ENDPOINTS.REVIEW.UPDATE(id),
-      data
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     )
     return response.data
   },

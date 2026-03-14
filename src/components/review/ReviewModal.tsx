@@ -33,6 +33,39 @@ const RATING_LABELS: Record<number, string> = {
 
 type FormData = CreateReviewFormData | UpdateReviewFormData
 
+const mapReviewImagesToUploadFiles = (images: Review['images'] = []): UploadFile[] =>
+  images.map((image, index) => ({
+    uid: `existing-${index}`,
+    name: image.publicId || `image-${index + 1}`,
+    status: 'done',
+    url: image.imageUrl
+  }))
+
+const fileNameFromUrl = (url: string, fallback: string) => {
+  try {
+    const pathname = new URL(url).pathname
+    const lastSegment = pathname.split('/').pop()
+    return lastSegment || fallback
+  } catch {
+    return fallback
+  }
+}
+
+const convertExistingUploadToFile = async (file: UploadFile, index: number): Promise<File | null> => {
+  if (!file.url) return null
+
+  try {
+    const response = await fetch(file.url)
+    const blob = await response.blob()
+    const fileName = file.name || fileNameFromUrl(file.url, `review-image-${index + 1}`)
+    const mimeType = blob.type || 'image/jpeg'
+
+    return new File([blob], fileName, { type: mimeType })
+  } catch {
+    return null
+  }
+}
+
 const ReviewModal = ({
   isOpen,
   onClose,
@@ -70,19 +103,7 @@ const ReviewModal = ({
       rating: existingReview?.rating ?? 0,
       comment: existingReview?.comment ?? '',
     })
-    // For edit mode, show existing images as preview-only items
-    if (existingReview?.images?.length) {
-      setFileList(
-        existingReview.images.map((url, i) => ({
-          uid: `existing-${i}`,
-          name: `image-${i + 1}`,
-          status: 'done' as const,
-          url,
-        }))
-      )
-    } else {
-      setFileList([])
-    }
+    setFileList(existingReview?.images?.length ? mapReviewImagesToUploadFiles(existingReview.images) : [])
     dismissError()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, existingReview?._id])
@@ -97,12 +118,23 @@ const ReviewModal = ({
       .filter((f) => f.originFileObj)
       .map((f) => f.originFileObj as File)
 
+    const retainedExistingFiles = await Promise.all(
+      fileList
+        .filter((f) => !f.originFileObj && !!f.url)
+        .map((file, index) => convertExistingUploadToFile(file, index))
+    )
+
+    const mergedFiles = [
+      ...retainedExistingFiles.filter((file): file is File => file !== null),
+      ...newFiles
+    ]
+
     let success = false
     if (isEditMode && existingReview) {
       success = await updateReview(existingReview._id, {
         rating: data.rating,
         comment: data.comment || undefined,
-        images: existingReview.images // keep existing images for update (JSON)
+        images: mergedFiles.length > 0 ? mergedFiles : undefined
       })
     } else {
       success = await createReview({

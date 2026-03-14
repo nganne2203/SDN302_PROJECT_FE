@@ -6,6 +6,7 @@ import { useAppSelector } from '@/apps/hooks'
 import ReviewModal from './ReviewModal'
 import { toast } from '@/utils/toast'
 import type { Review } from '@/features/review/reviewTypes'
+import { getAvatarUrl, resolveAvatarUrl } from '@/utils/getAvatar'
 
 interface ReviewSectionProps {
   productId: string
@@ -33,6 +34,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
   const [ratingFilter, setRatingFilter] = useState<number | undefined>(undefined)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
   const [editingReview, setEditingReview] = useState<Review | null>(null)
+  const [reviewerAvatarUrls, setReviewerAvatarUrls] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!productId) return
@@ -41,6 +43,44 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
     if (user) checkCanReview(productId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, page, ratingFilter, user])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const reviewers = productReviews
+      .map((review) => (typeof review.userId === 'object' ? review.userId : review.user))
+      .filter((reviewer): reviewer is NonNullable<typeof reviewer> => !!reviewer)
+
+    if (!reviewers.length) return
+
+    const preloadReviewerAvatars = async () => {
+      const resolvedEntries = await Promise.all(
+        reviewers.map(async (reviewer) => {
+          const syncUrl = getAvatarUrl(reviewer)
+          if (syncUrl) return [reviewer._id, syncUrl] as const
+
+          const resolvedUrl = await resolveAvatarUrl(reviewer)
+          return resolvedUrl ? ([reviewer._id, resolvedUrl] as const) : null
+        })
+      )
+
+      if (isCancelled) return
+
+      const nextUrls = Object.fromEntries(
+        resolvedEntries.filter((entry): entry is readonly [string, string] => entry !== null)
+      )
+
+      if (Object.keys(nextUrls).length > 0) {
+        setReviewerAvatarUrls((prev) => ({ ...prev, ...nextUrls }))
+      }
+    }
+
+    preloadReviewerAvatars()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [productReviews])
 
   const handleModalClose = () => {
     setIsWriteModalOpen(false)
@@ -213,7 +253,9 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
                 ? review.userId
                 : review.user
               const reviewerName = reviewer?.fullname ?? 'Người dùng'
-              const reviewerAvatar = reviewer?.avatar
+              const reviewerAvatar = reviewer?._id
+                ? reviewerAvatarUrls[reviewer._id] || getAvatarUrl(reviewer)
+                : undefined
               const currentUserId = getUserId()
               const reviewUserId = typeof review.userId === 'object' ? review.userId._id : review.userId
               const isOwner = !!currentUserId && currentUserId === reviewUserId
@@ -257,7 +299,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
                           {review.images.map((img, idx) => (
                             <img
                               key={idx}
-                              src={img}
+                              src={img.imageUrl}
                               alt={`review-${idx}`}
                               className="w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
