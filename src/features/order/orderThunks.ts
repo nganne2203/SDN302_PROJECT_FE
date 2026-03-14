@@ -36,9 +36,15 @@ const mapWithConcurrency = async <T, R>(
   return results
 }
 
-const hydrateOrderPayment = async (order: Order): Promise<Order> => {
-  // If BE already sent a payment status (including pending), prefer it and avoid extra lookup calls.
-  if (normalizePaymentStatus(getOrderPaymentStatusRaw(order))) return order
+const hydrateOrderPayment = async (
+  order: Order,
+  options?: { forceRefresh?: boolean }
+): Promise<Order> => {
+  const forceRefresh = Boolean(options?.forceRefresh)
+
+  // If BE already sent a payment status (including pending), prefer it and avoid extra lookup calls
+  // unless a caller explicitly requests a refresh (e.g. after status transitions that may affect payment).
+  if (!forceRefresh && normalizePaymentStatus(getOrderPaymentStatusRaw(order))) return order
 
   const paymentMethod = String((order as unknown as { paymentMethod?: string }).paymentMethod || '').toLowerCase()
   if (!paymentMethod) return order
@@ -48,7 +54,11 @@ const hydrateOrderPayment = async (order: Order): Promise<Order> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const orderNumber = String((order as any)?.orderNumber || '').trim()
 
-  const cached = paymentByOrderIdCache.get(orderId)
+  if (forceRefresh) {
+    paymentByOrderIdCache.delete(orderId)
+  }
+
+  const cached = forceRefresh ? undefined : paymentByOrderIdCache.get(orderId)
   if (cached !== undefined) {
     return {
       ...(order as unknown as Record<string, unknown>),
@@ -176,7 +186,22 @@ export const updateOrderStatusThunk = createAsyncThunk<Order, UpdateOrderStatusP
   async ({ orderId, status }, { rejectWithValue }) => {
     try {
       const response = await orderApi.updateOrderStatus(orderId, status)
-      return response.data
+
+      // The status-update endpoint may not include the latest payment fields (e.g. COD becomes paid on delivery).
+      // Fetch the latest order snapshot and then re-hydrate payment if needed.
+      let order = response.data
+      try {
+        const latest = await orderApi.getOrderById(orderId)
+        order = latest.data ?? order
+      } catch {
+        // keep `order` from status update response
+      }
+
+      const normalizedNextStatus = String(status || '').trim().toLowerCase()
+      const currentPayment = normalizePaymentStatus(getOrderPaymentStatusRaw(order))
+      const shouldRefreshPayment = normalizedNextStatus === 'delivered' && currentPayment !== 'success'
+
+      return await hydrateOrderPayment(order, { forceRefresh: shouldRefreshPayment })
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể cập nhật trạng thái đơn hàng'))
     }
