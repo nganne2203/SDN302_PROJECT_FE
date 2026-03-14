@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { useProduct } from '@/hooks/useProduct'
 import { useBranch } from '@/hooks/useBranch'
@@ -14,8 +14,7 @@ import pricingApi from '@/apis/pricing'
 import { serviceProductApi } from '@/apis/serviceProduct'
 
 import { toast } from '@/utils/toast'
-import { API_ENDPOINTS, ROUTES } from '@/constants/constant'
-import apiClient from '@/services/apiClient'
+import { ROUTES } from '@/constants/constant'
 
 import type { Branch } from '@/types/api'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
@@ -25,6 +24,7 @@ import { useAppSelector } from '@/apps/hooks'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const navigate = useNavigate()
 
   const {
@@ -36,6 +36,7 @@ const ProductDetailPage = () => {
   } = useProduct()
   const { branches, fetchBranches } = useBranch()
   const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const hasUserSelectedBranchRef = useRef(false)
 
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
   const [branchStock, setBranchStock] = useState<number | null>(null)
@@ -43,7 +44,7 @@ const ProductDetailPage = () => {
   const [services, setServices] = useState<ServiceProduct[]>([])
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
 
-  const [quantity, setQuantity] = useState(0)
+  const [quantity, setQuantity] = useState(1)
 
   const [pricingData, setPricingData] = useState<PricingCalculation | null>(
     null
@@ -62,6 +63,9 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (!id) return
 
+    hasUserSelectedBranchRef.current = false
+    setSelectedBranchId(null)
+    setBranchStock(null)
     fetchProductById(id)
     fetchRelatedProducts(id, 4)
   }, [id])
@@ -75,10 +79,24 @@ const ProductDetailPage = () => {
   }, [])
 
   useEffect(() => {
-    if (branches.length && !selectedBranchId) {
-      setSelectedBranchId(branches[0]._id)
+    if (!branches.length) return
+
+    const stockByBranch = selectedProduct?.stockByBranch ?? []
+    const stockMap = new Map(stockByBranch.map((item) => [item.branch._id, item.quantity]))
+    const firstBranchWithStock = branches.find((branch) => (stockMap.get(branch._id) ?? 0) > 0)
+
+    if (!selectedBranchId) {
+      setSelectedBranchId(firstBranchWithStock?._id ?? branches[0]._id)
+      return
     }
-  }, [branches])
+
+    if (hasUserSelectedBranchRef.current || !firstBranchWithStock) return
+
+    const currentBranchStock = stockMap.get(selectedBranchId) ?? 0
+    if (currentBranchStock > 0 || firstBranchWithStock._id === selectedBranchId) return
+
+    setSelectedBranchId(firstBranchWithStock._id)
+  }, [branches, selectedBranchId, selectedProduct])
 
   /* ===============================
         FETCH SERVICES
@@ -105,32 +123,17 @@ const ProductDetailPage = () => {
     fetchServices()
   }, [id])
 
-  /* ===============================
-        FETCH STOCK
-  =============================== */
-
   useEffect(() => {
-    if (!id || !selectedBranchId) return
-
-    const fetchStock = async () => {
-      try {
-        setIsStockLoading(true)
-
-        const res = await apiClient.get(
-          API_ENDPOINTS.STORE_INVENTORY.BY_PRODUCT(selectedBranchId, id)
-        )
-
-        const qty = res?.data?.data?.quantity
-        setBranchStock(typeof qty === 'number' ? qty : null)
-      } catch (err: any) {
-        setBranchStock(err?.response?.status === 404 ? null : 0)
-      } finally {
-        setIsStockLoading(false)
-      }
+    if (!selectedBranchId) {
+      setBranchStock(null)
+      setIsStockLoading(false)
+      return
     }
 
-    fetchStock()
-  }, [id, selectedBranchId])
+    const matchedStock = selectedProduct?.stockByBranch?.find((item) => item.branch._id === selectedBranchId)
+    setBranchStock(matchedStock ? matchedStock.quantity : null)
+    setIsStockLoading(false)
+  }, [selectedBranchId, selectedProduct])
 
   /* ===============================
         FETCH PRICING
@@ -143,7 +146,8 @@ const ProductDetailPage = () => {
       try {
         setIsPricingLoading(true)
 
-        const res = await pricingApi.calculatePrice(id, quantity)
+        const pricingQuantity = Math.max(quantity, 1)
+        const res = await pricingApi.calculatePrice(id, pricingQuantity)
         setPricingData(res.data)
       } catch {
         setPricingData(null)
@@ -155,6 +159,20 @@ const ProductDetailPage = () => {
     fetchPricing()
   }, [id, quantity])
 
+  useEffect(() => {
+    if (location.hash !== '#feedback') return
+
+    const scrollToFeedback = () => {
+      document.getElementById('product-feedback')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+
+    const timer = window.setTimeout(scrollToFeedback, 150)
+    return () => window.clearTimeout(timer)
+  }, [location.hash, selectedProduct?._id])
+
   /* ===============================
         FIX QUANTITY > STOCK
   =============================== */
@@ -162,8 +180,13 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (branchStock !== null && quantity > branchStock) {
       setQuantity(branchStock)
+      return
     }
-  }, [branchStock])
+
+    if (branchStock !== null && branchStock > 0 && quantity < 1) {
+      setQuantity(1)
+    }
+  }, [branchStock, quantity])
 
   /* ===============================
         SELECTED SERVICES
@@ -180,7 +203,12 @@ const ProductDetailPage = () => {
         ? prev.filter((id) => id !== serviceId)
         : [...prev, serviceId]
     )
-  };
+  }
+
+  const handleBranchChange = (branchId: string | null) => {
+    hasUserSelectedBranchRef.current = true
+    setSelectedBranchId(branchId)
+  }
 
   /* ===============================
         ADD TO CART
@@ -258,7 +286,7 @@ const ProductDetailPage = () => {
           relatedProducts={relatedProducts}
           branches={branches as Branch[]}
           selectedBranchId={selectedBranchId}
-          onBranchChange={setSelectedBranchId}
+          onBranchChange={handleBranchChange}
           branchStock={branchStock}
           isStockLoading={isStockLoading}
           services={services}

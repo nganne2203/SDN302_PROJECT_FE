@@ -208,6 +208,13 @@ export interface Product {
   ratingAvg: number;
   ratingCount: number;
   isActive: boolean;
+  totalStock?: number;
+  inStock?: boolean;
+  stockByBranch?: Array<{
+    branch: Branch;
+    quantity: number;
+    inStock: boolean;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

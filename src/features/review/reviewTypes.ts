@@ -6,6 +6,11 @@ export interface ReviewUser {
   avatar?: string
 }
 
+export interface ReviewImage {
+  publicId: string
+  imageUrl: string
+}
+
 export interface Review {
   _id: string
   userId: string | ReviewUser
@@ -13,7 +18,7 @@ export interface Review {
   orderId?: string
   rating: number
   comment?: string
-  images?: string[]
+  images?: ReviewImage[]
   isVerifiedPurchase: boolean
   createdAt: string
   updatedAt: string
@@ -24,6 +29,13 @@ export interface ReviewStats {
   averageRating: number
   totalReviews: number
   ratingDistribution: Record<string, number>
+}
+
+export interface ReviewEligibility {
+  canReview: boolean
+  hasPurchased: boolean
+  hasReviewed: boolean
+  existingReview: Review | null
 }
 
 export interface CreateReviewRequest {
@@ -37,7 +49,7 @@ export interface CreateReviewRequest {
 export interface UpdateReviewRequest {
   rating?: number
   comment?: string
-  images?: string[]
+  images?: File[]
 }
 
 export interface ReviewFilter {
@@ -55,6 +67,7 @@ export interface ReviewState {
   productReviewsPagination: PaginationMeta | null
   productStats: ReviewStats | null
   canReview: boolean | null
+  reviewEligibility: ReviewEligibility | null
 
   // My reviews
   myReviews: Review[]

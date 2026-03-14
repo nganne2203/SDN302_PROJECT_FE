@@ -2,6 +2,7 @@ import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
 import type { ApiError, ApiResponse, UserInfo, ProfileResponse } from '@/types/api'
 import { mapBackendUserToUserInfo } from '@/utils/userMapper'
+import { stripLocationCodesFromList } from '@/utils/address'
 import uploadApi from './upload'
 import type { AxiosError } from 'axios'
 
@@ -105,9 +106,16 @@ export const userApi = {
   },
 
   updateProfile: async (data: UpdateProfileRequest): Promise<ApiResponse<UserInfo>> => {
+    const sanitizedData: UpdateProfileRequest = data.addresses
+      ? {
+        ...data,
+        addresses: stripLocationCodesFromList(data.addresses)
+      }
+      : data
+
     const response = await apiClient.put<ApiResponse<UserInfo>>(
       API_ENDPOINTS.USER.UPDATE_PROFILE,
-      data
+      sanitizedData
     )
     const userWithAvatar = await resolveUserAvatar(response.data.data)
 

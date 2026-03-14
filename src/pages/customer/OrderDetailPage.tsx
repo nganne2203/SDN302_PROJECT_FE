@@ -373,6 +373,14 @@ const OrderDetailPage = () => {
               <span className="font-medium text-gray-800 line-clamp-2 block">
                 {item.product.name}
               </span>
+              {isDeliveredOrder(order) && (
+                <Link
+                  to={`/products/${item.product._id}#feedback`}
+                  className="inline-flex mt-1 text-xs font-medium text-emerald-600 hover:text-emerald-700"
+                >
+                  Đi đến đánh giá
+                </Link>
+              )}
               {selectedServices.length > 0 && (
                 <div className="mt-1 space-y-0.5">
                   {selectedServices.map((service, index) => (
