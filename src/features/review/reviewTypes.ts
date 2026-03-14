@@ -26,6 +26,13 @@ export interface ReviewStats {
   ratingDistribution: Record<string, number>
 }
 
+export interface ReviewEligibility {
+  canReview: boolean
+  hasPurchased: boolean
+  hasReviewed: boolean
+  existingReview: Review | null
+}
+
 export interface CreateReviewRequest {
   productId: string
   orderId?: string
@@ -55,6 +62,7 @@ export interface ReviewState {
   productReviewsPagination: PaginationMeta | null
   productStats: ReviewStats | null
   canReview: boolean | null
+  reviewEligibility: ReviewEligibility | null
 
   // My reviews
   myReviews: Review[]

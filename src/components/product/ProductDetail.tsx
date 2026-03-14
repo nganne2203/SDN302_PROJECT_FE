@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useMemo, useState, useEffect } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
+import { SERVICE_PRODUCT_TYPE_COLORS, getServiceProductTypeLabel } from '@/constants/constant'
 import type { Branch, Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
@@ -57,7 +58,7 @@ const ProductDetail = ({
   useEffect(() => {
     setQuantityInput(String(quantity))
   }, [quantity])
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'warranty'>('description')
+  const [activeTab, setActiveTab] = useState<'description' | 'specs'>('description')
 
   const imageUrls = useMemo(() => {
     const imgs = Array.isArray(product.images)
@@ -75,12 +76,14 @@ const ProductDetail = ({
   const ratingCount = product.ratingCount || 0
   const serviceTotal = selectedServices.reduce((sum, svc) => sum + (svc.price || 0), 0)
   const pricingInfo = pricingData?.pricing
+  const pricingQuantity = pricingData?.quantity && pricingData.quantity > 0 ? pricingData.quantity : 1
   const unitPrice = pricingInfo?.pricePerUnit ?? product.price
-  const originalUnitPrice = pricingInfo?.originalTotal && quantity > 0
-    ? pricingInfo.originalTotal / quantity
+  const originalUnitPrice = pricingInfo?.originalTotal
+    ? pricingInfo.originalTotal / pricingQuantity
     : product.price
   const discountPercent = pricingInfo?.discountPercentage ?? 0
-  const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
+  const hasDiscount = discountPercent > 0 && unitPrice < originalUnitPrice
+  const productTotal = quantity > 0 ? (pricingInfo?.totalPrice ?? product.price * quantity) : 0
   const totalPrice = productTotal + serviceTotal * quantity
   const isOutOfStock = !isStockLoading && selectedBranchId !== null && (branchStock === null || branchStock === 0)
   const maxQuantity = branchStock !== null && branchStock > 0 ? branchStock : 99
@@ -191,13 +194,13 @@ const ProductDetail = ({
                 <span className="text-4xl font-bold text-blue-600">
                   {formatCurrency(unitPrice)}
                 </span>
-                {discountPercent > 0 && originalUnitPrice > unitPrice && (
+                {hasDiscount && (
                   <>
                     <span className="text-sm text-gray-400 line-through">
                       {formatCurrency(Math.round(originalUnitPrice))}
                     </span>
                     <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                      -{discountPercent}%
+                      -{Math.round(discountPercent)}%
                     </span>
                   </>
                 )}
@@ -388,8 +391,12 @@ const ProductDetail = ({
                           </div>
                         </div>
                         <p className="text-xs text-gray-500">{svc.description}</p>
-                        <span className="inline-block mt-2 text-[10px] uppercase px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-                          {svc.type}
+                        <span
+                          className={`inline-block mt-2 text-[10px] uppercase px-2 py-1 rounded-full border ${
+                            SERVICE_PRODUCT_TYPE_COLORS[svc.type] || SERVICE_PRODUCT_TYPE_COLORS.other
+                          }`}
+                        >
+                          {getServiceProductTypeLabel(svc.type)}
                         </span>
                       </div>
                     </label>
@@ -404,7 +411,7 @@ const ProductDetail = ({
                   <span>Giá sản phẩm:</span>
                   <span>{formatCurrency(productTotal)}</span>
                 </div>
-                {discountPercent > 0 && pricingInfo && (
+                {hasDiscount && pricingInfo && (
                   <div className="flex justify-between text-xs text-green-600">
                     <span>Tiet kiem:</span>
                     <span>{formatCurrency(pricingInfo.savings)}</span>
@@ -435,7 +442,7 @@ const ProductDetail = ({
             { key: 'specs', label: 'Thông số kỹ thuật' },
             { key: 'reviews', label: `Đánh giá (${ratingCount})` },
             { key: 'warranty', label: 'Chính sách bảo hành' }
-          ].map((tab) => (
+          ].filter((tab) => tab.key === 'description' || tab.key === 'specs').map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
@@ -459,7 +466,6 @@ const ProductDetail = ({
             <div className="space-y-2">
               <div><span className="font-medium text-gray-700">Chất liệu:</span> {product.material || 'Đang cập nhật'}</div>
               <div><span className="font-medium text-gray-700">Danh mục:</span> {categoryName}</div>
-              <div><span className="font-medium text-gray-700">Slug:</span> {product.slug}</div>
               <div>
                 <span className="font-medium text-gray-700">Thiết bị tương thích:</span>{' '}
                 {product.compatibility && product.compatibility.length > 0
@@ -468,12 +474,12 @@ const ProductDetail = ({
               </div>
             </div>
           )}
-          {activeTab === 'reviews' && (
+          {false && activeTab === 'reviews' && (
             <div>
               <p>Chưa có đánh giá chi tiết. Hãy là người đầu tiên đánh giá sản phẩm này.</p>
             </div>
           )}
-          {activeTab === 'warranty' && (
+          {false && activeTab === 'warranty' && (
             <div>
               <p>Sản phẩm được bảo hành chính hãng 12 tháng tại tất cả các chi nhánh.</p>
             </div>

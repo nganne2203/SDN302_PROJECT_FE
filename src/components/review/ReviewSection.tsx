@@ -18,6 +18,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
     productReviewsPagination,
     productStats,
     canReview,
+    reviewEligibility,
     isLoading,
     isSubmitting,
     fetchProductReviews,
@@ -83,9 +84,18 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
   const totalReviews = productStats?.totalReviews ?? 0
   const avg = productStats?.averageRating ?? 0
   const dist = productStats?.ratingDistribution ?? {}
+  const canWriteReview = !!user && !!canReview
+  const existingReview = user ? (reviewEligibility?.existingReview ?? null) : null
+  const reviewNotice = !user
+    ? 'Đăng nhập để đánh giá sản phẩm sau khi mua hàng.'
+    : reviewEligibility?.hasReviewed
+      ? 'Bạn đã đánh giá sản phẩm này. Bạn có thể chỉnh sửa lại đánh giá của mình.'
+      : reviewEligibility?.hasPurchased === false
+        ? 'Bạn chỉ có thể đánh giá sau khi đơn hàng đã được giao thành công.'
+        : null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
+    <div id="product-feedback" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
       <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
         <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
         Đánh giá sản phẩm
@@ -155,15 +165,31 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
       )}
 
       {/* Write review button */}
-      {user && canReview && (
+      {(canWriteReview || existingReview || !!reviewNotice) && (
         <div className="mb-6">
-          <button
-            onClick={() => { setEditingReview(null); setIsWriteModalOpen(true) }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-          >
-            <Star className="w-4 h-4" />
-            Viết đánh giá
-          </button>
+          <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            {canWriteReview && (
+              <button
+                onClick={() => { setEditingReview(null); setIsWriteModalOpen(true) }}
+                className="flex w-fit items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+              >
+                <Star className="w-4 h-4" />
+                Viết đánh giá
+              </button>
+            )}
+            {!canWriteReview && existingReview && (
+              <button
+                onClick={() => handleEdit(existingReview)}
+                className="flex w-fit items-center gap-2 px-5 py-2.5 bg-white text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+              >
+                <Edit2 className="w-4 h-4" />
+                Chỉnh sửa đánh giá của bạn
+              </button>
+            )}
+            {reviewNotice && (
+              <p className="text-sm text-gray-600">{reviewNotice}</p>
+            )}
+          </div>
         </div>
       )}
 

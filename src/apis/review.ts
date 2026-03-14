@@ -1,6 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { API_ENDPOINTS } from '@/constants/constant'
 import type { ApiResponse, PaginatedResponse } from '@/types/api'
+import type { ReviewEligibility } from '@/features/review/reviewTypes'
 
 export interface Review {
   _id: string
@@ -103,8 +104,8 @@ export const reviewApi = {
   },
 
   // Check if current user can review a product
-  canReview: async (productId: string): Promise<ApiResponse<{ canReview: boolean }>> => {
-    const response = await apiClient.get<ApiResponse<{ canReview: boolean }>>(
+  canReview: async (productId: string): Promise<ApiResponse<ReviewEligibility>> => {
+    const response = await apiClient.get<ApiResponse<ReviewEligibility>>(
       API_ENDPOINTS.REVIEW.CAN_REVIEW(productId)
     )
     return response.data
