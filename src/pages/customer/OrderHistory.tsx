@@ -7,6 +7,7 @@ import { LoaderCommon } from '@/components/common'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import useOrder from '@/hooks/useOrder'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getOrderPaymentDisplay } from '@/utils/orderPayment'
 import { ROUTES } from '@/constants/constant'
 import type { Order } from '@/types/api'
 import type { OrderFilter } from '@/features/order/orderTypes'
@@ -93,6 +94,21 @@ const OrderHistory = () => {
       )
     },
     {
+      title: 'Thanh toán',
+      dataIndex: 'paymentStatus',
+      key: 'payment',
+      render: (value: string, record: Order) => {
+        const paymentDisplay = getOrderPaymentDisplay(record, value)
+        return (
+          <span className={
+            paymentDisplay.tone === 'success' ? 'text-green-600' :
+              paymentDisplay.tone === 'warning' ? 'text-yellow-600' :
+                paymentDisplay.tone === 'error' ? 'text-red-600' : 'text-gray-600'
+          }>{paymentDisplay.label}</span>
+        )
+      }
+    },
+    {
       title: 'Trạng thái',
       dataIndex: 'orderStatus',
       key: 'status',
@@ -101,7 +117,7 @@ const OrderHistory = () => {
       )
     },
     {
-      title: 'Thảo tác',
+      title: 'Thao tác',
       key: 'actions',
       align: 'center' as const,
       render: (_: unknown, order: Order) => (

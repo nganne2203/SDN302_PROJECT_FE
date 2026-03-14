@@ -3,7 +3,7 @@ import { orderApi, type OrderFilter } from '@/apis/order'
 import paymentApi from '@/apis/payment'
 import { extractApiError } from '@/utils/apiError'
 import type { Order, CreateOrderRequest } from '@/types/api'
-import { isOrderPaid } from '@/utils/orderPayment'
+import { getOrderPaymentStatusRaw, normalizePaymentStatus } from '@/utils/orderPayment'
 import type { FetchOrdersPayload, UpdateOrderStatusPayload, CancelOrderPayload } from './orderTypes'
 
 const getOrderListRequestKey = (params?: OrderFilter) => JSON.stringify(params ?? {})
@@ -17,7 +17,8 @@ const getOrderId = (order: Order): string =>
 const mapWithConcurrency = async <T, R>(
   items: T[],
   limit: number,
-  mapper: (item: T) => Promise<R>
+  // eslint-disable-next-line no-unused-vars
+  mapper: (_item: T) => Promise<R>
 ): Promise<R[]> => {
   const results: R[] = new Array(items.length)
   let nextIndex = 0
@@ -36,10 +37,11 @@ const mapWithConcurrency = async <T, R>(
 }
 
 const hydrateOrderPayment = async (order: Order): Promise<Order> => {
-  if (isOrderPaid(order)) return order
+  // If BE already sent a payment status (including pending), prefer it and avoid extra lookup calls.
+  if (normalizePaymentStatus(getOrderPaymentStatusRaw(order))) return order
 
   const paymentMethod = String((order as unknown as { paymentMethod?: string }).paymentMethod || '').toLowerCase()
-  if (!paymentMethod || paymentMethod === 'cod') return order
+  if (!paymentMethod) return order
 
   const orderId = getOrderId(order)
   if (!orderId) return order
@@ -51,7 +53,10 @@ const hydrateOrderPayment = async (order: Order): Promise<Order> => {
     return {
       ...(order as unknown as Record<string, unknown>),
       payment: cached,
-      paymentStatus: (order as unknown as { paymentStatus?: string }).paymentStatus || cached?.status
+      paymentStatus:
+        (order as unknown as { paymentStatus?: string }).paymentStatus ||
+        (order as unknown as { payment?: { status?: string } | null }).payment?.status ||
+        cached?.status
     } as unknown as Order
   }
 
@@ -64,7 +69,10 @@ const hydrateOrderPayment = async (order: Order): Promise<Order> => {
     return {
       ...(order as unknown as Record<string, unknown>),
       payment,
-      paymentStatus: (order as unknown as { paymentStatus?: string }).paymentStatus || payment?.status
+      paymentStatus:
+        (order as unknown as { paymentStatus?: string }).paymentStatus ||
+        (order as unknown as { payment?: { status?: string } | null }).payment?.status ||
+        payment?.status
     } as unknown as Order
   } catch {
     // Some backends expose payment lookup by orderNumber instead of orderId.
@@ -78,7 +86,10 @@ const hydrateOrderPayment = async (order: Order): Promise<Order> => {
         return {
           ...(order as unknown as Record<string, unknown>),
           payment,
-          paymentStatus: (order as unknown as { paymentStatus?: string }).paymentStatus || payment?.status
+          paymentStatus:
+            (order as unknown as { paymentStatus?: string }).paymentStatus ||
+            (order as unknown as { payment?: { status?: string } | null }).payment?.status ||
+            payment?.status
         } as unknown as Order
       } catch {
         // fall through

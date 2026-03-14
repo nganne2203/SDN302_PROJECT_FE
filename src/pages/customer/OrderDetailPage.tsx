@@ -16,7 +16,6 @@ import {
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { orderApi } from '@/apis/order'
 import paymentApi, { type PaymentRecord } from '@/apis/payment'
-import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import { ROUTES } from '@/constants/constant'
@@ -86,7 +85,7 @@ interface BackendOrder {
   message?: string
   cancelReason?: string
   shippingAddress: BackendShippingAddress
-  delivery: BackendDelivery
+  delivery: BackendDelivery | null
   branch?: BackendBranch
   items: BackendItem[]
   createdAt: string
@@ -96,6 +95,31 @@ interface BackendOrder {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const normalizeLower = (value?: string | null) => (typeof value === 'string' ? value.trim().toLowerCase() : '')
 
+type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+
+const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'Chờ xử lý',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đang giao',
+  delivered: 'Đã giao',
+  cancelled: 'Đã hủy'
+}
+
+const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
+  pending: 'warning',
+  confirmed: 'processing',
+  shipped: 'blue',
+  delivered: 'success',
+  cancelled: 'error'
+}
+
+function getOrderStatus(order: BackendOrder | null): OrderStatus {
+  const s = normalizeLower(order?.orderStatus)
+  if (s === 'canceled') return 'cancelled' // legacy
+  if (s === 'pending' || s === 'confirmed' || s === 'shipped' || s === 'delivered' || s === 'cancelled') return s
+  return 'pending'
+}
+
 const isDeliveredOrder = (target: BackendOrder | null): boolean => {
   if (!target) return false
   return normalizeLower(target.orderStatus) === 'delivered' || normalizeLower(target.delivery?.status) === 'delivered'
@@ -103,7 +127,12 @@ const isDeliveredOrder = (target: BackendOrder | null): boolean => {
 
 const isFinalPaymentStatus = (status?: string | null): boolean => {
   const normalized = normalizeLower(status)
-  return normalized === 'success' || normalized === 'failed' || normalized === 'cancelled' || normalized === 'refunded'
+  return (
+    normalized === 'success' ||
+    normalized === 'failed' ||
+    normalized === 'cancelled' ||
+    normalized === 'refunded'
+  )
 }
 
 const PAYMENT_METHOD_MAP: Record<string, string> = {
@@ -121,6 +150,34 @@ const DELIVERY_STATUS_MAP: Record<string, { label: string; color: string }> = {
   in_transit: { label: 'Đang vận chuyển', color: 'blue' },
   delivered: { label: 'Đã giao', color: 'success' },
   failed: { label: 'Giao thất bại', color: 'error' }
+}
+
+type DeliveryStatus = 'pending' | 'shipping' | 'delivered' | 'cancelled' | 'failed'
+
+const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
+  pending: 'Chờ giao',
+  shipping: 'Đang giao',
+  delivered: 'Đã giao',
+  cancelled: 'Đã hủy',
+  failed: 'Giao thất bại'
+}
+
+const DELIVERY_STATUS_COLORS: Record<DeliveryStatus, string> = {
+  pending: 'default',
+  shipping: 'processing',
+  delivered: 'success',
+  cancelled: 'default',
+  failed: 'error'
+}
+
+function getDeliveryStatus(order: BackendOrder | null): DeliveryStatus | null {
+  const s = normalizeLower(order?.delivery?.status)
+  if (!s) return null
+  if (s === 'canceled') return 'cancelled' // legacy
+  if (s === 'pending' || s === 'shipping' || s === 'delivered' || s === 'cancelled' || s === 'failed') {
+    return s
+  }
+  return null
 }
 
 const extractItemServices = (services: unknown[]): Array<{ name: string; price: number }> => {
@@ -151,10 +208,11 @@ const OrderDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelModalVisible, setCancelModalVisible] = useState(false)
-  const [cancelReason, setCancelReason] = useState("")
-  const [cancelError, setCancelError] = useState("")
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelError, setCancelError] = useState('')
 
   const pollingTimerRef = useRef<number | null>(null)
+  const didRefetchOrderAfterRefundRef = useRef(false)
 
   const loadPayment = async (orderId: string) => {
     setIsPaymentLoading(true)
@@ -188,6 +246,26 @@ const OrderDetailPage = () => {
     loadOrder()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  useEffect(() => {
+    if (!id || !order) return
+
+    const paymentStatus = String(payment?.status ?? '').toLowerCase()
+    if (paymentStatus !== 'refunded') {
+      didRefetchOrderAfterRefundRef.current = false
+      return
+    }
+
+    const orderStatus = String(order.orderStatus ?? '').toLowerCase()
+    if (orderStatus !== 'confirmed') return
+    if (didRefetchOrderAfterRefundRef.current) return
+    didRefetchOrderAfterRefundRef.current = true
+
+    orderApi
+      .getOrderById(id)
+      .then((res) => setOrder(res.data as unknown as BackendOrder))
+      .catch(() => undefined)
+  }, [id, order?.orderStatus, payment?.status])
 
   useEffect(() => {
     // Poll only for COD orders until payment becomes final, so user sees paidAt without manual refresh.
@@ -238,34 +316,35 @@ const OrderDetailPage = () => {
     }
   }, [id, order?._id, order?.paymentMethod, payment?.status])
 
-  const canCancel = ['pending', 'confirmed'].includes((order?.orderStatus ?? '').toLowerCase())
+  const normalizedOrderStatus = getOrderStatus(order)
+  const canCancel = normalizedOrderStatus === 'pending' || normalizedOrderStatus === 'confirmed'
 
   const handleCancel = () => {
     setCancelModalVisible(true)
-    setCancelReason("")
-    setCancelError("")
+    setCancelReason('')
+    setCancelError('')
   }
 
   const handleCancelOrder = async () => {
     const trimmedReason = cancelReason.trim()
     if (!trimmedReason) {
-      setCancelError("Vui lòng nhập lý do hủy đơn hàng.")
+      setCancelError('Vui lòng nhập lý do hủy đơn hàng.')
       return
     }
     if (trimmedReason.length < 10) {
-      setCancelError("Lý do hủy phải có ít nhất 10 ký tự.")
+      setCancelError('Lý do hủy phải có ít nhất 10 ký tự.')
       return
     }
     if (!id) return
     setIsCancelling(true)
-    setCancelError("")
+    setCancelError('')
     try {
       await orderApi.cancelOrder(id, cancelReason)
-      message.success("Đã hủy đơn hàng thành công")
+      message.success('Đã hủy đơn hàng thành công')
       setCancelModalVisible(false)
       loadOrder()
     } catch {
-      message.error("Không thể hủy đơn hàng")
+      message.error('Không thể hủy đơn hàng')
     } finally {
       setIsCancelling(false)
     }
@@ -358,11 +437,9 @@ const OrderDetailPage = () => {
   const delivery = order.delivery
   const shippingFee = order.shippingFee ?? 0
   const payMethodKey = (order.paymentMethod ?? '').toLowerCase()
-  const deliveryStatusKey = (delivery?.status ?? '').toLowerCase()
-  const deliveryStatusInfo = DELIVERY_STATUS_MAP[deliveryStatusKey] ?? {
-    label: delivery?.status ?? '—',
-    color: 'default'
-  }
+  const deliveryStatus = getDeliveryStatus(order)
+  const deliveryText = deliveryStatus ? DELIVERY_STATUS_LABELS[deliveryStatus] : 'N/A'
+  const deliveryColor = deliveryStatus ? DELIVERY_STATUS_COLORS[deliveryStatus] : 'default'
   const paymentStatusKey = (payment?.status ?? '').toLowerCase()
   const paymentTagColor =
     paymentStatusKey === 'success'
@@ -386,7 +463,6 @@ const OrderDetailPage = () => {
               : 'N/A'
   const paidAtText = payment?.paidAt ? new Date(payment.paidAt).toLocaleString('vi-VN') : ''
 
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 space-y-6">
@@ -408,7 +484,9 @@ const OrderDetailPage = () => {
               )}
             </Title>
           </div>
-          <OrderStatusBadge status={order.orderStatus} />
+          <Tag color={ORDER_STATUS_COLORS[normalizedOrderStatus]}>
+            {ORDER_STATUS_LABELS[normalizedOrderStatus]}
+          </Tag>
         </div>
 
         {/* ── Items table ── */}
@@ -446,8 +524,6 @@ const OrderDetailPage = () => {
           </div>
         </Card>
 
-        
-
         <Row gutter={[16, 16]} className="mt-2">
           {/* ── Shipping address ── */}
           <Col xs={24} md={14}>
@@ -462,26 +538,28 @@ const OrderDetailPage = () => {
                 </Descriptions.Item>
               </Descriptions>
 
-              {/* Delivery tracking */}
-              {delivery && (
-                <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 font-medium">Vận chuyển:</span>
-                    <Tag color={deliveryStatusInfo.color}>{deliveryStatusInfo.label}</Tag>
-                  </div>
-                  {delivery.trackingCode && (
-                    <div className="text-xs text-gray-500">
-                      Mã vận đơn:{' '}
-                      <span className="font-mono text-gray-700">{delivery.trackingCode}</span>
-                    </div>
-                  )}
-                  {delivery.providerName && (
-                    <div className="text-xs text-gray-500">
-                      Đơn vị vận chuyển: {delivery.providerName}
-                    </div>
+              {/* Delivery */}
+              <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-medium">Vận chuyển:</span>
+                  {deliveryStatus ? (
+                    <Tag color={deliveryColor}>{deliveryText}</Tag>
+                  ) : (
+                    <span className="text-xs text-gray-500">N/A</span>
                   )}
                 </div>
-              )}
+                {delivery?.trackingCode && (
+                  <div className="text-xs text-gray-500">
+                    Mã vận đơn:{' '}
+                    <span className="font-mono text-gray-700">{delivery.trackingCode}</span>
+                  </div>
+                )}
+                {delivery?.providerName && (
+                  <div className="text-xs text-gray-500">
+                    Đơn vị vận chuyển: {delivery.providerName}
+                  </div>
+                )}
+              </div>
 
               {order.message && (
                 <div className="mt-3 text-sm text-gray-500">
