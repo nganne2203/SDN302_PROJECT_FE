@@ -333,6 +333,11 @@ export const ORDER_STATUS_LABELS = {
 } as const
 
 export const PAYMENT_STATUS_LABELS = {
+  pending: 'Chưa thanh toán',
+  success: 'Đã thanh toán',
+  failed: 'Thanh toán thất bại',
+  refunded: 'Đã hoàn tiền',
+  canceled: 'Đã hủy thanh toán',
   PENDING: 'Chờ thanh toán',
   PAID: 'Đã thanh toán',
   FAILED: 'Thanh toán thất bại',

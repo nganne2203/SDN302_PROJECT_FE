@@ -3,7 +3,7 @@ interface OrderStatusBadgeProps {
 }
 
 const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
-  const getStatusConfig = (status?: string | null) => {
+  const getStatusConfig = (value?: string | null) => {
     const statusMap: Record<string, { label: string; className: string }> = {
       pending: {
         label: 'Chờ xác nhận',
@@ -27,9 +27,11 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
       }
     }
 
-    const normalized = typeof status === 'string' ? status.toLowerCase() : ''
+    let normalized = typeof value === 'string' ? value.trim().toLowerCase() : ''
+    if (normalized === 'canceled') normalized = 'cancelled'
+
     return statusMap[normalized] || {
-      label: status || 'Không xác định',
+      label: value || 'Không xác định',
       className: 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -46,3 +48,4 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
 }
 
 export default OrderStatusBadge
+
