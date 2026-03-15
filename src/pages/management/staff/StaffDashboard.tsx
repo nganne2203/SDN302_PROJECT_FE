@@ -3,7 +3,6 @@ import { Alert, Button, Card, Col, Empty, Row, Select, Spin, Statistic, Table, T
 import {
   ShoppingCartOutlined,
   CheckCircleOutlined,
-  FileTextOutlined,
   ReloadOutlined,
   AlertOutlined,
   InboxOutlined,
@@ -164,7 +163,7 @@ const StaffDashboard = () => {
 
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
                 title="Đơn hàng trong kỳ"
@@ -174,17 +173,7 @@ const StaffDashboard = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
-              <Statistic
-                title="Đơn chờ xử lý"
-                value={dashboard?.orders.pending ?? 0}
-                prefix={<FileTextOutlined className="text-yellow-600" />}
-                styles={{ content: { color: '#faad14' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
                 title="Sản phẩm sắp hết"
@@ -194,7 +183,7 @@ const StaffDashboard = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
                 title="Hết hàng"
