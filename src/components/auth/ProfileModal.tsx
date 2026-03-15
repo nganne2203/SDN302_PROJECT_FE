@@ -150,12 +150,12 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
 
       const result = await updateProfile(payload)
 
-      if (result) {
+      if (result.success) {
         setIsEditMode(false)
         toast.success('Cập nhật thông tin thành công')
         fetchProfile()
       } else {
-        toast.error('Cập nhật thông tin thất bại')
+        toast.error(result.error || 'Cập nhật thông tin thất bại')
       }
     },
     [updateProfile, fetchProfile]

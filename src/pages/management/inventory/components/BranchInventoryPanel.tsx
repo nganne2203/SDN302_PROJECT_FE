@@ -1,4 +1,4 @@
-import { Card, Table, Tag, Row, Col, Statistic, Alert, Empty, Progress, Tooltip, Space, Tabs, Popconfirm } from 'antd'
+import { Card, Table, Tag, Row, Col, Statistic, Alert, Empty, Progress, Tooltip, Space, Tabs, Popconfirm, Button } from 'antd'
 import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import dayjs from 'dayjs'
@@ -6,12 +6,11 @@ import { useNavigate } from 'react-router-dom'
 import type { Branch, StoreInventoryRecord } from '@/types/api'
 import type { BranchView } from '@/hooks/useInventory'
 import { InputField, SelectField } from '@/components/common'
-import { Button } from 'antd'
 import { ROUTES } from '@/constants/constant'
 
-/* eslint-disable no-unused-vars */
 interface BranchInventoryPanelProps {
   isAdmin: boolean
+  showAdvancedViews?: boolean
   canEditThresholds: boolean
   canCreate: boolean
   canDelete: boolean
@@ -36,6 +35,7 @@ interface BranchInventoryPanelProps {
 
 const BranchInventoryPanel = ({
   isAdmin,
+  showAdvancedViews = true,
   canEditThresholds,
   canCreate,
   canDelete,
@@ -58,6 +58,7 @@ const BranchInventoryPanel = ({
   onDelete
 }: BranchInventoryPanelProps) => {
   const navigate = useNavigate()
+
   const getBranchStatus = (record: StoreInventoryRecord) => {
     if (record.quantity <= 0) return 'out_of_stock'
     if (record.quantity < record.minThreshold) return 'low_stock'
@@ -137,54 +138,56 @@ const BranchInventoryPanel = ({
       render: (value: string) => dayjs(value).format('DD/MM/YYYY')
     },
     ...((canEditThresholds || canDelete)
-      ? [
-        {
-          title: 'Hành động',
-          key: 'action',
-          render: (_: unknown, record: StoreInventoryRecord) => (
-            <Space size="small">
-              {canEditThresholds && (
+      ? [{
+        title: 'Hành động',
+        key: 'action',
+        render: (_: unknown, record: StoreInventoryRecord) => (
+          <Space size="small">
+            {canEditThresholds && (
+              <Button
+                type="default"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => onEditThresholds(record)}
+              >
+                Ngưỡng
+              </Button>
+            )}
+            {canDelete && (
+              <Popconfirm
+                title="Xóa tồn kho"
+                description="Bạn có chắc chắn muốn xóa bản ghi tồn kho này?"
+                onConfirm={() => onDelete(record)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+              >
                 <Button
                   type="default"
+                  danger
                   size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => onEditThresholds(record)}
+                  icon={<DeleteOutlined />}
                 >
-                  Ngưỡng
+                  Xóa
                 </Button>
-              )}
-              {canDelete && (
-                <Popconfirm
-                  title="Xóa tồn kho"
-                  description="Bạn có chắc chắn muốn xóa bản ghi tồn kho này?"
-                  onConfirm={() => onDelete(record)}
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Button
-                    type="default"
-                    danger
-                    size="small"
-                    icon={<DeleteOutlined />}
-                  >
-                    Xóa
-                  </Button>
-                </Popconfirm>
-              )}
-            </Space>
-          )
-        }
-      ]
+              </Popconfirm>
+            )}
+          </Space>
+        )
+      }]
       : [])
   ]
 
   const branchViewTabs = [
     { key: 'all', label: 'Tất cả' },
     { key: 'out_of_stock', label: 'Hết hàng' },
-    { key: 'low_stock', label: 'Sắp hết' },
-    { key: 'need_restock', label: 'Cần nhập' },
-    { key: 'overstock', label: 'Quá tồn' }
+    ...(showAdvancedViews
+      ? [
+        { key: 'low_stock', label: 'Sắp hết' },
+        { key: 'need_restock', label: 'Cần nhập' },
+        { key: 'overstock', label: 'Quá tồn' }
+      ]
+      : [])
   ]
 
   return (
@@ -202,15 +205,18 @@ const BranchInventoryPanel = ({
       {!isAdmin && selectedBranchId && branchStats.lowStock > 0 && (
         <Alert
           message={`Cảnh báo: ${branchStats.lowStock} sản phẩm dưới ngưỡng tối thiểu`}
-          description="Vui lòng tạo yêu cầu nhập kho hoặc cập nhật ngưỡng tồn kho"
+          description={canCreate
+            ? 'Vui lòng tạo yêu cầu nhập kho hoặc cập nhật ngưỡng tồn kho'
+            : 'Vui lòng liên hệ quản lý chi nhánh để bổ sung hàng hoặc điều chỉnh ngưỡng'
+          }
           type="warning"
           showIcon
           className="mb-6"
-          action={
+          action={canCreate ? (
             <Button size="small" type="primary" onClick={() => navigate(ROUTES.MANAGEMENT.STOCK_REQUESTS)}>
               Tạo yêu cầu nhập kho
             </Button>
-          }
+          ) : undefined}
         />
       )}
 

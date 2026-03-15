@@ -3,9 +3,15 @@ import OrderHeader from '@/components/order/OrderHeader'
 import OrderFilterComponent from '@/components/order/OrderFilter'
 import OrderList from '@/components/order/OrderList'
 import OrderDetailModal from '@/components/order/OrderDetailModal'
+import OfflineOrderModal from '@/components/order/OfflineOrderModal'
+import OrderDeliveryUpdateModal from '@/components/order/OrderDeliveryUpdateModal'
+import OrderShippingFeeModal from '@/components/order/OrderShippingFeeModal'
+import { orderApi } from '@/apis/order'
+import useAuth from '@/hooks/useAuth'
 import useOrder from '@/hooks/useOrder'
 import { toast } from '@/utils/toast'
-import type { Order } from '@/types/api'
+import { extractApiError } from '@/utils/apiError'
+import type { DeliveryInfo, Order } from '@/types/api'
 import type { OrderFilter } from '@/features/order/orderTypes'
 
 interface OrderManagementProps {
@@ -21,6 +27,7 @@ const OrderManagement = ({
   canManage = true,
   useAllOrders = true
 }: OrderManagementProps) => {
+  const { isAdmin, isManager, isManagementUser } = useAuth()
   const {
     orders,
     pagination,
@@ -41,6 +48,11 @@ const OrderManagement = ({
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isOfflineOrderModalOpen, setIsOfflineOrderModalOpen] = useState(false)
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false)
+  const [isShippingFeeModalOpen, setIsShippingFeeModalOpen] = useState(false)
+  const [isDeliverySaving, setIsDeliverySaving] = useState(false)
+  const [isShippingFeeSaving, setIsShippingFeeSaving] = useState(false)
 
   // Fetch orders based on role
   const loadOrders = useCallback(() => {
@@ -128,6 +140,54 @@ const OrderManagement = ({
     loadOrders()
   }
 
+  const refreshSelectedOrder = (updatedOrder: Order, orderId: string) => {
+    setSelectedOrder((current) => {
+      if (!current) return current
+      const currentId = (current as { _id?: string })._id || current.id
+      return currentId === orderId ? updatedOrder : current
+    })
+  }
+
+  const handleOpenDeliveryModal = (order: Order) => {
+    setSelectedOrder(order)
+    setIsDeliveryModalOpen(true)
+  }
+
+  const handleOpenShippingFeeModal = (order: Order) => {
+    setSelectedOrder(order)
+    setIsShippingFeeModalOpen(true)
+  }
+
+  const handleUpdateDelivery = async (orderId: string, data: DeliveryInfo) => {
+    try {
+      setIsDeliverySaving(true)
+      const response = await orderApi.updateDeliveryInfo(orderId, data)
+      refreshSelectedOrder(response.data, orderId)
+      setIsDeliveryModalOpen(false)
+      toast.success('Cap nhat giao van thanh cong')
+      loadOrders()
+    } catch (error) {
+      toast.error(extractApiError(error, 'Khong the cap nhat giao van'))
+    } finally {
+      setIsDeliverySaving(false)
+    }
+  }
+
+  const handleUpdateShippingFee = async (orderId: string, shippingFee: number) => {
+    try {
+      setIsShippingFeeSaving(true)
+      const response = await orderApi.updateShippingFee(orderId, shippingFee)
+      refreshSelectedOrder(response.data, orderId)
+      setIsShippingFeeModalOpen(false)
+      toast.success('Cap nhat phi ship thanh cong')
+      loadOrders()
+    } catch (error) {
+      toast.error(extractApiError(error, 'Khong the cap nhat phi ship'))
+    } finally {
+      setIsShippingFeeSaving(false)
+    }
+  }
+
   const handlePageChange = (page: number) => {
     setFilter({ ...filter, page })
   }
@@ -137,6 +197,8 @@ const OrderManagement = ({
       <OrderHeader
         title={title}
         subtitle={subtitle}
+        showCreateButton={canManage && isManagementUser}
+        onCreate={() => setIsOfflineOrderModalOpen(true)}
         onRefresh={handleRefresh}
         isLoading={isLoading}
       />
@@ -164,7 +226,36 @@ const OrderManagement = ({
         onClose={() => setIsDetailModalOpen(false)}
         onUpdateStatus={canManage ? handleUpdateStatus : undefined}
         onCancelOrder={canManage ? handleCancelOrder : undefined}
+        onEditDelivery={canManage ? handleOpenDeliveryModal : undefined}
+        onEditShippingFee={(isAdmin || isManager) && canManage ? handleOpenShippingFeeModal : undefined}
+        canEditDelivery={canManage}
+        canEditShippingFee={Boolean(canManage && (isAdmin || isManager))}
         canManage={canManage}
+      />
+
+      <OfflineOrderModal
+        isOpen={isOfflineOrderModalOpen}
+        onClose={() => setIsOfflineOrderModalOpen(false)}
+        onSuccess={() => {
+          setIsOfflineOrderModalOpen(false)
+          loadOrders()
+        }}
+      />
+
+      <OrderDeliveryUpdateModal
+        order={selectedOrder}
+        isOpen={isDeliveryModalOpen}
+        isSubmitting={isDeliverySaving}
+        onClose={() => setIsDeliveryModalOpen(false)}
+        onSubmit={handleUpdateDelivery}
+      />
+
+      <OrderShippingFeeModal
+        order={selectedOrder}
+        isOpen={isShippingFeeModalOpen}
+        isSubmitting={isShippingFeeSaving}
+        onClose={() => setIsShippingFeeModalOpen(false)}
+        onSubmit={handleUpdateShippingFee}
       />
     </div>
   )

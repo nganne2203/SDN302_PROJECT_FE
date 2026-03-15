@@ -369,7 +369,7 @@ const ManagerDashboard = () => {
             { label: 'Tồn kho', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <ShoppingOutlined /> },
             { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> },
             { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <FileTextOutlined /> },
-            { label: 'Nhân viên', path: ROUTES.MANAGEMENT.STAFF, icon: <TeamOutlined /> },
+            { label: 'Người dùng', path: ROUTES.MANAGEMENT.MANAGER_USERS, icon: <TeamOutlined /> },
             { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <PercentageOutlined /> }
           ].map(({ label, path, icon }) => (
             <Col xs={12} sm={8} lg={4} key={path}>

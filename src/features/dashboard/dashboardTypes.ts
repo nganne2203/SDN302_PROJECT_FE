@@ -252,8 +252,8 @@ export interface InventoryStatisticsFilter {
 
 export interface InventoryStatisticsData {
   summary: Record<string, unknown>
-  lowStockProducts: Record<string, unknown>[]
-  outOfStockProducts: Record<string, unknown>[]
+  lowStockItems: Record<string, unknown>[]
+  outOfStockItems: Record<string, unknown>[]
   stockByBranch: Record<string, unknown>[]
 }
 
