@@ -6,7 +6,6 @@ import {
   ShoppingOutlined,
   FileTextOutlined,
   PercentageOutlined,
-  ClockCircleOutlined,
   AlertOutlined,
   TruckOutlined,
   ReloadOutlined,
@@ -209,18 +208,7 @@ const AdminDashboard = () => {
 
         {/* Row 2: Secondary metrics */}
         <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Đơn chờ xác nhận"
-                value={orders?.pending ?? 0}
-                prefix={<ClockCircleOutlined className="text-yellow-600" />}
-                styles={{ content: { color: '#faad14' } }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card styles={statCardStyles}>
               <Statistic
                 title="Đơn đã giao"
@@ -231,7 +219,7 @@ const AdminDashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card styles={statCardStyles}>
               <Statistic
                 title="Sản phẩm sắp hết"
@@ -259,7 +247,7 @@ const AdminDashboard = () => {
 
         {/* Row 3: Order status breakdown */}
         <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card styles={statCardStyles}>
               <Statistic
                 title="Đã xác nhận"

@@ -29,11 +29,17 @@ export interface DashboardOverview {
   totalProductsSold: number
   totalCustomers: number
   averageOrderValue: number
+  pendingProcessing?: number
+  confirmedOrders?: number
+  shippedOrders?: number
+  deliveredOrders?: number
+  cancelledOrders?: number
 }
 
 export interface DashboardOrders {
   total: number
   pending: number
+  pendingProcessing?: number
   confirmed: number
   shipped: number
   delivered: number
