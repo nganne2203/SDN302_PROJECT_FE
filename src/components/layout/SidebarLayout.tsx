@@ -10,7 +10,6 @@ import {
   BankOutlined,
   InboxOutlined,
   BarChartOutlined,
-  // TeamOutlined,
   CustomerServiceOutlined,
   FileTextOutlined,
   MobileOutlined,
@@ -68,18 +67,21 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
       getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
-      // getItem('Nhân viên', ROUTES.MANAGEMENT.STAFF, <TeamOutlined />),
       getItem('Người dùng chi nhánh', ROUTES.MANAGEMENT.MANAGER_USERS, <UserOutlined />),
       getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
-      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />)
+      getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
+      getItem('Báo cáo', ROUTES.MANAGEMENT.BRANCH_REPORTS, <BarChartOutlined />)
     ]
 
   case USER_ROLES.STAFF:
     return [
       ...commonItems,
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
+      getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),
-      getItem('Khách hàng', ROUTES.MANAGEMENT.STAFF_CUSTOMERS, <UserOutlined />)
+      getItem('Khách hàng', ROUTES.MANAGEMENT.STAFF_CUSTOMERS, <UserOutlined />),
+      getItem('Báo cáo', ROUTES.MANAGEMENT.BRANCH_REPORTS, <BarChartOutlined />)
     ]
 
   default:
@@ -101,7 +103,6 @@ const SidebarLayout = ({ collapsed = false, userRole = USER_ROLES.CUSTOMER }: Si
   const [openKeys, setOpenKeys] = useState<string[]>(['users-group'])
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    // Only navigate if the key is a valid route (starts with '/')
     if (typeof e.key === 'string' && e.key.startsWith('/')) {
       navigate(e.key)
     }

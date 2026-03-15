@@ -208,6 +208,13 @@ export interface Product {
   ratingAvg: number;
   ratingCount: number;
   isActive: boolean;
+  totalStock?: number;
+  inStock?: boolean;
+  stockByBranch?: Array<{
+    branch: Branch;
+    quantity: number;
+    inStock: boolean;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -341,21 +348,37 @@ export interface Cart {
 }
 
 export interface Order {
+  _id?: string;
+  orderNumber?: string;
   id: string;
   userId: string;
   items: OrderItem[];
+  subtotal?: number;
+  shippingFee?: number;
   totalAmount: number;
   status: OrderStatus;
   shippingAddress: ShippingAddress;
-  paymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod | 'cod' | 'vnpay' | 'bank_transfer' | 'credit_card' | 'e_wallet';
   paymentStatus?: PaymentStatus | string;
   payment?: {
     status?: string;
     paidAt?: string;
     failureReason?: string;
   } | null;
+  delivery?: DeliveryInfo | null;
+  message?: string;
+  branch?: Branch | string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DeliveryInfo {
+  status?: 'pending' | 'shipping' | 'delivered' | 'cancelled' | 'failed' | string;
+  providerName?: string;
+  trackingCode?: string;
+  estimatedDeliveryDate?: string | null;
+  deliveredAt?: string | null;
+  recipientName?: string;
 }
 
 export interface OrderItem {
@@ -372,7 +395,12 @@ export type OrderStatus =
   | 'CONFIRMED'
   | 'SHIPPING'
   | 'DELIVERED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'pending'
+  | 'confirmed'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
 export type PaymentMethod =
   | 'COD'
   | 'BANK_TRANSFER'

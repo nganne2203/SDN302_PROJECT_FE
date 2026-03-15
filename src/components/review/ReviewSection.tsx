@@ -6,6 +6,7 @@ import { useAppSelector } from '@/apps/hooks'
 import ReviewModal from './ReviewModal'
 import { toast } from '@/utils/toast'
 import type { Review } from '@/features/review/reviewTypes'
+import { getAvatarUrl, resolveAvatarUrl } from '@/utils/getAvatar'
 
 interface ReviewSectionProps {
   productId: string
@@ -18,6 +19,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
     productReviewsPagination,
     productStats,
     canReview,
+    reviewEligibility,
     isLoading,
     isSubmitting,
     fetchProductReviews,
@@ -32,6 +34,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
   const [ratingFilter, setRatingFilter] = useState<number | undefined>(undefined)
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
   const [editingReview, setEditingReview] = useState<Review | null>(null)
+  const [reviewerAvatarUrls, setReviewerAvatarUrls] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!productId) return
@@ -40,6 +43,44 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
     if (user) checkCanReview(productId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, page, ratingFilter, user])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const reviewers = productReviews
+      .map((review) => (typeof review.userId === 'object' ? review.userId : review.user))
+      .filter((reviewer): reviewer is NonNullable<typeof reviewer> => !!reviewer)
+
+    if (!reviewers.length) return
+
+    const preloadReviewerAvatars = async () => {
+      const resolvedEntries = await Promise.all(
+        reviewers.map(async (reviewer) => {
+          const syncUrl = getAvatarUrl(reviewer)
+          if (syncUrl) return [reviewer._id, syncUrl] as const
+
+          const resolvedUrl = await resolveAvatarUrl(reviewer)
+          return resolvedUrl ? ([reviewer._id, resolvedUrl] as const) : null
+        })
+      )
+
+      if (isCancelled) return
+
+      const nextUrls = Object.fromEntries(
+        resolvedEntries.filter((entry): entry is readonly [string, string] => entry !== null)
+      )
+
+      if (Object.keys(nextUrls).length > 0) {
+        setReviewerAvatarUrls((prev) => ({ ...prev, ...nextUrls }))
+      }
+    }
+
+    preloadReviewerAvatars()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [productReviews])
 
   const handleModalClose = () => {
     setIsWriteModalOpen(false)
@@ -83,9 +124,18 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
   const totalReviews = productStats?.totalReviews ?? 0
   const avg = productStats?.averageRating ?? 0
   const dist = productStats?.ratingDistribution ?? {}
+  const canWriteReview = !!user && !!canReview
+  const existingReview = user ? (reviewEligibility?.existingReview ?? null) : null
+  const reviewNotice = !user
+    ? 'Đăng nhập để đánh giá sản phẩm sau khi mua hàng.'
+    : reviewEligibility?.hasReviewed
+      ? 'Bạn đã đánh giá sản phẩm này. Bạn có thể chỉnh sửa lại đánh giá của mình.'
+      : reviewEligibility?.hasPurchased === false
+        ? 'Bạn chỉ có thể đánh giá sau khi đơn hàng đã được giao thành công.'
+        : null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
+    <div id="product-feedback" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
       <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
         <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
         Đánh giá sản phẩm
@@ -155,15 +205,31 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
       )}
 
       {/* Write review button */}
-      {user && canReview && (
+      {(canWriteReview || existingReview || !!reviewNotice) && (
         <div className="mb-6">
-          <button
-            onClick={() => { setEditingReview(null); setIsWriteModalOpen(true) }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-          >
-            <Star className="w-4 h-4" />
-            Viết đánh giá
-          </button>
+          <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            {canWriteReview && (
+              <button
+                onClick={() => { setEditingReview(null); setIsWriteModalOpen(true) }}
+                className="flex w-fit items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+              >
+                <Star className="w-4 h-4" />
+                Viết đánh giá
+              </button>
+            )}
+            {!canWriteReview && existingReview && (
+              <button
+                onClick={() => handleEdit(existingReview)}
+                className="flex w-fit items-center gap-2 px-5 py-2.5 bg-white text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+              >
+                <Edit2 className="w-4 h-4" />
+                Chỉnh sửa đánh giá của bạn
+              </button>
+            )}
+            {reviewNotice && (
+              <p className="text-sm text-gray-600">{reviewNotice}</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -187,7 +253,9 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
                 ? review.userId
                 : review.user
               const reviewerName = reviewer?.fullname ?? 'Người dùng'
-              const reviewerAvatar = reviewer?.avatar
+              const reviewerAvatar = reviewer?._id
+                ? reviewerAvatarUrls[reviewer._id] || getAvatarUrl(reviewer)
+                : undefined
               const currentUserId = getUserId()
               const reviewUserId = typeof review.userId === 'object' ? review.userId._id : review.userId
               const isOwner = !!currentUserId && currentUserId === reviewUserId
@@ -231,7 +299,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
                           {review.images.map((img, idx) => (
                             <img
                               key={idx}
-                              src={img}
+                              src={img.imageUrl}
                               alt={`review-${idx}`}
                               className="w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}

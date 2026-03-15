@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useProduct, type ProductFormData, productValidationSchema, initialProductFormValues } from '@/hooks/useProduct'
+import useAuth from '@/hooks/useAuth'
 import type { Product, Image } from '@/types/api'
 import { toast } from '@/utils/toast'
 import ProductHeader from '@/components/product/ProductHeader'
@@ -48,6 +49,7 @@ const toPublicId = (image: Image | string): string | null => {
 }
 
 const ProductManagement = () => {
+  const { isAdmin } = useAuth()
   const {
     products,
     pagination,
@@ -192,7 +194,7 @@ const ProductManagement = () => {
   return (
     <div className="p-2">
       {/* Header */}
-      <ProductHeader onCreateClick={openCreateModal} />
+      <ProductHeader onCreateClick={openCreateModal} canCreate={Boolean(isAdmin)} />
 
       {/* Filters */}
       <ProductFilter
@@ -206,6 +208,7 @@ const ProductManagement = () => {
         products={products}
         pagination={pagination}
         isLoading={isLoading}
+        canManage={Boolean(isAdmin)}
         onEdit={openEditModal}
         onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}

@@ -125,16 +125,6 @@ const isDeliveredOrder = (target: BackendOrder | null): boolean => {
   return normalizeLower(target.orderStatus) === 'delivered' || normalizeLower(target.delivery?.status) === 'delivered'
 }
 
-const isFinalPaymentStatus = (status?: string | null): boolean => {
-  const normalized = normalizeLower(status)
-  return (
-    normalized === 'success' ||
-    normalized === 'failed' ||
-    normalized === 'cancelled' ||
-    normalized === 'refunded'
-  )
-}
-
 const PAYMENT_METHOD_MAP: Record<string, string> = {
   cod: 'Thanh toán khi nhận hàng (COD)',
   vnpay: 'VNPay',
@@ -211,7 +201,6 @@ const OrderDetailPage = () => {
   const [cancelReason, setCancelReason] = useState('')
   const [cancelError, setCancelError] = useState('')
 
-  const pollingTimerRef = useRef<number | null>(null)
   const didRefetchOrderAfterRefundRef = useRef(false)
 
   const loadPayment = async (orderId: string) => {
@@ -266,55 +255,6 @@ const OrderDetailPage = () => {
       .then((res) => setOrder(res.data as unknown as BackendOrder))
       .catch(() => undefined)
   }, [id, order?.orderStatus, payment?.status])
-
-  useEffect(() => {
-    // Poll only for COD orders until payment becomes final, so user sees paidAt without manual refresh.
-    if (!id || !order?._id) return
-
-    const payMethodKey = normalizeLower(order.paymentMethod)
-    if (payMethodKey !== 'cod') return
-
-    if (isFinalPaymentStatus(payment?.status)) return
-
-    const intervalMs = 7000
-
-    const tick = async () => {
-      try {
-        const [orderRes, paymentRes] = await Promise.all([
-          orderApi.getOrderById(id),
-          paymentApi.getPaymentByOrder(order._id)
-        ])
-
-        const nextOrder = orderRes.data as unknown as BackendOrder
-        setOrder(nextOrder)
-        setPayment(paymentRes.data ?? null)
-
-        const nextPaymentStatus = paymentRes.data?.status
-        if (isFinalPaymentStatus(nextPaymentStatus)) {
-          if (pollingTimerRef.current) {
-            window.clearInterval(pollingTimerRef.current)
-            pollingTimerRef.current = null
-          }
-        }
-      } catch {
-        // ignore transient polling errors
-      }
-    }
-
-    tick()
-
-    if (pollingTimerRef.current) {
-      window.clearInterval(pollingTimerRef.current)
-    }
-    pollingTimerRef.current = window.setInterval(tick, intervalMs)
-
-    return () => {
-      if (pollingTimerRef.current) {
-        window.clearInterval(pollingTimerRef.current)
-        pollingTimerRef.current = null
-      }
-    }
-  }, [id, order?._id, order?.paymentMethod, payment?.status])
 
   const normalizedOrderStatus = getOrderStatus(order)
   const canCancel = normalizedOrderStatus === 'pending' || normalizedOrderStatus === 'confirmed'
@@ -373,6 +313,14 @@ const OrderDetailPage = () => {
               <span className="font-medium text-gray-800 line-clamp-2 block">
                 {item.product.name}
               </span>
+              {isDeliveredOrder(order) && (
+                <Link
+                  to={`/products/${item.product._id}#feedback`}
+                  className="inline-flex mt-1 text-xs font-medium text-emerald-600 hover:text-emerald-700"
+                >
+                  Đi đến đánh giá
+                </Link>
+              )}
               {selectedServices.length > 0 && (
                 <div className="mt-1 space-y-0.5">
                   {selectedServices.map((service, index) => (

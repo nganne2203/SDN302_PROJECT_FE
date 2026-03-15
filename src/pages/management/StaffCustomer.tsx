@@ -23,11 +23,9 @@ const StaffCustomerPage = () => {
     isDetailModalOpen,
     selectedUser,
     handleOpenCreate,
-    handleOpenEdit,
     handleCloseForm,
     handleViewUser,
     handleCloseDetail,
-    handleEditFromDetail,
     formMethods,
     onSubmit
   } = useStaffCustomerPage()
@@ -72,7 +70,6 @@ const StaffCustomerPage = () => {
         pagination={filterPagination}
         onPageChange={handlePageChange}
         onViewUser={handleViewUser}
-        onEditUser={handleOpenEdit}
         hideStatusToggle
       />
 
@@ -156,7 +153,6 @@ const StaffCustomerPage = () => {
         isOpen={isDetailModalOpen}
         user={selectedUser}
         onClose={handleCloseDetail}
-        onEdit={handleEditFromDetail}
       />
     </div>
   )
