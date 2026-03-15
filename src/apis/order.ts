@@ -22,11 +22,22 @@ export interface CreateCodOrderRequest {
 }
 
 export interface CreateOfflineOrderRequest {
+  type?: 'offline'
   customerId?: string
   branchId: string
-  items: { productId: string; quantity: number; services?: { serviceId: string }[] }[]
-  paymentMethod?: string
-  note?: string
+  items: { product: string; quantity: number; services?: string[] }[]
+  shippingAddress?: {
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    ward: string
+    provinceCode?: string
+    wardCode?: string
+  }
+  paymentMethod: 'cod'
+  message?: string
+  hasDelivery?: boolean
 }
 
 export interface OrderFilter {

@@ -156,6 +156,19 @@ const AdminManagerRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>
 }
 
+const StaffRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace />
+  }
+
+  if (!user || user.role !== USER_ROLES.STAFF) {
+    return <Navigate to={ROUTES.MANAGEMENT.DASHBOARD} replace />
+  }
+
+  return <>{children}</>
+}
+
 // Route configuration
 export const routes: RouteObject[] = [
   // ========================
@@ -293,7 +306,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: ROUTES.MANAGEMENT.SERVICES,
-        element: <AdminManagerRoute>{withSuspense(ServiceProductManagement)}</AdminManagerRoute>
+        element: <ManagementRoute>{withSuspense(ServiceProductManagement)}</ManagementRoute>
       },
       {
         path: 'orders',
@@ -313,7 +326,11 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'reports',
-        element: <AdminRoute>{withSuspense(ManagementReports)}</AdminRoute>
+        element: <ManagementRoute>{withSuspense(ManagementReports)}</ManagementRoute>
+      },
+      {
+        path: 'branch-reports',
+        element: <ManagementRoute>{withSuspense(ManagementReports)}</ManagementRoute>
       },
       {
         path: 'categories',
@@ -341,7 +358,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'staff-customers',
-        element: <ManagementRoute>{withSuspense(StaffCustomerManagement)}</ManagementRoute>
+        element: <StaffRoute>{withSuspense(StaffCustomerManagement)}</StaffRoute>
       }
     ]
   },

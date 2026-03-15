@@ -3,6 +3,8 @@ import OrderHeader from '@/components/order/OrderHeader'
 import OrderFilterComponent from '@/components/order/OrderFilter'
 import OrderList from '@/components/order/OrderList'
 import OrderDetailModal from '@/components/order/OrderDetailModal'
+import OfflineOrderModal from '@/components/order/OfflineOrderModal'
+import useAuth from '@/hooks/useAuth'
 import useOrder from '@/hooks/useOrder'
 import { toast } from '@/utils/toast'
 import type { Order } from '@/types/api'
@@ -21,6 +23,7 @@ const OrderManagement = ({
   canManage = true,
   useAllOrders = true
 }: OrderManagementProps) => {
+  const { isManagementUser } = useAuth()
   const {
     orders,
     pagination,
@@ -41,6 +44,7 @@ const OrderManagement = ({
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isOfflineOrderModalOpen, setIsOfflineOrderModalOpen] = useState(false)
 
   // Fetch orders based on role
   const loadOrders = useCallback(() => {
@@ -137,6 +141,8 @@ const OrderManagement = ({
       <OrderHeader
         title={title}
         subtitle={subtitle}
+        showCreateButton={canManage && isManagementUser}
+        onCreate={() => setIsOfflineOrderModalOpen(true)}
         onRefresh={handleRefresh}
         isLoading={isLoading}
       />
@@ -165,6 +171,15 @@ const OrderManagement = ({
         onUpdateStatus={canManage ? handleUpdateStatus : undefined}
         onCancelOrder={canManage ? handleCancelOrder : undefined}
         canManage={canManage}
+      />
+
+      <OfflineOrderModal
+        isOpen={isOfflineOrderModalOpen}
+        onClose={() => setIsOfflineOrderModalOpen(false)}
+        onSuccess={() => {
+          setIsOfflineOrderModalOpen(false)
+          loadOrders()
+        }}
       />
     </div>
   )
