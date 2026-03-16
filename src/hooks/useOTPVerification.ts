@@ -98,7 +98,9 @@ export const useOTPVerification = ({
     setIsVerifying(false)
 
     if (result.success) {
-      toast.success(result.message || 'Xác thực thành công!')
+      if (!onSuccess) {
+        toast.success(result.message || 'Xác thực thành công!')
+      }
       onSuccess?.()
       onClose()
     } else {
