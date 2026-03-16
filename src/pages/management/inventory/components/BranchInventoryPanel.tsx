@@ -58,6 +58,7 @@ const BranchInventoryPanel = ({
   onDelete
 }: BranchInventoryPanelProps) => {
   const navigate = useNavigate()
+  const activeSkuCount = branchInventory.filter((record) => record.quantity > 0).length
 
   const getBranchStatus = (record: StoreInventoryRecord) => {
     if (record.quantity <= 0) return 'out_of_stock'
@@ -242,7 +243,7 @@ const BranchInventoryPanel = ({
           <Card hoverable>
             <Statistic
               title="SKU hoạt động"
-              value={branchInventory.length}
+              value={activeSkuCount}
               prefix={<CheckCircleOutlined className="text-success" />}
               styles={{ content: { color: '#52c41a' } }}
             />

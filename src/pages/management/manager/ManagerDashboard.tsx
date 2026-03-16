@@ -23,21 +23,8 @@ import type { DashboardData } from '@/features/dashboard/dashboardTypes'
 import type { StockRequestRecord, StoreInventoryRecord } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import dayjs from 'dayjs'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 
-const ORDER_STATUS_COLOR: Record<string, string> = {
-  pending: 'warning',
-  confirmed: 'processing',
-  shipped: 'blue',
-  delivered: 'success',
-  cancelled: 'error'
-}
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: 'Chờ xử lý',
-  confirmed: 'Đã xác nhận',
-  shipped: 'Đang vận chuyển',
-  delivered: 'Đã giao',
-  cancelled: 'Đã hủy'
-}
 const STOCK_STATUS_COLOR: Record<string, string> = {
   pending: 'warning',
   approved: 'success',
@@ -143,11 +130,7 @@ const ManagerDashboard = () => {
       title: 'Trạng thái đơn',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={ORDER_STATUS_COLOR[status] ?? 'default'}>
-          {ORDER_STATUS_LABEL[status] ?? status}
-        </Tag>
-      )
+      render: (status: string) => <OrderStatusBadge status={status} />
     },
     {
       title: 'Ngày',

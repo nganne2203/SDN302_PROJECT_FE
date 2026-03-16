@@ -19,6 +19,7 @@ import useBranchPerformance from '@/hooks/useBranchPerformance'
 import type { RecentOrder, BranchPerformanceItem } from '@/features/dashboard/dashboardTypes'
 import { ROUTES } from '@/constants/constant'
 import dayjs from 'dayjs'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 
 const PERIOD_OPTIONS = [
   { label: 'Hôm nay', value: 'today' },
@@ -29,22 +30,6 @@ const PERIOD_OPTIONS = [
   { label: 'Tháng trước', value: 'last_month' },
   { label: 'Năm nay', value: 'this_year' }
 ]
-
-const ORDER_STATUS_COLOR: Record<string, string> = {
-  pending: 'warning',
-  confirmed: 'processing',
-  shipping: 'blue',
-  delivered: 'success',
-  cancelled: 'error'
-}
-
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: 'Chờ xác nhận',
-  confirmed: 'Đã xác nhận',
-  shipping: 'Đang giao',
-  delivered: 'Đã giao',
-  cancelled: 'Đã hủy'
-}
 
 const formatCurrency = (value: number) => value.toLocaleString('vi-VN') + ' ₫'
 
@@ -103,11 +88,7 @@ const AdminDashboard = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={ORDER_STATUS_COLOR[status] ?? 'default'}>
-          {ORDER_STATUS_LABEL[status] ?? status}
-        </Tag>
-      )
+      render: (status: string) => <OrderStatusBadge status={status} />
     },
     {
       title: 'Ngày tạo',
