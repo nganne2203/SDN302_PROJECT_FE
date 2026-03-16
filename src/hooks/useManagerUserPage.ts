@@ -8,6 +8,7 @@ import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import type { UserManageFilter, UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 import useAuth from '@/hooks/useAuth'
+import { getChangedEmailField } from '@/utils/userUpdate'
 
 // ─── Zod schemas ────────────────────────────────────────────────────
 const MANAGER_ALLOWED_ROLES = [USER_ROLES.STAFF, USER_ROLES.CUSTOMER] as const
@@ -196,7 +197,7 @@ export const useManagerUserPage = () => {
         const isStaffRole = data.role === USER_ROLES.STAFF
         const result = await updateUser(selectedUser._id, {
           fullname: data.fullname,
-          email: data.email,
+          ...getChangedEmailField(selectedUser, data.email),
           phone: data.phone || undefined,
           branch: isStaffRole ? currentUser?.branch?._id : undefined
         })
