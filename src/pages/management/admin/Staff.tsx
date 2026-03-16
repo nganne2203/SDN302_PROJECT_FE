@@ -11,6 +11,7 @@ import UserDetailModal from '@/components/user/UserDetailModal'
 import { useState } from 'react'
 import UserFormModal from '@/components/user/UserFormModal'
 import { stripLocationCodesFromList } from '@/utils/address'
+import { getChangedEmailField } from '@/utils/userUpdate'
 import { USER_ROLES } from '@/constants/constant'
 
 const ManagementStaff = () => {
@@ -174,7 +175,7 @@ const ManagementStaff = () => {
       if (isEditMode && selectedStaff) {
         const result = await updateUser(selectedStaff._id, {
           fullname: formData.fullname,
-          email: formData.email,
+          ...getChangedEmailField(selectedStaff, formData.email),
           phone: formData.phone || undefined,
           role: formData.role,
           branch: formData.branch || undefined,
