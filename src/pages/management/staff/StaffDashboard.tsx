@@ -4,7 +4,6 @@ import {
   ShoppingCartOutlined,
   CheckCircleOutlined,
   ReloadOutlined,
-  AlertOutlined,
   InboxOutlined,
   ShopOutlined,
   CustomerServiceOutlined,
@@ -17,7 +16,8 @@ import dashboardApi from '@/apis/dashboard'
 import useAuth from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/constant'
 import { formatCurrency } from '@/utils/formatCurrency'
-import type { DashboardData, InventoryStatisticsData, OrderStatusSummaryData } from '@/features/dashboard/dashboardTypes'
+import type { DashboardData, OrderStatusSummaryData } from '@/features/dashboard/dashboardTypes'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 
 const PERIOD_OPTIONS = [
   { label: 'Hôm nay', value: 'today' },
@@ -52,7 +52,6 @@ const StaffDashboard = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
-  const [inventoryStats, setInventoryStats] = useState<InventoryStatisticsData | null>(null)
   const [orderStatusSummary, setOrderStatusSummary] = useState<OrderStatusSummaryData | null>(null)
   const [recentOrders, setRecentOrders] = useState<Array<{
     orderNumber: string
@@ -69,21 +68,20 @@ const StaffDashboard = () => {
     setError(null)
 
     try {
-      const [dashboardRes, inventoryRes, orderStatusRes, recentOrdersRes] = await Promise.all([
+      const baseRequests = [
         dashboardApi.getDashboard({ period }),
-        dashboardApi.getInventoryStatistics(),
         dashboardApi.getOrderStatusSummary({ period }),
         dashboardApi.getRecentOrders({ period, limit: 5, page: 1 })
-      ])
+      ] as const
+
+      const [dashboardRes, orderStatusRes, recentOrdersRes] = await Promise.all(baseRequests)
 
       setDashboard(dashboardRes.data)
-      setInventoryStats(inventoryRes.data as InventoryStatisticsData)
       setOrderStatusSummary(orderStatusRes.data)
       setRecentOrders(recentOrdersRes.data as typeof recentOrders)
     } catch {
       setError('Không thể tải dữ liệu dashboard cho nhân viên')
       setDashboard(null)
-      setInventoryStats(null)
       setOrderStatusSummary(null)
       setRecentOrders([])
     } finally {
@@ -94,30 +92,6 @@ const StaffDashboard = () => {
   useEffect(() => {
     loadDashboard().catch(() => undefined)
   }, [loadDashboard])
-
-  const inventorySummary = useMemo(() => {
-    const summary = (inventoryStats?.summary ?? {}) as {
-      uniqueProducts?: number
-      totalQuantity?: number
-      totalValue?: number
-    }
-
-    return {
-      uniqueProducts: summary.uniqueProducts ?? 0,
-      totalQuantity: summary.totalQuantity ?? 0,
-      totalValue: summary.totalValue ?? 0
-    }
-  }, [inventoryStats])
-
-  const lowStockItems = useMemo(
-    () => ((inventoryStats?.lowStockItems ?? []) as Array<{ productName?: string; quantity?: number }>),
-    [inventoryStats]
-  )
-
-  const outOfStockItems = useMemo(
-    () => ((inventoryStats?.outOfStockItems ?? []) as Array<{ productName?: string }>),
-    [inventoryStats]
-  )
 
   const statusItems = useMemo(
     () => orderStatusSummary?.statuses ?? [],
@@ -130,7 +104,7 @@ const StaffDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Dashboard Nhân viên</h1>
           <p className="text-gray-500">
-            Xin chào, {user?.fullname}! Đây là tổng quan đơn hàng và tồn kho của chi nhánh bạn.
+            Xin chào, {user?.fullname}! Đây là tổng quan đơn hàng của chi nhánh bạn.
           </p>
           {dashboard?.dateRange && (
             <p className="text-xs text-gray-400 mt-1">
@@ -163,7 +137,7 @@ const StaffDashboard = () => {
 
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={8}>
+          <Col xs={24} lg={24}>
             <Card hoverable>
               <Statistic
                 title="Đơn hàng trong kỳ"
@@ -173,33 +147,13 @@ const StaffDashboard = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={8}>
-            <Card hoverable>
-              <Statistic
-                title="Sản phẩm sắp hết"
-                value={lowStockItems.length}
-                prefix={<AlertOutlined className="text-red-600" />}
-                styles={{ content: { color: '#cf1322' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={8}>
-            <Card hoverable>
-              <Statistic
-                title="Hết hàng"
-                value={outOfStockItems.length}
-                prefix={<InboxOutlined className="text-gray-500" />}
-                styles={{ content: { color: '#595959' } }}
-              />
-            </Card>
-          </Col>
         </Row>
 
         <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
-                title="Doanh thu hỗ trợ"
+                title="Doanh thu"
                 value={dashboard?.overview.totalRevenue ?? 0}
                 prefix={<CheckCircleOutlined className="text-green-600" />}
                 formatter={(value) => formatCurrency(Number(value))}
@@ -207,7 +161,7 @@ const StaffDashboard = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
                 title="Sản phẩm đã bán"
@@ -217,17 +171,7 @@ const StaffDashboard = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
-              <Statistic
-                title="SKU theo dõi"
-                value={inventorySummary.uniqueProducts}
-                prefix={<InboxOutlined className="text-cyan-600" />}
-                styles={{ content: { color: '#08979c' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card hoverable>
               <Statistic
                 title="Tỷ lệ hoàn thành"
@@ -241,7 +185,7 @@ const StaffDashboard = () => {
         </Row>
 
         <Row gutter={[16, 16]} className="mt-6">
-          <Col xs={24} lg={12}>
+          <Col xs={24} lg={24}>
             <Card title="Trạng thái đơn hàng">
               {statusItems.length === 0 ? (
                 <Empty description="Chưa có dữ liệu trạng thái đơn hàng" />
@@ -261,29 +205,6 @@ const StaffDashboard = () => {
                         <div className="font-semibold text-gray-900">{item.count} đơn</div>
                         <div className="text-xs text-gray-500">{item.percentage}%</div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </Col>
-
-          <Col xs={24} lg={12}>
-            <Card title="Cảnh báo tồn kho">
-              {lowStockItems.length === 0 && outOfStockItems.length === 0 ? (
-                <Empty description="Không có cảnh báo tồn kho" />
-              ) : (
-                <div className="space-y-3">
-                  {lowStockItems.slice(0, 4).map((item, index) => (
-                    <div key={`${item.productName || 'low-stock'}-${index}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-4 py-3">
-                      <div className="font-medium text-gray-900">{item.productName || 'Sản phẩm'}</div>
-                      <div className="text-sm text-amber-700">Còn {item.quantity ?? 0}</div>
-                    </div>
-                  ))}
-                  {outOfStockItems.slice(0, 2).map((item, index) => (
-                    <div key={`${item.productName || 'out-stock'}-${index}`} className="flex items-center justify-between rounded-lg bg-red-50 px-4 py-3">
-                      <div className="font-medium text-gray-900">{item.productName || 'Sản phẩm'}</div>
-                      <div className="text-sm text-red-700">Hết hàng</div>
                     </div>
                   ))}
                 </div>
@@ -318,11 +239,7 @@ const StaffDashboard = () => {
                 title: 'Trạng thái',
                 dataIndex: 'status',
                 key: 'status',
-                render: (value: string) => (
-                  <Tag color={STATUS_COLOR[value] || 'default'}>
-                    {STATUS_LABEL[value] || value}
-                  </Tag>
-                )
+                render: (value: string) => <OrderStatusBadge status={value} />
               },
               {
                 title: 'Tạo lúc',

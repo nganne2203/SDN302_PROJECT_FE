@@ -1,8 +1,7 @@
-import { CreditCard, MapPin, Package, Truck } from 'lucide-react'
-import { Tag } from 'antd'
+import { CreditCard, MapPin, Package } from 'lucide-react'
 import { ButtonCommon, ModalCommon } from '@/components/common'
 import OrderStatusBadge from './OrderStatusBadge'
-import type { DeliveryInfo, Order } from '@/types/api'
+import type { Order } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import { getOrderPaymentDisplay } from '@/utils/orderPayment'
@@ -13,27 +12,9 @@ interface OrderDetailModalProps {
   onClose: () => void
   onUpdateStatus?: (orderId: string, status: string) => void
   onCancelOrder?: (orderId: string) => void
-  onEditDelivery?: (order: Order) => void
   onEditShippingFee?: (order: Order) => void
   canManage?: boolean
-  canEditDelivery?: boolean
   canEditShippingFee?: boolean
-}
-
-const DELIVERY_STATUS_LABELS: Record<string, string> = {
-  pending: 'Cho xu ly',
-  shipping: 'Dang giao',
-  delivered: 'Da giao',
-  cancelled: 'Da huy',
-  failed: 'That bai'
-}
-
-const DELIVERY_STATUS_COLORS: Record<string, string> = {
-  pending: 'gold',
-  shipping: 'blue',
-  delivered: 'green',
-  cancelled: 'red',
-  failed: 'volcano'
 }
 
 const normalizeStatus = (status?: string) => (typeof status === 'string' ? status.toLowerCase() : '')
@@ -140,10 +121,8 @@ const OrderDetailModal = ({
   onClose,
   onUpdateStatus,
   onCancelOrder,
-  onEditDelivery,
   onEditShippingFee,
   canManage = false,
-  canEditDelivery = false,
   canEditShippingFee = false
 }: OrderDetailModalProps) => {
   if (!order) return null
@@ -151,7 +130,6 @@ const OrderDetailModal = ({
   const orderStatus = getOrderStatus(order)
   const nextStatus = getNextStatus(orderStatus)
   const currentStatus = normalizeStatus(orderStatus)
-  const delivery = (order.delivery || null) as DeliveryInfo | null
   const canUpdate =
     canManage &&
     nextStatus &&
@@ -199,50 +177,6 @@ const OrderDetailModal = ({
             <p className="font-medium text-gray-900">{getShippingName(order)}</p>
             <p className="mt-1 text-sm text-gray-600">{getShippingPhone(order)}</p>
             <p className="mt-1 text-sm text-gray-600">{getShippingAddressText(order)}</p>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-gray-500" />
-              <h3 className="text-lg font-semibold text-gray-800">Giao van</h3>
-            </div>
-            {canEditDelivery && onEditDelivery && (
-              <ButtonCommon variant="outline" size="sm" onClick={() => onEditDelivery(order)}>
-                Cap nhat giao van
-              </ButtonCommon>
-            )}
-          </div>
-          <div className="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-gray-500">Trang thai giao van</p>
-              <div className="mt-1">
-                <Tag color={DELIVERY_STATUS_COLORS[delivery?.status || ''] || 'default'}>
-                  {DELIVERY_STATUS_LABELS[delivery?.status || ''] || (delivery?.status || 'Chua cap nhat')}
-                </Tag>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Don vi van chuyen</p>
-              <p className="mt-1 text-sm text-gray-900">{delivery?.providerName || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Ma van don</p>
-              <p className="mt-1 text-sm text-gray-900">{delivery?.trackingCode || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Nguoi nhan</p>
-              <p className="mt-1 text-sm text-gray-900">{delivery?.recipientName || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Du kien giao</p>
-              <p className="mt-1 text-sm text-gray-900">{formatDate(delivery?.estimatedDeliveryDate)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Da giao luc</p>
-              <p className="mt-1 text-sm text-gray-900">{formatDate(delivery?.deliveredAt)}</p>
-            </div>
           </div>
         </div>
 

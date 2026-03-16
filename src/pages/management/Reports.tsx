@@ -38,6 +38,7 @@ import type {
 } from '@/features/dashboard/dashboardTypes'
 import type { Branch } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 
 const COLORS = ['#1890ff', '#13c2c2', '#faad14', '#52c41a', '#eb2f96', '#722ed1']
 const PERIOD_OPTIONS = [
@@ -339,7 +340,6 @@ const StaffReports = () => {
   const [error, setError] = useState<string | null>(null)
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [productStats, setProductStats] = useState<ProductStatisticsData | null>(null)
-  const [inventoryStats, setInventoryStats] = useState<InventoryStatisticsData | null>(null)
   const [orderStatus, setOrderStatus] = useState<OrderStatusSummaryData | null>(null)
   const [recentOrders, setRecentOrders] = useState<Array<{
     orderNumber: string
@@ -356,24 +356,21 @@ const StaffReports = () => {
     setError(null)
 
     try {
-      const [dashboardRes, productRes, inventoryRes, orderStatusRes, recentOrdersRes] = await Promise.all([
+      const [dashboardRes, productRes, orderStatusRes, recentOrdersRes] = await Promise.all([
         dashboardApi.getDashboard({ period }),
         dashboardApi.getProductStatistics({ period, limit: 8 }),
-        dashboardApi.getInventoryStatistics(),
         dashboardApi.getOrderStatusSummary({ period }),
         dashboardApi.getRecentOrders({ period, limit: 8, page: 1 })
       ])
 
       setDashboard(dashboardRes.data)
       setProductStats(productRes.data)
-      setInventoryStats(inventoryRes.data as InventoryStatisticsData)
       setOrderStatus(orderStatusRes.data)
       setRecentOrders(recentOrdersRes.data as typeof recentOrders)
     } catch {
       setError('Không thể tải báo cáo cho nhân viên')
       setDashboard(null)
       setProductStats(null)
-      setInventoryStats(null)
       setOrderStatus(null)
       setRecentOrders([])
     } finally {
@@ -390,25 +387,6 @@ const StaffReports = () => {
     [productStats]
   )
 
-  const inventorySummary = useMemo(() => {
-    const summary = (inventoryStats?.summary ?? {}) as {
-      uniqueProducts?: number
-      totalQuantity?: number
-      totalValue?: number
-    }
-
-    return {
-      uniqueProducts: summary.uniqueProducts ?? 0,
-      totalQuantity: summary.totalQuantity ?? 0,
-      totalValue: summary.totalValue ?? 0
-    }
-  }, [inventoryStats])
-
-  const lowStockItems = useMemo(
-    () => (inventoryStats?.lowStockItems ?? []) as Array<{ productName?: string; branchName?: string; quantity?: number }>,
-    [inventoryStats]
-  )
-
   const orderStatusData = useMemo(() => orderStatus?.statuses ?? [], [orderStatus])
 
   return (
@@ -417,7 +395,7 @@ const StaffReports = () => {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Báo cáo chi nhánh</h1>
-            <p className="text-gray-500">Xem nhanh hiệu suất đơn hàng, sản phẩm bán chạy và cảnh báo tồn kho</p>
+            <p className="text-gray-500">Xem nhanh hiệu suất đơn hàng và sản phẩm bán chạy</p>
           </div>
           <Space wrap>
             <Select
@@ -435,7 +413,7 @@ const StaffReports = () => {
         {error && <Alert message={error} type="error" showIcon />}
 
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={12}>
             <Card hoverable>
               <Statistic
                 title="Đơn hàng"
@@ -444,31 +422,13 @@ const StaffReports = () => {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={12}>
             <Card hoverable>
               <Statistic
-                title="Doanh thu hỗ trợ"
+                title="Doanh thu"
                 value={dashboard?.overview.totalRevenue ?? 0}
                 prefix={<DollarOutlined className="text-green-600" />}
                 formatter={(value) => formatCurrency(Number(value))}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
-              <Statistic
-                title="SKU theo dõi"
-                value={inventorySummary.uniqueProducts}
-                prefix={<InboxOutlined className="text-cyan-600" />}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card hoverable>
-              <Statistic
-                title="Sắp hết hàng"
-                value={lowStockItems.length}
-                prefix={<BarChartOutlined className="text-red-600" />}
               />
             </Card>
           </Col>
@@ -527,27 +487,7 @@ const StaffReports = () => {
         </Row>
 
         <Row gutter={[16, 16]}>
-          <Col xs={24} lg={10}>
-            <Card title="Cảnh báo tồn kho">
-              {lowStockItems.length === 0 ? (
-                renderEmpty('Không có cảnh báo tồn kho')
-              ) : (
-                <div className="space-y-3">
-                  {lowStockItems.slice(0, 8).map((item, index) => (
-                    <div key={`${item.productName || 'inventory'}-${index}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-4 py-3">
-                      <div>
-                        <div className="font-medium text-gray-900">{item.productName || 'Sản phẩm'}</div>
-                        <div className="text-xs text-gray-500">{item.branchName || 'Chi nhánh hiện tại'}</div>
-                      </div>
-                      <Tag color="warning">Còn {item.quantity ?? 0}</Tag>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </Col>
-
-          <Col xs={24} lg={14}>
+          <Col xs={24} lg={24}>
             <Card title="Đơn hàng gần đây">
               <Table
                 dataSource={recentOrders.map((item) => ({ ...item, key: `${item.orderNumber}-${item.createdAt}` }))}
@@ -566,7 +506,7 @@ const StaffReports = () => {
                     title: 'Trạng thái',
                     dataIndex: 'status',
                     key: 'status',
-                    render: (value: string) => <Tag>{value}</Tag>
+                    render: (value: string) => <OrderStatusBadge status={value} />
                   },
                   {
                     title: 'Tạo lúc',

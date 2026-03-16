@@ -6,7 +6,6 @@ import type { ColumnsType } from 'antd/es/table'
 import {
   BarChartOutlined,
   DollarOutlined,
-  InboxOutlined,
   ReloadOutlined,
   ShoppingCartOutlined
 } from '@ant-design/icons'
@@ -224,14 +223,12 @@ const StaffReports = () => {
 
   const inventorySummary = useMemo(() => {
     const summary = (inventoryQuery.data?.summary ?? {}) as {
-      uniqueProducts?: number
       totalQuantity?: number
       totalValue?: number
       lowStock?: number
       outOfStock?: number
     }
     return {
-      uniqueProducts: summary.uniqueProducts ?? 0,
       totalQuantity: summary.totalQuantity ?? 0,
       totalValue: summary.totalValue ?? 0,
       lowStock: summary.lowStock ?? (inventoryQuery.data?.lowStockItems ?? []).length,
@@ -390,61 +387,7 @@ const StaffReports = () => {
       {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            {dashboardQuery.isLoading ? (
-              <Skeleton active paragraph={{ rows: 1 }} />
-            ) : (
-              <Statistic
-                title="Đơn hàng"
-                value={dashboard?.overview?.totalOrders ?? 0}
-                prefix={<ShoppingCartOutlined className="text-blue-600" />}
-              />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            {dashboardQuery.isLoading ? (
-              <Skeleton active paragraph={{ rows: 1 }} />
-            ) : (
-              <Statistic
-                title="Doanh thu"
-                value={dashboard?.overview?.totalRevenue ?? 0}
-                prefix={<DollarOutlined className="text-green-600" />}
-                formatter={(value) => formatCurrency(Number(value))}
-              />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            {dashboardQuery.isLoading ? (
-              <Skeleton active paragraph={{ rows: 1 }} />
-            ) : (
-              <Statistic
-                title="Giá trị đơn TB"
-                value={dashboard?.overview?.averageOrderValue ?? 0}
-                prefix={<BarChartOutlined className="text-purple-600" />}
-                formatter={(value) => formatCurrency(Number(value))}
-              />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            {inventoryQuery.isLoading ? (
-              <Skeleton active paragraph={{ rows: 1 }} />
-            ) : (
-              <Statistic
-                title="SKU theo dõi"
-                value={inventorySummary.uniqueProducts}
-                prefix={<InboxOutlined className="text-cyan-600" />}
-              />
-            )}
-          </Card>
-        </Col>
-      </Row>
+        </Row>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
