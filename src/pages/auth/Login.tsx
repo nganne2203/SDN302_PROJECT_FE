@@ -12,6 +12,7 @@ import { loginSchema, type LoginFormData } from '@/utils/validator'
 import useAuth from '@/hooks/useAuth'
 import { ROUTES, API_ENDPOINTS, OTP_TYPES } from '@/constants/constant'
 import { env } from '@/configs/env'
+import authImage from '@/assets/auth.jpeg'
 
 const Login = () => {
   const isCaptchaEnabled = true
@@ -94,112 +95,125 @@ const Login = () => {
   const emailForOTP = pendingEmail || localPendingEmail || getValues('email')
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Đăng Nhập</h1>
-          <p className="text-gray-500">Chào mừng bạn quay trở lại!</p>
+    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+      <div className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl md:min-h-[calc(100vh-3rem)] lg:grid-cols-2">
+        <div
+          className="relative hidden bg-cover bg-center bg-no-repeat lg:block"
+          style={{ backgroundImage: `url(${authImage})` }}
+        >
+          <div className="absolute inset-0 bg-slate-900/35" />
         </div>
 
-        <form onSubmit={handleFormSubmit} className="space-y-6">
-          <ControlledField
-            name="email"
-            control={control}
-            render={({ value, onChange, onBlur, error }) => (
-              <InputField
-                label="Email"
-                type="email"
-                value={value as string}
-                onChange={(e) => onChange(e.target.value)}
-                onBlur={onBlur}
-                prefix={<Mail className="w-4 h-4 text-gray-400" />}
-                placeholder="Nhập email của bạn"
-                size="large"
-                error={error}
-              />
-            )}
-          />
-
-          <ControlledField
-            name="password"
-            control={control}
-            render={({ value, onChange, onBlur, error }) => (
-              <InputField
-                label="Mật khẩu"
-                type="password"
-                value={value as string}
-                onChange={(e) => onChange(e.target.value)}
-                onBlur={onBlur}
-                prefix={<Lock className="w-4 h-4 text-gray-400" />}
-                placeholder="Nhập mật khẩu"
-                size="large"
-                error={error}
-              />
-            )}
-          />
-
-          <div className="flex items-center justify-end">
-            <Link
-              to={ROUTES.FORGOT_PASSWORD}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Quên mật khẩu?
-            </Link>
-          </div>
-
-          {env.RECAPTCHA_SITE_KEY && (
-            <div className="flex justify-center">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={env.RECAPTCHA_SITE_KEY}
-                onChange={onRecaptchaChange}
-                theme="light"
-              />
+        <div className="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-5">
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Đăng Nhập</h1>
+              <p className="text-gray-500">Chào mừng bạn quay trở lại!</p>
             </div>
-          )}
 
-          <ButtonCommon
-            type="submit"
-            variant="primary"
-            size="lg"
-            isLoading={isLoading}
-            disabled={isLoading}
-            block
-          >
-            Đăng Nhập
-          </ButtonCommon>
-        </form>
+            <form onSubmit={handleFormSubmit} className="space-y-6">
+              <ControlledField
+                name="email"
+                control={control}
+                render={({ value, onChange, onBlur, error }) => (
+                  <InputField
+                    label="Email"
+                    type="email"
+                    value={value as string}
+                    onChange={(e) => onChange(e.target.value)}
+                    onBlur={onBlur}
+                    prefix={<Mail className="w-4 h-4 text-gray-400" />}
+                    placeholder="Nhập email của bạn"
+                    size="large"
+                    error={error}
+                    required
+                  />
+                )}
+              />
 
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">Hoặc</span>
+              <ControlledField
+                name="password"
+                control={control}
+                render={({ value, onChange, onBlur, error }) => (
+                  <InputField
+                    label="Mật khẩu"
+                    type="password"
+                    value={value as string}
+                    onChange={(e) => onChange(e.target.value)}
+                    onBlur={onBlur}
+                    prefix={<Lock className="w-4 h-4 text-gray-400" />}
+                    placeholder="Nhập mật khẩu"
+                    size="large"
+                    error={error}
+                    required
+                  />
+                )}
+              />
+
+              <div className="flex items-center justify-end">
+                <Link
+                  to={ROUTES.FORGOT_PASSWORD}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Quên mật khẩu?
+                </Link>
+              </div>
+
+              {env.RECAPTCHA_SITE_KEY && (
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={env.RECAPTCHA_SITE_KEY}
+                    onChange={onRecaptchaChange}
+                    theme="light"
+                  />
+                </div>
+              )}
+
+              <ButtonCommon
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={isLoading}
+                disabled={isLoading}
+                block
+              >
+                Đăng Nhập
+              </ButtonCommon>
+            </form>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Hoặc</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors hover:shadow-md"
+              >
+                <img
+                  src="https://www.google.com/favicon.ico"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                <span className="text-gray-700">Đăng nhập với Google</span>
+              </button>
+            </div>
+
+            <p className="mt-8 text-center text-gray-600">
+              Chưa có tài khoản?{' '}
+              <Link to={ROUTES.REGISTER} className="text-blue-600 font-semibold hover:underline">
+                Đăng ký ngay
+              </Link>
+            </p>
           </div>
         </div>
-
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors hover:shadow-md"
-          >
-            <img
-              src="https://www.google.com/favicon.ico"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            <span className="text-gray-700">Đăng nhập với Google</span>
-          </button>
-        </div>
-
-        <p className="mt-8 text-center text-gray-600">
-          Chưa có tài khoản?{' '}
-          <Link to={ROUTES.REGISTER} className="text-blue-600 font-semibold hover:underline">
-            Đăng ký ngay
-          </Link>
-        </p>
       </div>
 
       {emailForOTP && (

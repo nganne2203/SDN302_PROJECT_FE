@@ -8,6 +8,7 @@ import SectionHeader from '@/components/common/SectionHeader'
 import BranchCard from '@/components/branch/BranchCard'
 import useBranch from '@/hooks/useBranch'
 import type { Branch } from '@/types/api'
+import sectionImage from '@/assets/image.png'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -36,12 +37,12 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+      <section className="text-white py-14 md:py-16" style={{ backgroundImage: `url(${sectionImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Chào mừng đến TechStore
           </h1>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-white mb-8">
             Hệ thống của hàng công nghệ uy tín với đa chi nhánh trên toàn quốc
           </p>
 
@@ -55,32 +56,32 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-12 ">
+      <section className="bg-white py-2 md:py-10">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 md:gap-6">
             <div className="flex flex-col items-center text-center">
-              <div className="bg-blue-100 p-4 rounded-full mb-4">
+              <div className="bg-blue-100 p-3 rounded-full mb-3">
                 <ShoppingOutlined className="text-3xl text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Sản phẩm chính hãng</h3>
               <p className="text-sm text-gray-600">100% hàng chính hãng, đầy đủ VAT</p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="bg-green-100 p-4 rounded-full mb-4">
+              <div className="bg-green-100 p-3 rounded-full mb-3">
                 <TruckOutlined className="text-3xl text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Giao hàng nhanh</h3>
-              <p className="text-sm text-gray-600">Giao hàng toàn quốc trong 24h</p>
+              <p className="text-sm text-gray-600">Giao hàng toàn quốc trong thời gian ngắn</p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="bg-purple-100 p-4 rounded-full mb-4">
+              <div className="bg-purple-100 p-3 rounded-full mb-3">
                 <SafetyOutlined className="text-3xl text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Bảo hành uy tín</h3>
               <p className="text-sm text-gray-600">Bảo hành chính hãng tại tất cả chi nhánh</p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="bg-orange-100 p-4 rounded-full mb-4">
+              <div className="bg-orange-100 p-3 rounded-full mb-3">
                 <CustomerServiceOutlined className="text-3xl text-orange-600" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Hỗ trợ 24/7</h3>
@@ -91,7 +92,7 @@ const Home = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-4 md:py-6 bg-gray-50">
         <div className="container mx-auto px-4">
           <SectionHeader title="Sản phẩm nổi bật" />
 
@@ -100,9 +101,11 @@ const Home = () => {
               <LoaderCommon />
             </div>
           ) : displayProducts && displayProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-stretch">
               {displayProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <div key={product._id} className="w-full max-w-[270px] mx-auto">
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           ) : (
@@ -115,7 +118,7 @@ const Home = () => {
 
       {/* New Arrivals Section */}
       {displayNewArrivals && displayNewArrivals.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-4 md:py-6 bg-gray-50">
           <div className="container mx-auto px-4">
             <SectionHeader title="Sản phẩm mới nhất" />
 
@@ -124,9 +127,11 @@ const Home = () => {
                 <LoaderCommon />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-stretch">
                 {displayNewArrivals.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                  <div key={product._id} className="w-full max-w-[270px] mx-auto">
+                    <ProductCard product={product} />
+                  </div>
                 ))}
               </div>
             )}
@@ -135,7 +140,7 @@ const Home = () => {
       )}
 
       {(isBranchLoading || displayBranches.length > 0) && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-4 md:py-6 bg-gray-50">
           <div className="container mx-auto px-4">
             <SectionHeader title="Hệ thống chi nhánh" />
 
@@ -144,9 +149,11 @@ const Home = () => {
                 <LoaderCommon />
               </div>
             ) : displayBranches.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-stretch">
                 {displayBranches.map((branch: Branch) => (
-                  <BranchCard key={branch._id} branch={branch} />
+                  <div key={branch._id} className="w-full max-w-[270px] mx-auto h-full">
+                    <BranchCard branch={branch} />
+                  </div>
                 ))}
               </div>
             ) : (
