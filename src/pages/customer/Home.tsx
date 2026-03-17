@@ -8,6 +8,7 @@ import SectionHeader from '@/components/common/SectionHeader'
 import BranchCard from '@/components/branch/BranchCard'
 import useBranch from '@/hooks/useBranch'
 import type { Branch } from '@/types/api'
+import sectionImage from '@/assets/image.png'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -36,12 +37,12 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-14 md:py-16">
+      <section className="text-white py-14 md:py-16" style={{ backgroundImage: `url(${sectionImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Chào mừng đến TechStore
           </h1>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-white mb-8">
             Hệ thống của hàng công nghệ uy tín với đa chi nhánh trên toàn quốc
           </p>
 
