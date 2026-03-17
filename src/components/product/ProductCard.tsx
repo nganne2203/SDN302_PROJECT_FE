@@ -101,8 +101,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
     if (isAddingToCart || isBuyingNow) return
     setIsBuyingNow(true)
     try {
-      await cartApi.addToCart(product._id, 1)
-      navigate(ROUTES.CHECKOUT)
+      navigate(ROUTES.CHECKOUT, {
+        state: {
+          buyNow: {
+            product,
+            quantity: 1,
+            services: [],
+            serviceIds: [],
+            pricingData: pricingInfo
+          }
+        }
+      })
     } catch {
       toast.error('Mua hàng thất bại')
     } finally {
