@@ -86,29 +86,29 @@ const HeaderLayout = () => {
 
   const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
     switch (key) {
-      case 'profile':
-        setIsProfileModalOpen(true)
-        break
-      case 'change-password':
-        navigate(ROUTES.CHANGE_PASSWORD)
-        break
-      case 'orders':
-        navigate(ROUTES.ORDERS)
-        break
-      case 'management':
-        navigate(ROUTES.MANAGEMENT.DASHBOARD)
-        break
-      case 'logout':
-        void logout()
-        break
-      case 'login':
-        navigate(ROUTES.LOGIN)
-        break
-      case 'register':
-        navigate(ROUTES.REGISTER)
-        break
-      default:
-        break
+    case 'profile':
+      setIsProfileModalOpen(true)
+      break
+    case 'change-password':
+      navigate(ROUTES.CHANGE_PASSWORD)
+      break
+    case 'orders':
+      navigate(ROUTES.ORDERS)
+      break
+    case 'management':
+      navigate(ROUTES.MANAGEMENT.DASHBOARD)
+      break
+    case 'logout':
+      void logout()
+      break
+    case 'login':
+      navigate(ROUTES.LOGIN)
+      break
+    case 'register':
+      navigate(ROUTES.REGISTER)
+      break
+    default:
+      break
     }
   }
 

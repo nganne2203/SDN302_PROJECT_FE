@@ -30,7 +30,6 @@ const LocationSelectGroupOffline = ({
 
   const {
     provinceOptions,
-    districtOptions,
     wardOptions,
     loading,
     fetchProvinces,

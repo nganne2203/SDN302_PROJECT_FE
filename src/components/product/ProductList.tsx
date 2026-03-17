@@ -6,6 +6,7 @@ import type { Product, PaginationMeta } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 
+/* eslint-disable no-unused-vars */
 interface ProductWithKey extends Record<string, unknown> {
   key: string
   _id: string
@@ -166,7 +167,7 @@ const ProductList = ({
                   onClick={() => onToggleStatus(product._id, product.isActive)}
                 />
               </Tooltip>
-              <Tooltip title={product.isActive ? 'Vô hiệu hóa sản phẩm trước khi xóa' : 'Xóa'}>
+              {!product.isActive && (
                 <Popconfirm
                   title="Xác nhận xóa"
                   description="Bạn có chắc chắn muốn xóa sản phẩm này?"
@@ -174,16 +175,16 @@ const ProductList = ({
                   cancelText="Hủy"
                   onConfirm={() => onDelete(product)}
                   okButtonProps={{ danger: true }}
-                  disabled={product.isActive}
                 >
-                  <Button
-                    danger
-                    size="small"
-                    icon={<Trash2 className="w-4 h-4" />}
-                    disabled={product.isActive}
-                  />
+                  <Tooltip title="Xóa">
+                    <Button
+                      danger
+                      size="small"
+                      icon={<Trash2 className="w-4 h-4" />}
+                    />
+                  </Tooltip>
                 </Popconfirm>
-              </Tooltip>
+              )}
             </Space>
           )
         }

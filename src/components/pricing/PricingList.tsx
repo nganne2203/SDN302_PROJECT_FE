@@ -130,18 +130,22 @@ const PricingListComponent = ({
               onClick={() => onToggleStatus(record._id)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc chắn muốn xóa bảng giá này?"
-            okText="Xóa"
-            cancelText="Hủy"
-            onConfirm={() => onDelete(record._id)}
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Xóa">
-              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
-            </Tooltip>
-          </Popconfirm>
+          {
+            !record.isActive && (
+              <Popconfirm
+                title="Xác nhận xóa"
+                description="Bạn có chắc chắn muốn xóa bảng giá này?"
+                okText="Xóa"
+                cancelText="Hủy"
+                onConfirm={() => onDelete(record._id)}
+                okButtonProps={{ danger: true }}
+              >
+                <Tooltip title="Xóa">
+                  <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+                </Tooltip>
+              </Popconfirm>
+            )
+          }
         </Space>
       )
     }

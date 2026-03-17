@@ -23,8 +23,6 @@ const BranchFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
   onReset
 }: BranchFilterProps) => {
   const filterFields: FilterField[] = [

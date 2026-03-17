@@ -46,14 +46,14 @@ const ServiceProductList = ({
           <div className='w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0'>
             {record.product.images ? (
               (() => {
-                const url = getProductImageUrl(record.product.images);
+                const url = getProductImageUrl(record.product.images)
                 return (
                   <img
                     src={url}
                     alt={record.product.name}
                     className='w-full h-full object-cover'
                   />
-                );
+                )
               })()
             ) : (
               <div className='w-full h-full flex items-center justify-center text-xs text-gray-400'>No img</div>
@@ -135,7 +135,7 @@ const ServiceProductList = ({
       width: 150,
       sortable: true,
       render: (value) => <span className='text-gray-500'>{dayjs(value as string).format('DD/MM/YYYY')}</span>
-    },
+    }
   ]
 
   if (canManage) {
@@ -162,18 +162,20 @@ const ServiceProductList = ({
               onClick={() => onStatusChange(record._id, !record.isActive)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xóa dịch vụ"
-            description={`Bạn có chắc muốn xóa dịch vụ "${record.name}"?`}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => onDelete(record)}
-          >
-            <Tooltip title="Xóa">
-              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
-            </Tooltip>
-          </Popconfirm>
+          {!record.isActive && (
+            <Popconfirm
+              title="Xóa dịch vụ"
+              description={`Bạn có chắc muốn xóa dịch vụ "${record.name}"?`}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => onDelete(record)}
+            >
+              <Tooltip title="Xóa">
+                <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+              </Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       )
     })

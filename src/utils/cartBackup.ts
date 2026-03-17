@@ -38,14 +38,14 @@ export const normalizeCartBackupItems = (items: unknown[]): CartBackupItem[] => 
 
     const services = Array.isArray(item.services)
       ? item.services
-          .map((svc: unknown) => {
-            if (!svc || typeof svc !== 'object') return null
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const s = svc as any
-            const serviceId = extractId(s.serviceId) || extractId(s._id) || extractId(s.id) || extractId(s)
-            return serviceId ? { serviceId } : null
-          })
-          .filter(Boolean)
+        .map((svc: unknown) => {
+          if (!svc || typeof svc !== 'object') return null
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const s = svc as any
+          const serviceId = extractId(s.serviceId) || extractId(s._id) || extractId(s.id) || extractId(s)
+          return serviceId ? { serviceId } : null
+        })
+        .filter(Boolean)
       : undefined
 
     result.push({

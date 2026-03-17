@@ -9,11 +9,19 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
         label: 'Chờ xác nhận',
         className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
       },
+      pending_processing: {
+        label: 'Đang xử lý',
+        className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      },
       confirmed: {
         label: 'Đã xác nhận',
         className: 'bg-blue-100 text-blue-800 border-blue-200'
       },
       shipped: {
+        label: 'Đang giao',
+        className: 'bg-purple-100 text-purple-800 border-purple-200'
+      },
+      shipping: {
         label: 'Đang giao',
         className: 'bg-purple-100 text-purple-800 border-purple-200'
       },
@@ -27,11 +35,18 @@ const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
       }
     }
 
+    if (!value) {
+      return {
+        label: 'Chưa xác định',
+        className: 'bg-gray-100 text-gray-800 border-gray-200'
+      }
+    }
+
     let normalized = typeof value === 'string' ? value.trim().toLowerCase() : ''
     if (normalized === 'canceled') normalized = 'cancelled'
 
     return statusMap[normalized] || {
-      label: value || 'Không xác định',
+      label: String(value),
       className: 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }

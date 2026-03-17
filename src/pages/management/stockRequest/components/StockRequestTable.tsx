@@ -11,6 +11,7 @@ interface StockRequestTableProps {
   pagination: TablePaginationConfig
   onPaginationChange: (_pagination: TablePaginationConfig) => void
   isAdmin: boolean
+  availableInventoryByProduct?: Record<string, number>
   onApprove: (_record: StockRequestRecord) => void
   onReject: (_record: StockRequestRecord) => void
   onViewDetail?: (_record: StockRequestRecord) => void
@@ -22,6 +23,7 @@ const StockRequestTable = ({
   pagination,
   onPaginationChange,
   isAdmin,
+  availableInventoryByProduct = {},
   onApprove,
   onReject,
   onViewDetail
@@ -67,6 +69,19 @@ const StockRequestTable = ({
       key: 'quantity',
       render: (value: number) => `${value} cái`
     },
+    ...(isAdmin
+      ? [
+        {
+          title: 'Tồn kho khả dụng',
+          key: 'availableInventory',
+          render: (_: unknown, record: StockRequestRecord) => {
+            const productId = record.product?._id
+            const availableQuantity = productId ? availableInventoryByProduct[productId] : undefined
+            return `${availableQuantity ?? 0} cái`
+          }
+        }
+      ]
+      : []),
     {
       title: 'Ngày yêu cầu',
       dataIndex: 'createdAt',
@@ -87,11 +102,13 @@ const StockRequestTable = ({
         const colorMap: Record<string, string> = {
           pending: 'warning',
           approved: 'success',
+          partially_approved: 'processing',
           rejected: 'error'
         }
         const labelMap: Record<string, string> = {
           pending: 'Chờ duyệt',
           approved: 'Đã duyệt',
+          partially_approved: 'Duyệt một phần',
           rejected: 'Bị từ chối'
         }
         return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>
