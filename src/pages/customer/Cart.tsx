@@ -19,13 +19,41 @@ const Cart = () => {
     removeItem
   } = useCart()
 
+  const getCartLineKey = (record: any) => {
+    const extractId = (value: any): string | undefined => {
+      if (typeof value === 'string') return value
+      if (!value || typeof value !== 'object') return undefined
+      if (typeof value._id === 'string') return value._id
+      if (typeof value.id === 'string') return value.id
+      return undefined
+    }
+
+    const lineId = extractId(record?.id) || extractId(record?._id)
+    if (lineId) return lineId
+
+    const productId = record?.productId || record?.product?._id || record?.product?.id || 'unknown-product'
+    const serviceIds = (record?.services || [])
+      .map((svc: any) => (
+        extractId(svc?.serviceId)
+        || extractId(svc?.service?._id)
+        || extractId(svc?.service?.id)
+        || extractId(svc?._id)
+        || extractId(svc?.id)
+        || extractId(svc?.service)
+      ))
+      .filter(Boolean)
+      .sort()
+      .join(',') || 'no-services'
+
+    return `${extractId(productId) || productId}::${serviceIds}`
+  }
+
   const columns = [
     {
       title: 'Sản phẩm',
       dataIndex: 'product',
       key: 'product',
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const productId = record.productId || record.product?._id
         const imageUrl = getProductImageUrl(record.product.images)
         return (
           <div className="flex items-center gap-4">
@@ -80,14 +108,13 @@ const Cart = () => {
       key: 'quantity',
       width: 150,
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const productId = record.productId || record.product?._id
         return (
           <InputNumber
             min={1}
             max={99}
             value={record.quantity}
             onChange={(value) => {
-              if (productId) updateQuantity(productId, value)
+              updateQuantity(record, value)
             }}
             className="w-20"
           />
@@ -113,14 +140,13 @@ const Cart = () => {
       key: 'action',
       width: 80,
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const productId = record.productId || record.product?._id
         return (
           <Button
             type="text"
             danger
             icon={<DeleteOutlined />}
             onClick={() => {
-              if (productId) removeItem(productId)
+              removeItem(record)
             }}
           />
         )
@@ -172,7 +198,7 @@ const Cart = () => {
               <Table
                 dataSource={cartItems}
                 columns={columns}
-                rowKey={(record) => record.id || record.productId || record.product?._id || ''}
+                rowKey={getCartLineKey}
                 pagination={false}
               />
             </div>
