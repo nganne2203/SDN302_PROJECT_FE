@@ -439,8 +439,8 @@ const Checkout = () => {
         isDefault: userAddresses.length === 0,
       };
       const updatedAddresses = [...userAddresses, newAddress];
-      const success = await updateProfile({ addresses: updatedAddresses });
-      if (success) {
+      const result = await updateProfile({ addresses: updatedAddresses });
+      if (result.success) {
         message.success('Đã thêm địa chỉ mới');
         setShowAddAddressModal(false);
         addAddressForm.resetFields();
@@ -450,7 +450,7 @@ const Checkout = () => {
         setSelectedAddressIndex(newIdx);
         fillFormWithAddress(newAddress);
       } else {
-        message.error('Không thể lưu địa chỉ');
+        message.error(result.error || 'Không thể lưu địa chỉ');
       }
     } catch {
       // validation failed

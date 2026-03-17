@@ -19,6 +19,7 @@ const InventoryPage = () => {
   const {
     isAdmin,
     isManager,
+    isStaff,
     branches,
     selectedBranchId,
     setSelectedBranchId,
@@ -227,6 +228,7 @@ const InventoryPage = () => {
               children: (
                 <BranchInventoryPanel
                   isAdmin={isAdmin}
+                  showAdvancedViews
                   canEditThresholds={isAdmin || isManager}
                   canCreate={isAdmin || isManager}
                   canDelete={isAdmin}
@@ -261,6 +263,7 @@ const InventoryPage = () => {
       ) : (
         <BranchInventoryPanel
           isAdmin={false}
+          showAdvancedViews={!isStaff}
           canEditThresholds={isManager}
           canCreate={isManager}
           canDelete={false}

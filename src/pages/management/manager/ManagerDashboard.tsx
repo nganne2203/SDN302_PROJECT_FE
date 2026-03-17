@@ -9,7 +9,6 @@ import {
   TeamOutlined,
   TruckOutlined,
   AlertOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
   StopOutlined,
   ReloadOutlined
@@ -19,24 +18,13 @@ import useAuth from '@/hooks/useAuth'
 import useManagerOrders from '@/hooks/useManagerOrders'
 import useManagerStockRequests from '@/hooks/useManagerStockRequests'
 import useManagerLowStock from '@/hooks/useManagerLowStock'
+import dashboardApi from '@/apis/dashboard'
+import type { DashboardData } from '@/features/dashboard/dashboardTypes'
 import type { StockRequestRecord, StoreInventoryRecord } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import dayjs from 'dayjs'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 
-const ORDER_STATUS_COLOR: Record<string, string> = {
-  pending: 'warning',
-  confirmed: 'processing',
-  shipped: 'blue',
-  delivered: 'success',
-  cancelled: 'error'
-}
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: 'Chờ xử lý',
-  confirmed: 'Đã xác nhận',
-  shipped: 'Đang vận chuyển',
-  delivered: 'Đã giao',
-  cancelled: 'Đã hủy'
-}
 const STOCK_STATUS_COLOR: Record<string, string> = {
   pending: 'warning',
   approved: 'success',
@@ -53,6 +41,9 @@ const ManagerDashboard = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const branchId = user?.branch ?? null
+  const branchIdParam = typeof branchId === 'string' ? branchId : null
+
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null)
 
   const [branchName, setBranchName] = useState<string>('—')
   useEffect(() => {
@@ -66,6 +57,29 @@ const ManagerDashboard = () => {
       setBranchName('—')
     }
   }, [branchId])
+
+  useEffect(() => {
+    if (!branchIdParam) {
+      setDashboard(null)
+      return
+    }
+
+    let isMounted = true
+
+    dashboardApi.getDashboard({ period: 'this_month', branchId: branchIdParam })
+      .then((res) => {
+        if (!isMounted) return
+        setDashboard(res.data)
+      })
+      .catch(() => {
+        if (!isMounted) return
+        setDashboard(null)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [branchIdParam])
 
   const {
     data: ordersData,
@@ -116,11 +130,7 @@ const ManagerDashboard = () => {
       title: 'Trạng thái đơn',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={ORDER_STATUS_COLOR[status] ?? 'default'}>
-          {ORDER_STATUS_LABEL[status] ?? status}
-        </Tag>
-      )
+      render: (status: string) => <OrderStatusBadge status={status} />
     },
     {
       title: 'Ngày',
@@ -189,7 +199,7 @@ const ManagerDashboard = () => {
 
       {/* Key Metrics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card hoverable>
             <Statistic
               title="Tổng đơn hàng"
@@ -200,18 +210,7 @@ const ManagerDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn chờ xử lý"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'pending').length}
-              prefix={<ClockCircleOutlined className="text-yellow-600" />}
-              styles={{ content: { color: '#faad14' } }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card hoverable>
             <Statistic
               title="Sản phẩm sắp hết"
@@ -223,7 +222,7 @@ const ManagerDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card hoverable>
             <Statistic
               title="Yêu cầu nhập kho"
@@ -242,7 +241,7 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Đơn đã giao"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'delivered').length}
+              value={dashboard?.overview.deliveredOrders ?? 0}
               prefix={<CheckCircleOutlined className="text-green-600" />}
               styles={{ content: { color: '#52c41a' } }}
             />
@@ -253,7 +252,7 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Đơn đang giao"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'shipped').length}
+              value={dashboard?.overview.shippedOrders ?? 0}
               prefix={<TruckOutlined className="text-cyan-600" />}
               styles={{ content: { color: '#08979c' } }}
             />
@@ -264,7 +263,7 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Đơn đã hủy"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'cancelled').length}
+              value={dashboard?.overview.cancelledOrders ?? 0}
               prefix={<StopOutlined className="text-red-400" />}
               styles={{ content: { color: '#ff4d4f' } }}
             />
@@ -275,7 +274,7 @@ const ManagerDashboard = () => {
           <Card hoverable>
             <Statistic
               title="Đơn đã xác nhận"
-              value={orders.filter(o => (o as unknown as { status: string }).status === 'confirmed').length}
+              value={dashboard?.overview.confirmedOrders ?? 0}
               prefix={<DollarOutlined className="text-purple-600" />}
               styles={{ content: { color: '#722ed1' } }}
             />
@@ -369,7 +368,7 @@ const ManagerDashboard = () => {
             { label: 'Tồn kho', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <ShoppingOutlined /> },
             { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> },
             { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <FileTextOutlined /> },
-            { label: 'Nhân viên', path: ROUTES.MANAGEMENT.STAFF, icon: <TeamOutlined /> },
+            { label: 'Người dùng', path: ROUTES.MANAGEMENT.MANAGER_USERS, icon: <TeamOutlined /> },
             { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <PercentageOutlined /> }
           ].map(({ label, path, icon }) => (
             <Col xs={12} sm={8} lg={4} key={path}>

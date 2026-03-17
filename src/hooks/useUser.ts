@@ -22,7 +22,13 @@ export const useUser = () => {
   const updateProfile = useCallback(
     async (data: UpdateProfilePayload) => {
       const result = await dispatch(updateProfileThunk(data))
-      return updateProfileThunk.fulfilled.match(result)
+      if (updateProfileThunk.fulfilled.match(result)) {
+        return { success: true as const, error: null }
+      }
+      return {
+        success: false as const,
+        error: (result.payload as string) || 'Khong the cap nhat thong tin'
+      }
     },
     [dispatch]
   )
