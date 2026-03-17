@@ -37,7 +37,20 @@ const MainInventoryPanel = ({
   onCreate,
   onAdjust
 }: MainInventoryPanelProps) => {
+  const currentPage = pagination.current || 1
+  const pageSize = pagination.pageSize || 10
   const columns: ColumnsType<InventoryRecord> = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: InventoryRecord, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
@@ -149,14 +162,14 @@ const MainInventoryPanel = ({
       }
       className="shadow-sm"
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 w-full">
         <Input
           allowClear
           prefix={<SearchOutlined className="text-gray-400" />}
           value={searchText}
           onChange={(e) => onSearchTextChange(e.target.value)}
           placeholder="Tìm theo tên sản phẩm"
-          style={{ maxWidth: 280 }}
+          style={{ maxWidth: '80%' }}
         />
         <div className="flex items-center gap-2">
           <Switch

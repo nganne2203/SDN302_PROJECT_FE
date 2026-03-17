@@ -49,7 +49,20 @@ const DeviceListComponent = ({
     key: device._id
   }))
 
+  const currentPage = pagination?.page || 1
+  const pageSize = pagination?.limit || 10
   const tableColumns: TableColumn<DeviceWithKey>[] = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: DeviceWithKey, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       key: 'name',
       title: 'Tên thiết bị',

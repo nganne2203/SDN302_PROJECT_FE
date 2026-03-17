@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Card, Table, Tag, Row, Col, Statistic, Alert, Empty, Progress, Tooltip, Space, Tabs, Popconfirm, Button } from 'antd'
 import { AlertOutlined, CheckCircleOutlined, ShoppingOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
@@ -61,6 +62,17 @@ const BranchInventoryPanel = ({
   const navigate = useNavigate()
   const activeSkuCount = branchInventory.filter((record) => record.quantity > 0).length
 
+  const branchOptions = useMemo(() => {
+    const options = branches.map((branch) => ({ label: branch.name, value: branch._id }))
+
+    if (!selectedBranchId || options.some((option) => option.value === selectedBranchId)) {
+      return options
+    }
+
+    const fallbackName = branchInventory.find((record) => record.branch?._id === selectedBranchId)?.branch?.name
+    return [{ label: fallbackName || 'Chi nhánh của bạn', value: selectedBranchId }, ...options]
+  }, [branches, selectedBranchId, branchInventory])
+
   const getBranchStatus = (record: StoreInventoryRecord) => {
     if (record.quantity <= 0) return 'out_of_stock'
     if (record.quantity < record.minThreshold) return 'low_stock'
@@ -88,7 +100,21 @@ const BranchInventoryPanel = ({
     return labelMap[status] || status
   }
 
+  const currentPage = pagination.current || 1
+  const pageSize = pagination.pageSize || 10
+
   const branchColumns: ColumnsType<StoreInventoryRecord> = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: StoreInventoryRecord, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
@@ -283,24 +309,27 @@ const BranchInventoryPanel = ({
       </Row>
 
       <Card className="mb-6">
-        <Space wrap>
-          {isAdmin && (
+        <Row gutter={[16, 0]} align="bottom">
+          <Col xs={24} md={10} lg={8}>
             <SelectField
               label="Chi nhánh"
               value={selectedBranchId || undefined}
               onChange={(value) => onBranchChange(value as string)}
-              options={branches.map((branch) => ({ label: branch.name, value: branch._id }))}
-              className="mb-0 min-w-[240px]"
+              options={branchOptions}
+              className="mb-0"
+              disabled={!isAdmin && branches.length <= 1}
             />
-          )}
-          <InputField
-            label="Tìm kiếm"
-            value={searchText}
-            onChange={(e) => onSearchTextChange(e.target.value)}
-            placeholder="Tìm theo tên sản phẩm"
-            className="mb-0 min-w-[240px]"
-          />
-        </Space>
+          </Col>
+          <Col xs={24} md={14} lg={16}>
+            <InputField
+              label="Tìm kiếm"
+              value={searchText}
+              onChange={(e) => onSearchTextChange(e.target.value)}
+              placeholder="Tìm theo tên sản phẩm"
+              className="mb-0"
+            />
+          </Col>
+        </Row>
       </Card>
 
       <Tabs
