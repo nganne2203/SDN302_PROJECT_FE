@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Button } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import useStockRequest from '@/hooks/useStockRequest'
 import { toast } from '@/utils/toast'
 import { extractApiError } from '@/utils/apiError'
@@ -124,15 +124,27 @@ const StockRequestPage = () => {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          {isAdmin ? 'Quản lý yêu cầu nhập kho toàn hệ thống' : 'Yêu cầu nhập kho chi nhánh'}
-        </h1>
-        <p className="text-gray-500">
-          {isAdmin
-            ? 'Duyệt và xuất kho từ inventory chung về các chi nhánh'
-            : 'Tạo yêu cầu nhập kho từ kho tổng'}
-        </p>
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {isAdmin ? 'Quản lý yêu cầu nhập kho toàn hệ thống' : 'Yêu cầu nhập kho chi nhánh'}
+          </h1>
+          <p className="text-gray-500">
+            {isAdmin
+              ? 'Duyệt và xuất kho từ inventory chung về các chi nhánh'
+              : 'Tạo yêu cầu nhập kho từ kho tổng'}
+          </p>
+        </div>
+        {isManager && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateModalOpen(true)}
+            className="w-full md:w-auto"
+          >
+            Tạo yêu cầu nhập kho mới
+          </Button>
+        )}
       </div>
 
       <StockRequestStats pendingCount={pendingCount} approvedCount={approvedCount} partialCount={partialCount} rejectCount={rejectCount} />
@@ -164,13 +176,11 @@ const StockRequestPage = () => {
       )}
 
       <StockRequestFilters
-        isManager={isManager}
         statusFilter={statusFilter}
         onStatusChange={(value) => {
           setStatusFilter(value)
           setPagination((prev) => ({ ...prev, current: 1 }))
         }}
-        onCreate={() => setCreateModalOpen(true)}
       />
 
       <StockRequestTable
