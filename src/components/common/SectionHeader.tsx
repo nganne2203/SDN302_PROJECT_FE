@@ -8,7 +8,7 @@ const SectionHeader = ({ title }: SectionHeaderProps) => {
   const navigate = useNavigate()
 
   return (
-    <div className="flex justify-between items-center mb-12">
+    <div className="flex justify-between items-center mb-4 md:mb-5">
       <h2 className="text-3xl font-bold text-gray-800">
         {title}
       </h2>
