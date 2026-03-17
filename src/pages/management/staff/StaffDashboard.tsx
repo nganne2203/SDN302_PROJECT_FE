@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Card, Col, Empty, Row, Select, Spin, Statistic, Table, Tag } from 'antd'
+import { Alert, Button, Card, Col, Empty, Progress, Row, Select, Spin, Statistic, Table, Tag } from 'antd'
 import {
   ShoppingCartOutlined,
   CheckCircleOutlined,
@@ -42,6 +42,14 @@ const STATUS_LABEL: Record<string, string> = {
   shipped: 'Đang giao',
   delivered: 'Đã giao',
   cancelled: 'Đã hủy'
+}
+
+const STATUS_PROGRESS_COLOR: Record<string, string> = {
+  pending: '#faad14',
+  confirmed: '#1677ff',
+  shipped: '#13c2c2',
+  delivered: '#52c41a',
+  cancelled: '#ff4d4f'
 }
 
 const StaffDashboard = () => {
@@ -98,6 +106,35 @@ const StaffDashboard = () => {
     [orderStatusSummary]
   )
 
+  const summaryCards = [
+    {
+      title: 'Đơn hàng trong kỳ',
+      value: dashboard?.overview.totalOrders ?? 0,
+      prefix: <ShoppingCartOutlined className="text-blue-600" />,
+      color: '#1890ff'
+    },
+    {
+      title: 'Doanh thu',
+      value: dashboard?.overview.totalRevenue ?? 0,
+      prefix: <CheckCircleOutlined className="text-green-600" />,
+      color: '#52c41a',
+      formatter: (value: string | number) => formatCurrency(Number(value))
+    },
+    {
+      title: 'Sản phẩm đã bán',
+      value: dashboard?.overview.totalProductsSold ?? 0,
+      prefix: <ShopOutlined className="text-orange-600" />,
+      color: '#fa8c16'
+    },
+    {
+      title: 'Tỷ lệ hoàn thành',
+      value: dashboard?.performance.completionRate ?? 0,
+      suffix: '%',
+      prefix: <CheckCircleOutlined className="text-green-600" />,
+      color: '#3f8600'
+    }
+  ]
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -137,139 +174,128 @@ const StaffDashboard = () => {
 
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} lg={24}>
-            <Card hoverable>
-              <Statistic
-                title="Đơn hàng trong kỳ"
-                value={dashboard?.overview.totalOrders ?? 0}
-                prefix={<ShoppingCartOutlined className="text-blue-600" />}
-                styles={{ content: { color: '#1890ff' } }}
-              />
-            </Card>
-          </Col>
+          {summaryCards.map((card) => (
+            <Col xs={24} sm={12} lg={6} key={card.title}>
+              <Card hoverable className="h-full">
+                <Statistic
+                  title={card.title}
+                  value={card.value}
+                  suffix={card.suffix}
+                  prefix={card.prefix}
+                  formatter={card.formatter}
+                  styles={{ content: { color: card.color } }}
+                />
+              </Card>
+            </Col>
+          ))}
         </Row>
 
-        <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={8}>
-            <Card hoverable>
-              <Statistic
-                title="Doanh thu"
-                value={dashboard?.overview.totalRevenue ?? 0}
-                prefix={<CheckCircleOutlined className="text-green-600" />}
-                formatter={(value) => formatCurrency(Number(value))}
-                styles={{ content: { color: '#52c41a' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={8}>
-            <Card hoverable>
-              <Statistic
-                title="Sản phẩm đã bán"
-                value={dashboard?.overview.totalProductsSold ?? 0}
-                prefix={<ShopOutlined className="text-orange-600" />}
-                styles={{ content: { color: '#fa8c16' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={8}>
-            <Card hoverable>
-              <Statistic
-                title="Tỷ lệ hoàn thành"
-                value={dashboard?.performance.completionRate ?? 0}
-                suffix="%"
-                prefix={<CheckCircleOutlined className="text-green-600" />}
-                styles={{ content: { color: '#3f8600' } }}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[16, 16]} className="mt-6">
-          <Col xs={24} lg={24}>
-            <Card title="Trạng thái đơn hàng">
-              {statusItems.length === 0 ? (
-                <Empty description="Chưa có dữ liệu trạng thái đơn hàng" />
-              ) : (
-                <div className="space-y-3">
-                  {statusItems.map((item) => (
-                    <div key={item.status} className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
-                      <div>
-                        <Tag color={STATUS_COLOR[item.status] || 'default'}>
-                          {STATUS_LABEL[item.status] || item.status}
-                        </Tag>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Doanh thu: {formatCurrency(item.totalAmount)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-900">{item.count} đơn</div>
-                        <div className="text-xs text-gray-500">{item.percentage}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </Col>
-        </Row>
-
-        <Card className="mt-6" title="Đơn hàng gần đây">
-          <Table
-            dataSource={recentOrders.map((order) => ({ ...order, key: order.orderNumber }))}
-            pagination={false}
-            size="small"
-            columns={[
-              {
-                title: 'Mã đơn',
-                dataIndex: 'orderNumber',
-                key: 'orderNumber'
-              },
-              {
-                title: 'Khách hàng',
-                dataIndex: 'customer',
-                key: 'customer'
-              },
-              {
-                title: 'Tổng tiền',
-                dataIndex: 'totalAmount',
-                key: 'totalAmount',
-                render: (value: number) => formatCurrency(value)
-              },
-              {
-                title: 'Trạng thái',
-                dataIndex: 'status',
-                key: 'status',
-                render: (value: string) => <OrderStatusBadge status={value} />
-              },
-              {
-                title: 'Tạo lúc',
-                dataIndex: 'createdAt',
-                key: 'createdAt',
-                render: (value: string) => dayjs(value).format('DD/MM/YYYY HH:mm')
-              }
-            ]}
-            locale={{ emptyText: 'Chưa có đơn hàng gần đây' }}
-          />
-        </Card>
-
-        <Card className="mt-6" title="Hành động nhanh">
+        <div className="mt-4 space-y-4">
           <Row gutter={[16, 16]}>
-            {[
-              { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
-              { label: 'Kho chi nhánh', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <InboxOutlined /> },
-              { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShopOutlined /> },
-              { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <CustomerServiceOutlined /> },
-              { label: 'Khách hàng', path: ROUTES.MANAGEMENT.STAFF_CUSTOMERS, icon: <UserOutlined /> },
-              { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <BarChartOutlined /> }
-            ].map(({ label, path, icon }) => (
-              <Col xs={12} sm={8} lg={4} key={path}>
-                <Button block icon={icon} onClick={() => navigate(path)}>
-                  {label}
-                </Button>
-              </Col>
-            ))}
+            <Col xs={24} lg={24}>
+              <Card
+                title="Trạng thái đơn hàng"
+                extra={<span className="text-xs text-gray-500">Tổng: {statusItems.reduce((acc, item) => acc + item.count, 0)} đơn</span>}
+              >
+                {statusItems.length === 0 ? (
+                  <Empty description="Chưa có dữ liệu trạng thái đơn hàng" />
+                ) : (
+                  <Row gutter={[12, 12]}>
+                    {statusItems.map((item) => (
+                      <Col xs={24} md={12} key={item.status}>
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <Tag color={STATUS_COLOR[item.status] || 'default'}>
+                                {STATUS_LABEL[item.status] || item.status}
+                              </Tag>
+                              <p className="mt-2 text-xs text-gray-500">
+                                Doanh thu: {formatCurrency(item.totalAmount)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xl font-semibold text-gray-900">{item.count}</div>
+                              <div className="text-xs text-gray-500">đơn</div>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <Progress
+                              percent={Math.max(0, Math.min(100, item.percentage))}
+                              strokeColor={STATUS_PROGRESS_COLOR[item.status] || '#1677ff'}
+                              strokeWidth={8}
+                              showInfo
+                              format={(percent) => `${percent ?? 0}%`}
+                            />
+                          </div>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                )}
+              </Card>
+            </Col>
           </Row>
-        </Card>
+
+          <Card title="Đơn hàng gần đây" className='mb-6'>
+            <Table
+              dataSource={recentOrders.map((order) => ({ ...order, key: order.orderNumber }))}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Mã đơn',
+                  dataIndex: 'orderNumber',
+                  key: 'orderNumber'
+                },
+                {
+                  title: 'Khách hàng',
+                  dataIndex: 'customer',
+                  key: 'customer'
+                },
+                {
+                  title: 'Tổng tiền',
+                  dataIndex: 'totalAmount',
+                  key: 'totalAmount',
+                  render: (value: number) => formatCurrency(value)
+                },
+                {
+                  title: 'Trạng thái',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (value: string) => <OrderStatusBadge status={value} />
+                },
+                {
+                  title: 'Tạo lúc',
+                  dataIndex: 'createdAt',
+                  key: 'createdAt',
+                  render: (value: string) => dayjs(value).format('DD/MM/YYYY HH:mm')
+                }
+              ]}
+              locale={{ emptyText: 'Chưa có đơn hàng gần đây' }}
+            />
+          </Card>
+
+          <div className="pt-4">
+            <Card title="Quản lý nhanh">
+              <Row gutter={[16, 16]}>
+                {[
+                  { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
+                  { label: 'Kho chi nhánh', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <InboxOutlined /> },
+                  { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShopOutlined /> },
+                  { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <CustomerServiceOutlined /> },
+                  { label: 'Khách hàng', path: ROUTES.MANAGEMENT.STAFF_CUSTOMERS, icon: <UserOutlined /> },
+                  { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <BarChartOutlined /> }
+                ].map(({ label, path, icon }) => (
+                  <Col xs={12} sm={8} lg={4} key={path}>
+                    <Button block icon={icon} onClick={() => navigate(path)}>
+                      {label}
+                    </Button>
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </div>
+        </div>
       </Spin>
     </div>
   )

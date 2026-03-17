@@ -243,7 +243,7 @@ const BranchInventoryPanel = ({
         <Col xs={24} sm={12} lg={6}>
           <Card hoverable>
             <Statistic
-              title="SKU hoạt động"
+              title="Sản phẩm hoạt động"
               value={activeSkuCount}
               prefix={<CheckCircleOutlined className="text-success" />}
               styles={{ content: { color: '#52c41a' } }}

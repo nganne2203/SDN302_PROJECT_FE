@@ -139,7 +139,7 @@ const AdminDashboard = () => {
       <Spin spinning={loading}>
         <div className="space-y-6">
           <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Overview</h2>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Tổng quan</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card styles={statCardStyles} className={cardClassName}>
                 <Statistic
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
           </section>
 
           <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Order Status</h2>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Tình trạng đơn hàng</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card styles={statCardStyles} className={cardClassName}>
                 <Statistic
@@ -229,7 +229,7 @@ const AdminDashboard = () => {
           </section>
 
           <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Secondary Metrics</h2>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Chỉ số phụ</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card styles={statCardStyles} className={cardClassName}>
                 <Statistic
@@ -274,126 +274,131 @@ const AdminDashboard = () => {
           </section>
         </div>
 
-        {/* Branch Performance Table */}
-        <Card
-          className="my-6"
-          title="Hiệu suất chi nhánh"
-          extra={
-            <Select
-              value={branchPerfFilter.period}
-              options={PERIOD_OPTIONS}
-              onChange={(val) => handleBranchPerfFilterChange({ period: val })}
-              style={{ width: 140 }}
-              size="small"
-            />
-          }
-        >
-          <Spin spinning={branchPerfLoading}>
-            <Table<BranchPerformanceItem>
-              columns={[
-                {
-                  title: 'Chi nhánh',
-                  dataIndex: 'branchName',
-                  key: 'branchName'
-                },
-                {
-                  title: 'Doanh thu',
-                  dataIndex: 'revenue',
-                  key: 'revenue',
-                  render: (v: number) => formatCurrency(v),
-                  sorter: (a, b) => a.revenue - b.revenue,
-                  defaultSortOrder: 'descend'
-                },
-                {
-                  title: 'Đơn hàng',
-                  dataIndex: 'orders',
-                  key: 'orders',
-                  sorter: (a, b) => a.orders - b.orders
-                },
-                {
-                  title: 'Số lượng bán',
-                  dataIndex: 'quantity',
-                  key: 'quantity',
-                  sorter: (a, b) => a.quantity - b.quantity
-                },
-                {
-                  title: 'Quản lý',
-                  dataIndex: 'manager',
-                  key: 'manager'
-                },
-                {
-                  title: 'Trạng thái',
-                  dataIndex: 'status',
-                  key: 'status',
-                  render: (status: string) => (
-                    <Tag color={status === 'Hoạt động' ? 'success' : 'error'}>
-                      {status === 'Hoạt động' ? 'Hoạt động' : 'Tạm dừng'}
-                    </Tag>
-                  )
+        <div className="mt-4 space-y-4">
+          {/* Branch Performance Table */}
+          <Card
+            title="Hiệu suất chi nhánh"
+            extra={
+              <Select
+                value={branchPerfFilter.period}
+                options={PERIOD_OPTIONS}
+                onChange={(val) => handleBranchPerfFilterChange({ period: val })}
+                style={{ width: 140 }}
+                size="small"
+              />
+            }
+          >
+            <Spin spinning={branchPerfLoading}>
+              <Table<BranchPerformanceItem>
+                columns={[
+                  {
+                    title: 'Chi nhánh',
+                    dataIndex: 'branchName',
+                    key: 'branchName'
+                  },
+                  {
+                    title: 'Doanh thu',
+                    dataIndex: 'revenue',
+                    key: 'revenue',
+                    render: (v: number) => formatCurrency(v),
+                    sorter: (a, b) => a.revenue - b.revenue,
+                    defaultSortOrder: 'descend'
+                  },
+                  {
+                    title: 'Đơn hàng',
+                    dataIndex: 'orders',
+                    key: 'orders',
+                    sorter: (a, b) => a.orders - b.orders
+                  },
+                  {
+                    title: 'Số lượng bán',
+                    dataIndex: 'quantity',
+                    key: 'quantity',
+                    sorter: (a, b) => a.quantity - b.quantity
+                  },
+                  {
+                    title: 'Quản lý',
+                    dataIndex: 'manager',
+                    key: 'manager'
+                  },
+                  {
+                    title: 'Trạng thái',
+                    dataIndex: 'status',
+                    key: 'status',
+                    render: (status: string) => (
+                      <Tag color={status === 'Hoạt động' ? 'success' : 'error'}>
+                        {status === 'Hoạt động' ? 'Hoạt động' : 'Tạm dừng'}
+                      </Tag>
+                    )
+                  }
+                ]}
+                dataSource={(branchPerfData?.branches ?? []).map((b) => ({ ...b, key: b.branchId }))}
+                pagination={{ pageSize: 10, showSizeChanger: false }}
+                size="small"
+                summary={() =>
+                  branchPerfData?.summary ? (
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0}>
+                        <strong>Tổng ({branchPerfData.summary.totalBranches} chi nhánh)</strong>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={1}>
+                        <strong>{formatCurrency(branchPerfData.summary.totalRevenue)}</strong>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <strong>{branchPerfData.summary.totalOrders}</strong>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={3}>
+                        <strong>{branchPerfData.summary.totalQuantity}</strong>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={4} />
+                      <Table.Summary.Cell index={5} />
+                    </Table.Summary.Row>
+                  ) : null
                 }
-              ]}
-              dataSource={(branchPerfData?.branches ?? []).map((b) => ({ ...b, key: b.branchId }))}
-              pagination={{ pageSize: 10, showSizeChanger: false }}
+                locale={{ emptyText: branchPerfLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
+              />
+            </Spin>
+          </Card>
+
+          {/* Recent Orders Table */}
+          <div className="pt-4">
+          <Card title="Đơn hàng gần đây">
+            <Table
+              columns={recentOrderColumns}
+              dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
+              pagination={false}
               size="small"
-              summary={() =>
-                branchPerfData?.summary ? (
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell index={0}>
-                      <strong>Tổng ({branchPerfData.summary.totalBranches} chi nhánh)</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1}>
-                      <strong>{formatCurrency(branchPerfData.summary.totalRevenue)}</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <strong>{branchPerfData.summary.totalOrders}</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={3}>
-                      <strong>{branchPerfData.summary.totalQuantity}</strong>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={4} />
-                    <Table.Summary.Cell index={5} />
-                  </Table.Summary.Row>
-                ) : null
-              }
-              locale={{ emptyText: branchPerfLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
+              locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
             />
-          </Spin>
-        </Card>
+          </Card>
+          </div>
 
-        {/* Recent Orders Table */}
-        <Card className="my-6" title="Đơn hàng gần đây">
-          <Table
-            columns={recentOrderColumns}
-            dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
-            pagination={false}
-            size="small"
-            locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
-          />
-        </Card>
-
-        {/* Quick navigation */}
-        <Card className="my-6" title="Quản lý nhanh">
-          <Row gutter={[16, 16]}>
-            {[
-              { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
-              { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShoppingOutlined /> },
-              { label: 'Người dùng', path: ROUTES.MANAGEMENT.USERS, icon: <UserOutlined /> },
-              { label: 'Chi nhánh', path: ROUTES.MANAGEMENT.BRANCHES, icon: <FileTextOutlined /> },
-              { label: 'Danh mục', path: ROUTES.MANAGEMENT.CATEGORIES, icon: <FileTextOutlined /> },
-              { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> }
-            ].map(({ label, path, icon }) => (
-              <Col xs={12} sm={8} lg={4} key={path}>
-                <Button
-                  block
-                  icon={icon}
-                  onClick={() => navigate(path)}
-                >
-                  {label}
-                </Button>
-              </Col>
-            ))}
-          </Row>
-        </Card>
+          {/* Quick navigation */}
+          <div className="">
+          <Card title="Quản lý nhanh">
+            <Row gutter={[16, 16]}>
+              {[
+                { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
+                { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShoppingOutlined /> },
+                { label: 'Người dùng', path: ROUTES.MANAGEMENT.USERS, icon: <UserOutlined /> },
+                { label: 'Chi nhánh', path: ROUTES.MANAGEMENT.BRANCHES, icon: <FileTextOutlined /> },
+                { label: 'Danh mục', path: ROUTES.MANAGEMENT.CATEGORIES, icon: <FileTextOutlined /> },
+                { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> }
+              ].map(({ label, path, icon }) => (
+                <Col xs={12} sm={8} lg={4} key={path}>
+                  <Button
+                    block
+                    icon={icon}
+                    onClick={() => navigate(path)}
+                  >
+                    {label}
+                  </Button>
+                </Col>
+              ))}
+            </Row>
+          </Card>
+          </div>
+        </div>
       </Spin>
     </div>
   )
