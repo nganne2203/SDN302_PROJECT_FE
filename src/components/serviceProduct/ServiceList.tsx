@@ -36,7 +36,20 @@ const ServiceProductList = ({
     key: item._id
   }))
 
+  const currentPage = pagination.page || 1
+  const pageSize = pagination.limit || 10
   const columns: TableColumn<ServiceProductWithKey>[] = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: ServiceProductWithKey, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       key: 'product',
       title: 'Sản phẩm áp dụng',

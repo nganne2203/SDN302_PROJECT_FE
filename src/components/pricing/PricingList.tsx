@@ -49,7 +49,21 @@ const PricingListComponent = ({
     key: pricing._id
   }))
 
+  const currentPage = pagination?.page || 1
+  const pageSize = pagination?.limit || 10
+
   const tableColumns: TableColumn<PricingWithKey>[] = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: PricingWithKey, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       key: 'product',
       title: 'Sản phẩm',

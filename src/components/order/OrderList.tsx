@@ -83,8 +83,21 @@ const OrderList = ({
     return labels[status] || 'Cập nhật'
   }
 
+  const currentPage = pagination?.currentPage || 1
+  const pageSize = pagination?.pageSize || 10
   // Table columns configuration
   const columns: TableColumn<Order>[] = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: Order, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       key: 'orderNumber',
       title: 'Mã đơn',
