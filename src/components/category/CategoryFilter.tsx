@@ -55,6 +55,7 @@ const CategoryFilterComponent = ({
       showPagination={true}
       onReset={onReset}
       showReset={true}
+      wideSearchInRow={true}
     />
   )
 }

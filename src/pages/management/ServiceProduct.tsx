@@ -154,13 +154,11 @@ const ManagementServiceProduct = () => {
     <div className='p-4 max-w-[1600px] mx-auto'>
       <ServiceProductHeader onCreate={handleCreate} canCreate={Boolean(isAdmin)} />
 
-      <div className='mb-6 bg-white p-4 rounded-lg border border-gray-100 shadow-sm'>
-        <ServiceProductFilter
-          filter={filter}
-          onFilterChange={handleFilterChange}
-          onReset={handleResetFilter}
-        />
-      </div>
+      <ServiceProductFilter
+        filter={filter}
+        onFilterChange={handleFilterChange}
+        onReset={handleResetFilter}
+      />
 
       <div className='bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden'>
         <ServiceProductList

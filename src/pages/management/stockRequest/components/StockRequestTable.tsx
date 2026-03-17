@@ -1,6 +1,7 @@
 import { Card, Table, Tag, Space, Button, Tooltip, Empty } from 'antd'
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons'
 import type { TablePaginationConfig } from 'antd/es/table'
+import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import type { StockRequestRecord, StockRequestStatus } from '@/types/api'
 
@@ -28,7 +29,20 @@ const StockRequestTable = ({
   onReject,
   onViewDetail
 }: StockRequestTableProps) => {
-  const columns = [
+  const currentPage = pagination.current || 1
+  const pageSize = pagination.pageSize || 10
+  const columns: ColumnsType<StockRequestRecord> = [
+    {
+      key: 'stt',
+      title: 'STT',
+      width: 70,
+      align: 'center',
+      fixed: 'left',
+      render: (_: unknown, __: StockRequestRecord, index: number) => {
+        const serialNumber = (currentPage - 1) * pageSize + index + 1
+        return <span className="font-medium text-gray-700">#{serialNumber}</span>
+      }
+    },
     {
       title: 'Mã yêu cầu',
       dataIndex: '_id',
