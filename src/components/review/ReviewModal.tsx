@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Rate } from 'antd'
-import { X, Plus } from 'lucide-react'
+import { Rate, Upload } from 'antd'
+import { ImagePlus } from 'lucide-react'
+import type { UploadFile } from 'antd'
 import ModalCommon from '@/components/common/ModalCommon'
 import ButtonCommon from '@/components/common/ButtonCommon'
 import FieldCustom from '@/components/common/FieldCustom'
@@ -32,6 +33,39 @@ const RATING_LABELS: Record<number, string> = {
 
 type FormData = CreateReviewFormData | UpdateReviewFormData
 
+const mapReviewImagesToUploadFiles = (images: Review['images'] = []): UploadFile[] =>
+  images.map((image, index) => ({
+    uid: `existing-${index}`,
+    name: image.publicId || `image-${index + 1}`,
+    status: 'done',
+    url: image.imageUrl
+  }))
+
+const fileNameFromUrl = (url: string, fallback: string) => {
+  try {
+    const pathname = new URL(url).pathname
+    const lastSegment = pathname.split('/').pop()
+    return lastSegment || fallback
+  } catch {
+    return fallback
+  }
+}
+
+const convertExistingUploadToFile = async (file: UploadFile, index: number): Promise<File | null> => {
+  if (!file.url) return null
+
+  try {
+    const response = await fetch(file.url)
+    const blob = await response.blob()
+    const fileName = file.name || fileNameFromUrl(file.url, `review-image-${index + 1}`)
+    const mimeType = blob.type || 'image/jpeg'
+
+    return new File([blob], fileName, { type: mimeType })
+  } catch {
+    return null
+  }
+}
+
 const ReviewModal = ({
   isOpen,
   onClose,
@@ -50,47 +84,29 @@ const ReviewModal = ({
     control,
     handleSubmit,
     reset,
-    setValue,
     watch,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       rating: existingReview?.rating ?? 0,
-      comment: existingReview?.comment ?? '',
-      imageUrls: ''
+      comment: existingReview?.comment ?? ''
     }
   })
 
   const rating = (watch('rating') ?? 0) as number
-  const [imageList, setImageList] = useState<string[]>(existingReview?.images ?? [])
+  const [fileList, setFileList] = useState<UploadFile[]>([])
 
   useEffect(() => {
     if (!isOpen) return
     reset({
       rating: existingReview?.rating ?? 0,
-      comment: existingReview?.comment ?? '',
-      imageUrls: ''
+      comment: existingReview?.comment ?? ''
     })
-    setImageList(existingReview?.images ?? [])
+    setFileList(existingReview?.images?.length ? mapReviewImagesToUploadFiles(existingReview.images) : [])
     dismissError()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, existingReview?._id])
-
-  const handleAddImage = () => {
-    const url = ((watch('imageUrls') as string | undefined) ?? '').trim()
-    if (!url) return
-    if (imageList.length >= 5) {
-      toast.error('Tối đa 5 ảnh')
-      return
-    }
-    setImageList((prev) => [...prev, url])
-    setValue('imageUrls', '')
-  }
-
-  const handleRemoveImage = (index: number) => {
-    setImageList((prev) => prev.filter((_, i) => i !== index))
-  }
 
   const handleFormSubmit = async (data: FormData) => {
     if (!rating || rating === 0) {
@@ -98,12 +114,27 @@ const ReviewModal = ({
       return
     }
 
+    const newFiles = fileList
+      .filter((f) => f.originFileObj)
+      .map((f) => f.originFileObj as File)
+
+    const retainedExistingFiles = await Promise.all(
+      fileList
+        .filter((f) => !f.originFileObj && !!f.url)
+        .map((file, index) => convertExistingUploadToFile(file, index))
+    )
+
+    const mergedFiles = [
+      ...retainedExistingFiles.filter((file): file is File => file !== null),
+      ...newFiles
+    ]
+
     let success = false
     if (isEditMode && existingReview) {
       success = await updateReview(existingReview._id, {
         rating: data.rating,
         comment: data.comment || undefined,
-        images: imageList.length > 0 ? imageList : undefined
+        images: mergedFiles.length > 0 ? mergedFiles : undefined
       })
     } else {
       success = await createReview({
@@ -111,7 +142,7 @@ const ReviewModal = ({
         orderId: orderId || undefined,
         rating: data.rating as number,
         comment: data.comment || undefined,
-        images: imageList.length > 0 ? imageList : undefined
+        images: newFiles.length > 0 ? newFiles : undefined
       })
     }
 
@@ -196,60 +227,48 @@ const ReviewModal = ({
           )}
         />
 
-        {/* Image URL input */}
+        {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Ảnh minh họa
             <span className="text-gray-400 font-normal ml-1">(tuỳ chọn, tối đa 5)</span>
           </label>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <FieldCustom.Controlled
-                name="imageUrls"
-                control={control}
-                render={({ value, onChange, onBlur }) => (
-                  <FieldCustom.Input
-                    placeholder="Nhập URL ảnh và nhấn Thêm..."
-                    value={(value as string) ?? ''}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    onPressEnter={handleAddImage}
-                    className="!mb-0"
-                  />
-                )}
-              />
-            </div>
-            <ButtonCommon
-              variant="outline"
-              onClick={handleAddImage}
-              disabled={imageList.length >= 5}
-              type="button"
-            >
-              <Plus className="w-4 h-4" />
-            </ButtonCommon>
-          </div>
-
-          {imageList.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {imageList.map((url, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={url}
-                    alt={`review-${index}`}
-                    className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <Upload
+            listType="picture-card"
+            fileList={fileList}
+            beforeUpload={(file) => {
+              const isImage = file.type.startsWith('image/')
+              if (!isImage) {
+                toast.error('Chỉ được tải lên file ảnh')
+                return Upload.LIST_IGNORE
+              }
+              const isLt5M = file.size / 1024 / 1024 < 5
+              if (!isLt5M) {
+                toast.error('Ảnh phải nhỏ hơn 5MB')
+                return Upload.LIST_IGNORE
+              }
+              if (fileList.length >= 5) {
+                toast.error('Tối đa 5 ảnh')
+                return Upload.LIST_IGNORE
+              }
+              return false // prevent auto upload
+            }}
+            onChange={({ fileList: newFileList }) => {
+              setFileList(newFileList.slice(0, 5))
+            }}
+            onRemove={(file) => {
+              setFileList((prev) => prev.filter((f) => f.uid !== file.uid))
+            }}
+            accept="image/*"
+            multiple
+          >
+            {fileList.length < 5 && (
+              <div className="flex flex-col items-center justify-center text-gray-400">
+                <ImagePlus className="w-5 h-5 mb-1" />
+                <span className="text-xs">Tải ảnh</span>
+              </div>
+            )}
+          </Upload>
         </div>
 
         {/* API Error */}

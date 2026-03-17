@@ -2,9 +2,10 @@ import { ButtonCommon } from '@/components/common'
 
 interface ProductHeaderProps {
   onCreateClick: () => void
+  canCreate?: boolean
 }
 
-const ProductHeader = ({ onCreateClick }: ProductHeaderProps) => {
+const ProductHeader = ({ onCreateClick, canCreate = true }: ProductHeaderProps) => {
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
@@ -13,12 +14,14 @@ const ProductHeader = ({ onCreateClick }: ProductHeaderProps) => {
           Quản lý danh sách sản phẩm và thông tin chi tiết
         </p>
       </div>
-      <ButtonCommon
-        variant="primary"
-        onClick={onCreateClick}
-      >
-        + Thêm sản phẩm
-      </ButtonCommon>
+      {canCreate && (
+        <ButtonCommon
+          variant="primary"
+          onClick={onCreateClick}
+        >
+          + Thêm sản phẩm
+        </ButtonCommon>
+      )}
     </div>
   )
 }

@@ -42,7 +42,7 @@ const Home = () => {
             Chào mừng đến TechStore
           </h1>
           <p className="text-xl text-blue-100 mb-8">
-            Hệ thống của hàng công nghệ uy tín với 3 chi nhánh trên toàn quốc
+            Hệ thống của hàng công nghệ uy tín với đa chi nhánh trên toàn quốc
           </p>
 
           <button

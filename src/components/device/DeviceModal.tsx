@@ -1,7 +1,7 @@
 import { ModalCommon, ButtonCommon, InputField, SelectField, ControlledField } from '@/components/common'
 import type { Control } from 'react-hook-form'
 import type { DeviceFormData } from '@/hooks/useDevice'
-import { DEVICE_TYPES } from '@/features/device/deviceTypes'
+import { DEVICE_TYPES, DEVICE_TYPE_LABELS } from '@/features/device/deviceTypes'
 
 interface DeviceModalProps {
   isOpen: boolean
@@ -21,8 +21,8 @@ const DeviceModalComponent = ({
   onSubmit
 }: DeviceModalProps) => {
   const deviceTypeOptions = [
-    { value: DEVICE_TYPES.SMARTPHONE, label: 'Smartphone' },
-    { value: DEVICE_TYPES.TABLET, label: 'Tablet' }
+    { value: DEVICE_TYPES.SMARTPHONE, label: DEVICE_TYPE_LABELS[DEVICE_TYPES.SMARTPHONE] },
+    { value: DEVICE_TYPES.TABLET, label: DEVICE_TYPE_LABELS[DEVICE_TYPES.TABLET] }
   ]
 
   return (

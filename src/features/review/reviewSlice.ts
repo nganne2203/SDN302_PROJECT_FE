@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { ReviewState, Review, ReviewStats, FetchReviewsPayload } from './reviewTypes'
+import type { ReviewState, Review, ReviewStats, FetchReviewsPayload, ReviewEligibility } from './reviewTypes'
 import {
   fetchProductReviewsThunk,
   fetchProductReviewStatsThunk,
@@ -16,6 +16,7 @@ const initialState: ReviewState = {
   productReviewsPagination: null,
   productStats: null,
   canReview: null,
+  reviewEligibility: null,
   myReviews: [],
   myReviewsPagination: null,
   allReviews: [],
@@ -37,6 +38,7 @@ const reviewSlice = createSlice({
       state.productReviewsPagination = null
       state.productStats = null
       state.canReview = null
+      state.reviewEligibility = null
     }
   },
   extraReducers: (builder) => {
@@ -72,10 +74,12 @@ const reviewSlice = createSlice({
 
     // Can review
     builder
-      .addCase(checkCanReviewThunk.fulfilled, (state, action: PayloadAction<boolean>) => {
-        state.canReview = action.payload
+      .addCase(checkCanReviewThunk.fulfilled, (state, action: PayloadAction<ReviewEligibility>) => {
+        state.reviewEligibility = action.payload
+        state.canReview = action.payload.canReview
       })
       .addCase(checkCanReviewThunk.rejected, (state) => {
+        state.reviewEligibility = null
         state.canReview = false
       })
 
@@ -121,6 +125,12 @@ const reviewSlice = createSlice({
         state.isSubmitting = false
         state.productReviews.unshift(action.payload)
         state.canReview = false
+        state.reviewEligibility = {
+          canReview: false,
+          hasPurchased: true,
+          hasReviewed: true,
+          existingReview: action.payload
+        }
       })
       .addCase(createReviewThunk.rejected, (state, action) => {
         state.isSubmitting = false
@@ -139,6 +149,9 @@ const reviewSlice = createSlice({
         if (idx !== -1) state.productReviews[idx] = action.payload
         const myIdx = state.myReviews.findIndex((r) => r._id === action.payload._id)
         if (myIdx !== -1) state.myReviews[myIdx] = action.payload
+        if (state.reviewEligibility?.existingReview?._id === action.payload._id) {
+          state.reviewEligibility.existingReview = action.payload
+        }
       })
       .addCase(updateReviewThunk.rejected, (state, action) => {
         state.isSubmitting = false
@@ -156,6 +169,15 @@ const reviewSlice = createSlice({
         state.productReviews = state.productReviews.filter((r) => r._id !== action.payload)
         state.myReviews = state.myReviews.filter((r) => r._id !== action.payload)
         state.allReviews = state.allReviews.filter((r) => r._id !== action.payload)
+        if (state.reviewEligibility?.existingReview?._id === action.payload) {
+          state.reviewEligibility = {
+            canReview: state.reviewEligibility.hasPurchased,
+            hasPurchased: state.reviewEligibility.hasPurchased,
+            hasReviewed: false,
+            existingReview: null
+          }
+          state.canReview = state.reviewEligibility.canReview
+        }
       })
       .addCase(deleteReviewThunk.rejected, (state, action) => {
         state.isSubmitting = false

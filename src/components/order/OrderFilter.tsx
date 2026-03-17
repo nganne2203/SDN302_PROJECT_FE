@@ -18,11 +18,10 @@ const OrderFilterComponent = ({ filter, onFilterChange, onReset }: OrderFilterPr
       type: 'select',
       placeholder: 'Tất cả trạng thái',
       options: [
-        { label: 'Chờ xác nhận', value: 'pending' },
         { label: 'Đã xác nhận', value: 'confirmed' },
         { label: 'Đang giao', value: 'shipped' },
         { label: 'Đã giao', value: 'delivered' },
-        { label: 'Đã hủy', value: 'canceled' }
+        { label: 'Đã hủy', value: 'cancelled' }
       ],
       allowClear: true
     }
@@ -36,7 +35,7 @@ const OrderFilterComponent = ({ filter, onFilterChange, onReset }: OrderFilterPr
       onSearchChange={(value) => onFilterChange({ ...filter, search: value, page: 1 })}
       filters={filterFields}
       filterValues={{
-        status: filter.status || ''
+        status: filter.status === 'pending' ? '' : (filter.status || '')
       }}
       onFilterChange={(key, value) => {
         onFilterChange({ ...filter, [key]: value || undefined, page: 1 })

@@ -4,10 +4,8 @@ import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
 
 type LocationChange = Partial<{
   province: string
-  district: string
   ward: string
   provinceCode: string | undefined
-  districtCode: string | undefined
   wardCode: string | undefined
 }>
 
@@ -16,7 +14,6 @@ type LocationChangeHandler = (changes: LocationChange) => void
 
 interface LocationSelectGroupOfflineProps {
   provinceCode?: string | number
-  districtCode?: string | number
   wardCode?: string | number
   onChange: LocationChangeHandler
   disabled?: boolean
@@ -33,7 +30,6 @@ const LocationSelectGroupOffline = ({
 
   const {
     provinceOptions,
-    districtOptions,
     wardOptions,
     loading,
     fetchProvinces,
@@ -59,8 +55,6 @@ const LocationSelectGroupOffline = ({
     onChange({
       province: selected?.label || '',
       provinceCode: value,
-      district: '',
-      districtCode: undefined,
       ward: '',
       wardCode: undefined
     })
@@ -70,11 +64,7 @@ const LocationSelectGroupOffline = ({
 
   const handleWardChange = (value?: string) => {
     const selected = wardOptions.find((item) => item.value === value)
-    const inferredDistrictCode = value ? String(value).slice(0, 3) : undefined
-    const selectedDistrict = districtOptions.find((item) => item.value === inferredDistrictCode)
     onChange({
-      district: selectedDistrict?.label || '',
-      districtCode: inferredDistrictCode,
       ward: selected?.label || '',
       wardCode: value
     })

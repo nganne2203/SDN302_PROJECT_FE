@@ -3,10 +3,8 @@ import { vietnamAddressService } from '@/services/vietnamAddressService'
 export interface AddressComponents {
   addressLine?: string
   ward?: string
-  district?: string
   city?: string
   provinceCode?: string
-  districtCode?: string
   wardCode?: string
 }
 
@@ -22,10 +20,6 @@ export const combineAddress = (components: AddressComponents): string => {
 
   if (components.ward?.trim()) {
     parts.push(components.ward.trim())
-  }
-
-  if (components.district?.trim()) {
-    parts.push(components.district.trim())
   }
 
   if (components.city?.trim()) {
@@ -77,16 +71,6 @@ export const parseAddress = (fullAddress: string): AddressComponents => {
     if (foundWard && foundWard.province_code === foundProvince.province_code) {
       result.ward = foundWard.name
       result.wardCode = foundWard.ward_code
-
-      // Try to infer district from ward code
-      const districtCode = foundWard.ward_code.slice(0, 3)
-      const districts = vietnamAddressService.getDistricts(foundProvince.province_code)
-      const foundDistrict = districts.find(d => d.code === districtCode)
-
-      if (foundDistrict) {
-        result.district = foundDistrict.name
-        result.districtCode = foundDistrict.code
-      }
     }
   }
 

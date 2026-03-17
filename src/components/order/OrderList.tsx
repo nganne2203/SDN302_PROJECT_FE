@@ -5,7 +5,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order, PaginationMeta } from '@/types/api'
 import type { TableColumn } from '@/components/common/TableCommon'
 import { formatCurrency } from '@/utils/formatCurrency'
-
+import { getOrderPaymentDisplay } from '@/utils/orderPayment'
 interface OrderListProps {
   orders: Order[]
   pagination: PaginationMeta | null
@@ -69,7 +69,7 @@ const OrderList = ({
       confirmed: 'shipped',
       shipped: 'delivered',
       delivered: null,
-      canceled: null
+      cancelled: null
     }
     return statusFlow[normalizeStatus(currentStatus)]
   }
@@ -128,18 +128,21 @@ const OrderList = ({
       key: 'payment',
       title: 'Thanh toán',
       width: 150,
-      render: (_, order) => (
-        <div>
-          <div className="text-sm text-gray-900">{order.paymentMethod}</div>
-          <div className="text-xs">
-            {String(order.paymentStatus || '').toUpperCase() === 'PAID' ? (
-              <span className="text-green-600">Đã thanh toán</span>
-            ) : (
-              <span className="text-yellow-600">Chưa thanh toán</span>
-            )}
+      render: (_, order) => {
+        const paymentDisplay = getOrderPaymentDisplay(order, (order as unknown as { paymentStatus?: string }).paymentStatus)
+        return (
+          <div>
+            <div className="text-sm text-gray-900">{order.paymentMethod}</div>
+            <div className="text-xs">
+              <span className={
+                paymentDisplay.tone === 'success' ? 'text-green-600' :
+                  paymentDisplay.tone === 'warning' ? 'text-yellow-600' :
+                    paymentDisplay.tone === 'error' ? 'text-red-600' : 'text-gray-600'
+              }>{paymentDisplay.label}</span>
+            </div>
           </div>
-        </div>
-      )
+        )
+      }
     },
     {
       key: 'status',
@@ -168,7 +171,7 @@ const OrderList = ({
           canManage &&
           nextStatus &&
           onUpdateStatus &&
-          currentStatus !== 'canceled' &&
+          currentStatus !== 'cancelled' &&
           currentStatus !== 'delivered'
         const canCancel =
           canManage &&

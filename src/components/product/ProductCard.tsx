@@ -1,14 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Product } from '@/types/api'
+import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
 import { ButtonCommon } from '@/components/common'
 import LoginRequiredModal from '@/components/common/LoginRequiredModal'
 import cartApi from '@/apis/cart'
+import pricingApi from '@/apis/pricing'
 import { toast } from '@/utils/toast'
 import { useAppSelector } from '@/apps/hooks'
 import { ROUTES } from '@/constants/constant'
+
+// Module-level cache to avoid re-fetching across renders / card remounts
+const pricingCache = new Map<string, PricingCalculation | null>()
+const pricingInFlight = new Map<string, Promise<PricingCalculation | null>>()
+
+const fetchPricingOnce = (productId: string): Promise<PricingCalculation | null> => {
+  if (pricingCache.has(productId)) {
+    return Promise.resolve(pricingCache.get(productId) ?? null)
+  }
+
+  const existingRequest = pricingInFlight.get(productId)
+  if (existingRequest) {
+    return existingRequest
+  }
+
+  const request = pricingApi.calculatePrice(productId, 1)
+    .then((res) => {
+      const data = res.data ?? null
+      pricingCache.set(productId, data)
+      return data
+    })
+    .catch(() => {
+      pricingCache.set(productId, null)
+      return null
+    })
+    .finally(() => {
+      pricingInFlight.delete(productId)
+    })
+
+  pricingInFlight.set(productId, request)
+  return request
+}
 
 interface ProductCardProps {
   product: Product
@@ -19,7 +53,28 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isBuyingNow, setIsBuyingNow] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [pricingInfo, setPricingInfo] = useState<PricingCalculation | null>(
+    pricingCache.has(product._id) ? (pricingCache.get(product._id) ?? null) : null
+  )
   const { isAuthenticated } = useAppSelector((state) => state.auth)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    fetchPricingOnce(product._id).then((data) => {
+      if (!isCancelled) {
+        setPricingInfo(data)
+      }
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [product._id])
+
+  const effectivePrice = pricingInfo?.pricing?.pricePerUnit ?? product.price
+  const discountPct = pricingInfo?.pricing?.discountPercentage ?? 0
+  const hasDiscount = discountPct > 0 && effectivePrice < product.price
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -83,6 +138,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
               Nổi bật
             </div>
           )}
+          {hasDiscount && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              -{Math.round(discountPct)}%
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
@@ -121,8 +181,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {/* Price */}
           <div className="flex items-baseline gap-2 min-h-[32px]">
             <span className="text-xl font-bold text-blue-600">
-              {formatCurrency(product.price)}
+              {formatCurrency(effectivePrice)}
             </span>
+            {hasDiscount && (
+              <span className="text-sm text-gray-400 line-through">
+                {formatCurrency(product.price)}
+              </span>
+            )}
           </div>
 
           {/* Material */}

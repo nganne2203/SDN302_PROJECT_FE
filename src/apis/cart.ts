@@ -59,9 +59,13 @@ export const cartApi = {
     quantity: number,
     services?: CartServicePayload[]
   ): Promise<ApiResponse<CartItem>> => {
+    const payload = { productId, quantity, services }
+
+    // ...existing code...
+
     const response = await apiClient.post<ApiResponse<CartItem>>(
       API_ENDPOINTS.CART.ADD,
-      { productId, quantity, services }
+      payload
     )
     invalidateCartCache()
     emitCartChanged({ type: 'sync' })

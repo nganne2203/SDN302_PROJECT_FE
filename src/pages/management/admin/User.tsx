@@ -8,6 +8,7 @@ import UserListComponent from '@/components/user/UserList'
 import UserFormModal from '@/components/user/UserFormModal'
 import UserDetailModal from '@/components/user/UserDetailModal'
 import { stripLocationCodesFromList } from '@/utils/address'
+import { getChangedEmailField } from '@/utils/userUpdate'
 import type { UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 
@@ -160,7 +161,7 @@ const ManagementUser = () => {
       if (isEditMode && selectedUser) {
         const result = await updateUser(selectedUser._id, {
           fullname: formData.fullname,
-          email: formData.email,
+          ...getChangedEmailField(selectedUser, formData.email),
           phone: formData.phone || undefined,
           role: formData.role,
           branch: formData.branch || undefined,

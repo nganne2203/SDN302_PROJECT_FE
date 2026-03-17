@@ -16,9 +16,12 @@ import type {
   ChangePasswordRequest,
   RefreshTokenRequest
 } from '@/types/api'
+import { STORAGE_KEYS } from '@/constants/constant'
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<ApiResponse<AuthTokens>> => {
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     const endpoint = data.captchaToken
       ? API_ENDPOINTS.AUTH.LOGIN
       : API_ENDPOINTS.AUTH.LOGIN_NO_CAPTCHA
@@ -94,7 +97,18 @@ export const authApi = {
   },
 
   logout: async (): Promise<SimpleResponse> => {
-    const response = await apiClient.post<SimpleResponse>(API_ENDPOINTS.AUTH.LOGOUT)
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+
+    const response = await apiClient.post(
+      API_ENDPOINTS.AUTH.LOGOUT,
+      { refreshToken }
+    )
+
+    // clear local storage
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.USER_INFO)
+
     return response.data
   },
 

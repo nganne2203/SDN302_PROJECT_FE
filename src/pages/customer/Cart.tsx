@@ -25,33 +25,50 @@ const Cart = () => {
       dataIndex: 'product',
       key: 'product',
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const pricing = getItemPricing(record.id)?.pricing
-        const unitPrice = pricing?.pricePerUnit ?? record.price
-        const discountPercent = pricing?.discountPercentage ?? 0
-        const originalUnitPrice = pricing?.originalTotal && record.quantity > 0
-          ? pricing.originalTotal / record.quantity
-          : record.price
+        const productId = record.productId || record.product?._id
         const imageUrl = getProductImageUrl(record.product.images)
-
         return (
           <div className="flex items-center gap-4">
-            <img
-              src={imageUrl || undefined}
-              alt={record.product.name}
-              className="w-20 h-20 object-cover rounded-lg"
-            />
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={record.product.name}
+                className="w-20 h-20 object-cover rounded-lg"
+                onError={(e) => {
+                  const el = e.currentTarget
+                  el.style.display = 'none'
+                  const placeholder = el.nextElementSibling as HTMLElement | null
+                  if (placeholder) placeholder.style.display = 'flex'
+                }}
+              />
+            ) : null}
+            <div
+              className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"
+              style={{ display: imageUrl ? 'none' : 'flex' }}
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
             <div>
               <h4 className="font-medium text-gray-800">{record.product.name}</h4>
               <div className="flex items-center gap-2">
                 <p className="text-blue-600 font-semibold">
-                  {formatCurrency(unitPrice)}
+                  {formatCurrency(record.price)}
                 </p>
-                {discountPercent > 0 && originalUnitPrice > unitPrice && (
-                  <span className="text-xs text-gray-400 line-through">
-                    {formatCurrency(Math.round(originalUnitPrice))}
-                  </span>
-                )}
               </div>
+              {record.services && record.services.length > 0 && (
+                <div className="mt-2 text-xs text-purple-700">
+                  <span>Dịch vụ bổ sung:</span>
+                  <ul className="list-disc ml-4">
+                    {record.services.map((svc: any) => (
+                      <li key={svc.serviceId}>
+                        {svc.service?.name} (+{formatCurrency(svc.price)})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         )
@@ -82,8 +99,8 @@ const Cart = () => {
       key: 'total',
       width: 150,
       render: (_: unknown, record: (typeof cartItems)[0]) => {
-        const pricing = getItemPricing(record.id)?.pricing
-        const itemTotal = pricing?.totalPrice ?? record.price * record.quantity
+        // Hiển thị tổng tiền đã cộng dịch vụ
+        const itemTotal = record.totalPrice ?? (record.price * record.quantity)
         return (
           <span className="font-semibold text-gray-800">
             {formatCurrency(itemTotal)}
@@ -174,6 +191,22 @@ const Cart = () => {
                   <span>{formatCurrency(totalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
+                  <span>Phí dịch vụ bổ sung</span>
+                  <span className="text-purple-700">
+                    {formatCurrency(cartItems.reduce((sum, item) => {
+                      // Nếu backend trả về serviceFee, dùng luôn, nếu không thì tính lại từ services
+                      if (typeof item.serviceFee === 'number') {
+                        return sum + item.serviceFee * item.quantity
+                      }
+                      if (item.services && item.services.length > 0) {
+                        const fee = item.services.reduce((s, svc) => s + (svc.price || 0), 0)
+                        return sum + fee * item.quantity
+                      }
+                      return sum
+                    }, 0))}
+                  </span>
+                </div>
+                <div className="flex justify-between text-gray-600">
                   <span>Phí vận chuyển</span>
                   <span className="text-green-600">Miễn phí</span>
                 </div>
@@ -181,7 +214,22 @@ const Cart = () => {
 
               <div className="flex justify-between text-lg font-bold text-gray-800 mb-6">
                 <span>Tổng cộng</span>
-                <span className="text-blue-600">{formatCurrency(totalAmount)}</span>
+                <span className="text-blue-600">{
+                  formatCurrency(
+                    cartItems.reduce((sum, item) => {
+                      // Nếu backend trả về totalPrice, dùng luôn, nếu không thì tính lại
+                      if (typeof item.totalPrice === 'number') {
+                        return sum + item.totalPrice
+                      }
+                      const fee = typeof item.serviceFee === 'number'
+                        ? item.serviceFee * item.quantity
+                        : item.services && item.services.length > 0
+                          ? item.services.reduce((s, svc) => s + (svc.price || 0), 0) * item.quantity
+                          : 0
+                      return sum + (item.price * item.quantity) + fee
+                    }, 0)
+                  )
+                }</span>
               </div>
               {isPricingLoading && (
                 <div className="text-xs text-gray-500 mb-4">

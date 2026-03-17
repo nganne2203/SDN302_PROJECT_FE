@@ -1,268 +1,302 @@
-import { Card, Row, Col, Statistic, Table, Button, Tag, Progress } from 'antd'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Alert, Button, Card, Col, Empty, Progress, Row, Select, Spin, Statistic, Table, Tag } from 'antd'
 import {
   ShoppingCartOutlined,
   CheckCircleOutlined,
-  FileTextOutlined,
-  PercentageOutlined,
-  ArrowUpOutlined
+  ReloadOutlined,
+  InboxOutlined,
+  ShopOutlined,
+  CustomerServiceOutlined,
+  UserOutlined,
+  BarChartOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
+import dashboardApi from '@/apis/dashboard'
 import useAuth from '@/hooks/useAuth'
+import { ROUTES } from '@/constants/constant'
+import { formatCurrency } from '@/utils/formatCurrency'
+import type { DashboardData, OrderStatusSummaryData } from '@/features/dashboard/dashboardTypes'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge'
+
+const PERIOD_OPTIONS = [
+  { label: 'Hôm nay', value: 'today' },
+  { label: 'Tuần này', value: 'this_week' },
+  { label: 'Tháng này', value: 'this_month' },
+  { label: 'Tháng trước', value: 'last_month' }
+] as const
+
+type StaffPeriod = (typeof PERIOD_OPTIONS)[number]['value']
+
+const STATUS_COLOR: Record<string, string> = {
+  pending: 'warning',
+  confirmed: 'processing',
+  shipped: 'blue',
+  delivered: 'success',
+  cancelled: 'error'
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Chờ xử lý',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đang giao',
+  delivered: 'Đã giao',
+  cancelled: 'Đã hủy'
+}
+
+const STATUS_PROGRESS_COLOR: Record<string, string> = {
+  pending: '#faad14',
+  confirmed: '#1677ff',
+  shipped: '#13c2c2',
+  delivered: '#52c41a',
+  cancelled: '#ff4d4f'
+}
 
 const StaffDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const myTasks = [
-    {
-      key: '1',
-      taskId: 'TASK-001',
-      description: 'Xử lý đơn hàng ORD-001',
-      status: 'pending',
-      priority: 'high',
-      date: '2024-01-30'
-    },
-    {
-      key: '2',
-      taskId: 'TASK-002',
-      description: 'Kiểm kê sản phẩm hàng A',
-      status: 'completed',
-      priority: 'medium',
-      date: '2024-01-29'
-    },
-    {
-      key: '3',
-      taskId: 'TASK-003',
-      description: 'Đóng gói đơn hàng ORD-003',
-      status: 'in_progress',
-      priority: 'high',
-      date: '2024-01-28'
-    }
-  ]
+  const [period, setPeriod] = useState<StaffPeriod>('this_month')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null)
+  const [orderStatusSummary, setOrderStatusSummary] = useState<OrderStatusSummaryData | null>(null)
+  const [recentOrders, setRecentOrders] = useState<Array<{
+    orderNumber: string
+    customer: string
+    status: string
+    totalAmount: number
+    paymentMethod: string
+    branch: string
+    createdAt: string
+  }>>([])
 
-  const taskColumns = [
+  const loadDashboard = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const baseRequests = [
+        dashboardApi.getDashboard({ period }),
+        dashboardApi.getOrderStatusSummary({ period }),
+        dashboardApi.getRecentOrders({ period, limit: 5, page: 1 })
+      ] as const
+
+      const [dashboardRes, orderStatusRes, recentOrdersRes] = await Promise.all(baseRequests)
+
+      setDashboard(dashboardRes.data)
+      setOrderStatusSummary(orderStatusRes.data)
+      setRecentOrders(recentOrdersRes.data as typeof recentOrders)
+    } catch {
+      setError('Không thể tải dữ liệu dashboard cho nhân viên')
+      setDashboard(null)
+      setOrderStatusSummary(null)
+      setRecentOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }, [period])
+
+  useEffect(() => {
+    loadDashboard().catch(() => undefined)
+  }, [loadDashboard])
+
+  const statusItems = useMemo(
+    () => orderStatusSummary?.statuses ?? [],
+    [orderStatusSummary]
+  )
+
+  const summaryCards = [
     {
-      title: 'Mã công việc',
-      dataIndex: 'taskId',
-      key: 'taskId'
+      title: 'Đơn hàng trong kỳ',
+      value: dashboard?.overview.totalOrders ?? 0,
+      prefix: <ShoppingCartOutlined className="text-blue-600" />,
+      color: '#1890ff'
     },
     {
-      title: 'Mô tả',
-      dataIndex: 'description',
-      key: 'description'
+      title: 'Doanh thu',
+      value: dashboard?.overview.totalRevenue ?? 0,
+      prefix: <CheckCircleOutlined className="text-green-600" />,
+      color: '#52c41a',
+      formatter: (value: string | number) => formatCurrency(Number(value))
     },
     {
-      title: 'Ưu tiên',
-      dataIndex: 'priority',
-      key: 'priority',
-      render: (priority: string) => {
-        const colorMap: Record<string, string> = {
-          high: 'red',
-          medium: 'orange',
-          low: 'blue'
-        }
-        const labelMap: Record<string, string> = {
-          high: 'Cao',
-          medium: 'Trung bình',
-          low: 'Thấp'
-        }
-        return <Tag color={colorMap[priority]}>{labelMap[priority]}</Tag>
-      }
+      title: 'Sản phẩm đã bán',
+      value: dashboard?.overview.totalProductsSold ?? 0,
+      prefix: <ShopOutlined className="text-orange-600" />,
+      color: '#fa8c16'
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        const statusMap: Record<string, string> = {
-          pending: 'warning',
-          in_progress: 'processing',
-          completed: 'success'
-        }
-        const labelMap: Record<string, string> = {
-          pending: 'Chờ xử lý',
-          in_progress: 'Đang làm',
-          completed: 'Hoàn thành'
-        }
-        return <Tag color={statusMap[status]}>{labelMap[status]}</Tag>
-      }
-    },
-    {
-      title: 'Ngày',
-      dataIndex: 'date',
-      key: 'date'
+      title: 'Tỷ lệ hoàn thành',
+      value: dashboard?.performance.completionRate ?? 0,
+      suffix: '%',
+      prefix: <CheckCircleOutlined className="text-green-600" />,
+      color: '#3f8600'
     }
   ]
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard Nhân Viên</h1>
-        <p className="text-gray-500">
-          Xin chào, {user?.fullName}! Đây là bảng điều khiển công việc của bạn.
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard Nhân viên</h1>
+          <p className="text-gray-500">
+            Xin chào, {user?.fullname}! Đây là tổng quan đơn hàng của chi nhánh bạn.
+          </p>
+          {dashboard?.dateRange && (
+            <p className="text-xs text-gray-400 mt-1">
+              {dayjs(dashboard.dateRange.startDate).format('DD/MM/YYYY')} - {dayjs(dashboard.dateRange.endDate).format('DD/MM/YYYY')}
+            </p>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <Select
+            value={period}
+            style={{ width: 160 }}
+            options={PERIOD_OPTIONS as unknown as Array<{ label: string; value: string }>}
+            onChange={(value) => setPeriod(value as StaffPeriod)}
+          />
+          <Button icon={<ReloadOutlined />} onClick={() => loadDashboard()} loading={loading}>
+            Làm mới
+          </Button>
+        </div>
       </div>
 
-      {/* Key Metrics */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Công việc hôm nay"
-              value={5}
-              prefix={<FileTextOutlined className="text-blue-600" />}
-              styles={{ content: { color: '#1890ff' } }}
-            />
-            <p className="text-xs text-blue-600 mt-2">
-              2 công việc chưa hoàn thành
-            </p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Công việc hoàn thành"
-              value={42}
-              prefix={<CheckCircleOutlined className="text-green-600" />}
-              styles={{ content: { color: '#52c41a' } }}
-            />
-            <p className="text-xs text-green-600 mt-2">
-              <ArrowUpOutlined /> Tuần này
-            </p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn hàng được xử lý"
-              value={23}
-              prefix={<ShoppingCartOutlined className="text-orange-600" />}
-              styles={{ content: { color: '#fa8c16' } }}
-            />
-            <p className="text-xs text-orange-600 mt-2">
-              Tháng này
-            </p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Hiệu suất"
-              value={94}
-              prefix={<PercentageOutlined className="text-green-600" />}
-              styles={{ content: { color: '#3f8600' } }}
-              suffix="%"
-            />
-            <p className="text-xs text-green-600 mt-2">
-              Rất tốt
-            </p>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Tasks Progress */}
-      <Row gutter={[16, 16]} className="mt-6">
-        <Col xs={24} lg={12}>
-          <Card title="Tiến độ công việc">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold mb-2">
-                  Công việc tuần này: 6/8 (75%)
-                </p>
-                <Progress
-                  percent={75}
-                  strokeColor={{
-                    '0%': '#108ee9',
-                    '100%': '#87d068'
-                  }}
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold mb-2">
-                  Đơn hàng đã xử lý: 23/25 (92%)
-                </p>
-                <Progress
-                  percent={92}
-                  strokeColor="#52c41a"
-                />
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card title="Thống kê">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                <span className="text-sm">Công việc chờ xử lý</span>
-                <span className="font-semibold text-blue-600">2</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-orange-50 rounded">
-                <span className="text-sm">Công việc đang làm</span>
-                <span className="font-semibold text-orange-600">1</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
-                <span className="text-sm">Công việc hoàn thành hôm nay</span>
-                <span className="font-semibold text-green-600">2</span>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* My Tasks */}
-      <Card className="mt-6" title="Công việc của tôi">
-        <Table
-          columns={taskColumns}
-          dataSource={myTasks}
-          pagination={{ pageSize: 10 }}
-          size="small"
+      {error && (
+        <Alert
+          message={error}
+          type="error"
+          showIcon
+          className="mb-6"
         />
-      </Card>
+      )}
 
-      {/* Quick Actions */}
-      <Card className="mt-6" title="Hành động nhanh">
+      <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="primary"
-              block
-              onClick={() => navigate('/management/orders')}
-            >
-              📦 Xem đơn hàng
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-              onClick={() => navigate('/management/products')}
-            >
-              🛒 Xem sản phẩm
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-              onClick={() => navigate('/management/inventory')}
-            >
-              📊 Kiểm kê
-            </Button>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button
-              type="default"
-              block
-            >
-              ⚙️ Cài đặt
-            </Button>
-          </Col>
+          {summaryCards.map((card) => (
+            <Col xs={24} sm={12} lg={6} key={card.title}>
+              <Card hoverable className="h-full">
+                <Statistic
+                  title={card.title}
+                  value={card.value}
+                  suffix={card.suffix}
+                  prefix={card.prefix}
+                  formatter={card.formatter}
+                  styles={{ content: { color: card.color } }}
+                />
+              </Card>
+            </Col>
+          ))}
         </Row>
-      </Card>
+
+        <div className="mt-4 space-y-4">
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={24}>
+              <Card
+                title="Trạng thái đơn hàng"
+                extra={<span className="text-xs text-gray-500">Tổng: {statusItems.reduce((acc, item) => acc + item.count, 0)} đơn</span>}
+              >
+                {statusItems.length === 0 ? (
+                  <Empty description="Chưa có dữ liệu trạng thái đơn hàng" />
+                ) : (
+                  <Row gutter={[12, 12]}>
+                    {statusItems.map((item) => (
+                      <Col xs={24} md={12} key={item.status}>
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <Tag color={STATUS_COLOR[item.status] || 'default'}>
+                                {STATUS_LABEL[item.status] || item.status}
+                              </Tag>
+                              <p className="mt-2 text-xs text-gray-500">
+                                Doanh thu: {formatCurrency(item.totalAmount)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xl font-semibold text-gray-900">{item.count}</div>
+                              <div className="text-xs text-gray-500">đơn</div>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <Progress
+                              percent={Math.max(0, Math.min(100, item.percentage))}
+                              strokeColor={STATUS_PROGRESS_COLOR[item.status] || '#1677ff'}
+                              strokeWidth={8}
+                              showInfo
+                              format={(percent) => `${percent ?? 0}%`}
+                            />
+                          </div>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                )}
+              </Card>
+            </Col>
+          </Row>
+
+          <Card title="Đơn hàng gần đây" className='mb-6'>
+            <Table
+              dataSource={recentOrders.map((order) => ({ ...order, key: order.orderNumber }))}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Mã đơn',
+                  dataIndex: 'orderNumber',
+                  key: 'orderNumber'
+                },
+                {
+                  title: 'Khách hàng',
+                  dataIndex: 'customer',
+                  key: 'customer'
+                },
+                {
+                  title: 'Tổng tiền',
+                  dataIndex: 'totalAmount',
+                  key: 'totalAmount',
+                  render: (value: number) => formatCurrency(value)
+                },
+                {
+                  title: 'Trạng thái',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (value: string) => <OrderStatusBadge status={value} />
+                },
+                {
+                  title: 'Tạo lúc',
+                  dataIndex: 'createdAt',
+                  key: 'createdAt',
+                  render: (value: string) => dayjs(value).format('DD/MM/YYYY HH:mm')
+                }
+              ]}
+              locale={{ emptyText: 'Chưa có đơn hàng gần đây' }}
+            />
+          </Card>
+
+          <div className="pt-4">
+            <Card title="Quản lý nhanh">
+              <Row gutter={[16, 16]}>
+                {[
+                  { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
+                  { label: 'Kho chi nhánh', path: ROUTES.MANAGEMENT.BRANCH_INVENTORY, icon: <InboxOutlined /> },
+                  { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShopOutlined /> },
+                  { label: 'Dịch vụ', path: ROUTES.MANAGEMENT.SERVICES, icon: <CustomerServiceOutlined /> },
+                  { label: 'Khách hàng', path: ROUTES.MANAGEMENT.STAFF_CUSTOMERS, icon: <UserOutlined /> },
+                  { label: 'Báo cáo', path: ROUTES.MANAGEMENT.BRANCH_REPORTS, icon: <BarChartOutlined /> }
+                ].map(({ label, path, icon }) => (
+                  <Col xs={12} sm={8} lg={4} key={path}>
+                    <Button block icon={icon} onClick={() => navigate(path)}>
+                      {label}
+                    </Button>
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </div>
+        </div>
+      </Spin>
     </div>
   )
 }

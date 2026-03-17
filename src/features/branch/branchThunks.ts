@@ -146,3 +146,16 @@ export const removeBranchManagerThunk = createAsyncThunk<
     return rejectWithValue(extractApiError(e, 'Không thể gỡ quản lý khỏi chi nhánh'))
   }
 })
+
+export const deleteBranchThunk = createAsyncThunk<string, string>(
+  'branch/deleteBranch',
+  async (id, { rejectWithValue, dispatch }) => {
+    try {
+      await branchApi.deleteBranch(id)
+      dispatch(fetchBranchesThunk())
+      return id
+    } catch (error) {
+      return rejectWithValue(extractApiError(error, 'Không thể xóa chi nhánh'))
+    }
+  }
+)

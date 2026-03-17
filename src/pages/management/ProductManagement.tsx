@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useProduct, type ProductFormData, productValidationSchema, initialProductFormValues } from '@/hooks/useProduct'
+import useAuth from '@/hooks/useAuth'
 import type { Product, Image } from '@/types/api'
 import { toast } from '@/utils/toast'
 import ProductHeader from '@/components/product/ProductHeader'
@@ -9,7 +10,46 @@ import ProductFilter from '@/components/product/ProductFilter'
 import ProductList from '@/components/product/ProductList'
 import ProductModal from '@/components/product/ProductModal'
 
+const toImageArray = (images: Product['images']): (Image | string)[] => {
+  if (Array.isArray(images)) return images as (Image | string)[]
+  if (images) return [images as Image | string]
+  return []
+}
+
+const toPublicId = (image: Image | string): string | null => {
+  if (typeof image !== 'string') {
+    return image.publicId?.trim() || null
+  }
+
+  const raw = image.trim()
+  if (!raw) return null
+
+  // If already a publicId, keep as-is to avoid mismatching DB values.
+  if (!raw.startsWith('http')) return raw
+
+  // Convert Cloudinary URL to publicId for update payload.
+  const uploadMarker = '/upload/'
+  const markerIndex = raw.indexOf(uploadMarker)
+  if (markerIndex < 0) return null
+
+  const afterUpload = raw.slice(markerIndex + uploadMarker.length)
+  const segments = afterUpload.split('/').filter(Boolean)
+  if (segments.length === 0) return null
+
+  if (/^v\d+$/.test(segments[0])) {
+    segments.shift()
+  }
+
+  if (segments.length === 0) return null
+  const lastIdx = segments.length - 1
+  segments[lastIdx] = segments[lastIdx].replace(/\.[a-zA-Z0-9]+$/, '')
+
+  const publicId = segments.join('/')
+  return publicId || null
+}
+
 const ProductManagement = () => {
+  const { isAdmin } = useAuth()
   const {
     products,
     pagination,
@@ -79,9 +119,11 @@ const ProductManagement = () => {
       categoryId: product.category._id,
       price: product.price,
       material: product.material || '',
-      compatibility: product.compatibility || []
+      compatibility: (product.compatibility || []).map((c: unknown) =>
+        typeof c === 'string' ? c : (c as { _id: string })._id
+      )
     })
-    setExistingImages(product.images)
+    setExistingImages(toImageArray(product.images))
     setImageFiles([])
     setImageError(undefined)
     setIsEditMode(true)
@@ -114,10 +156,12 @@ const ProductManagement = () => {
       }
 
       // Combine existing and new images
-      const existingImageIds = existingImages.map(img =>
-        typeof img === 'string' ? img : img.publicId
-      )
-      const allImages = [...existingImageIds, ...uploadedImageIds]
+      const existingImageIds = existingImages
+        .map((img) => toPublicId(img))
+        .filter((id): id is string => Boolean(id))
+
+      // Deduplicate to avoid keeping stale duplicated image ids.
+      const allImages = Array.from(new Set([...existingImageIds, ...uploadedImageIds]))
 
       const productData = {
         name: values.name,
@@ -150,7 +194,7 @@ const ProductManagement = () => {
   return (
     <div className="p-2">
       {/* Header */}
-      <ProductHeader onCreateClick={openCreateModal} />
+      <ProductHeader onCreateClick={openCreateModal} canCreate={Boolean(isAdmin)} />
 
       {/* Filters */}
       <ProductFilter
@@ -164,6 +208,7 @@ const ProductManagement = () => {
         products={products}
         pagination={pagination}
         isLoading={isLoading}
+        canManage={Boolean(isAdmin)}
         onEdit={openEditModal}
         onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}

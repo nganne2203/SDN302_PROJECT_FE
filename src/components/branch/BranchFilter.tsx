@@ -23,8 +23,6 @@ const BranchFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
   onReset
 }: BranchFilterProps) => {
   const filterFields: FilterField[] = [
@@ -64,11 +62,6 @@ const BranchFilterComponent = ({
       sortOrder={(filter.sortOrder as 'asc' | 'desc') || 'desc'}
       onSortChange={(field, order) => onFilterChange('sort', { field, order })}
       showSort
-      page={pagination?.page || 1}
-      limit={pagination?.limit || 10}
-      total={pagination?.total || 0}
-      onPageChange={onPageChange}
-      showPagination
       onReset={onReset}
       showReset
       compact

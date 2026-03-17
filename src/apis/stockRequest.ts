@@ -17,6 +17,11 @@ export interface CreateStockRequestPayload {
   reason?: string
 }
 
+export interface ApproveStockRequestPayload {
+  approvedQuantity: number
+  note?: string
+}
+
 export const stockRequestApi = {
   createStockRequest: async (data: CreateStockRequestPayload): Promise<ApiResponse<StockRequestRecord>> => {
     const response = await apiClient.post<ApiResponse<StockRequestRecord>>(
@@ -57,10 +62,13 @@ export const stockRequestApi = {
     return response.data
   },
 
-  approve: async (requestId: string, note?: string): Promise<ApiResponse<StockRequestRecord>> => {
-    const response = await apiClient.patch<ApiResponse<StockRequestRecord>>(
+  approve: async (
+    requestId: string,
+    data: ApproveStockRequestPayload
+  ): Promise<ApiResponse<StockRequestRecord>> => {
+    const response = await apiClient.put<ApiResponse<StockRequestRecord>>(
       API_ENDPOINTS.STOCK_REQUEST.APPROVE(requestId),
-      { note }
+      data
     )
     return response.data
   },

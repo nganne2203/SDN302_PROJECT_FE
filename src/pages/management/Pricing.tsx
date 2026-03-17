@@ -19,6 +19,7 @@ const ManagementPricing = () => {
     formData,
     formErrors,
     isSubmitting,
+    selectedProductBasePrice,
     handleSetFilter,
     handleClearFilter,
     handleOpenModal,
@@ -77,6 +78,7 @@ const ManagementPricing = () => {
         formErrors={formErrors}
         isSubmitting={isSubmitting}
         productOptions={productOptions}
+        selectedProductBasePrice={selectedProductBasePrice}
         onClose={handleCloseModal}
         onFormChange={handleFormChange}
         onSubmit={handleSubmit}

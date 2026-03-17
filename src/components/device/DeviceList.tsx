@@ -3,6 +3,7 @@ import { Edit, Trash2, Power } from 'lucide-react'
 import { TableCommon, LoaderCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Device } from '@/features/device/deviceTypes'
+import { getDeviceTypeLabel } from '@/features/device/deviceTypes'
 import dayjs from 'dayjs'
 
 interface DeviceWithKey extends Record<string, unknown> {
@@ -51,20 +52,21 @@ const DeviceListComponent = ({
   const tableColumns: TableColumn<DeviceWithKey>[] = [
     {
       key: 'name',
-      title: 'Ten thiet bi',
+      title: 'Tên thiết bị',
       dataIndex: 'name',
       width: 180,
       sortable: true
     },
     {
       key: 'type',
-      title: 'Loai',
+      title: 'Loại',
       dataIndex: 'type',
-      width: 120
+      width: 160,
+      render: (value: unknown) => getDeviceTypeLabel(value as string)
     },
     {
       key: 'brand',
-      title: 'Thuong hieu',
+      title: 'Thương hiệu',
       dataIndex: 'brand',
       width: 150
     },
@@ -76,21 +78,21 @@ const DeviceListComponent = ({
     },
     {
       key: 'isActive',
-      title: 'Trang thai',
+      title: 'Trạng thái',
       dataIndex: 'isActive',
       width: 100,
       render: (value: unknown) => {
         const isActive = value as boolean
         return (
           <span className={isActive ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-            {isActive ? 'Hoat dong' : 'Vo hieu hoa'}
+            {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
           </span>
         )
       }
     },
     {
       key: 'createdAt',
-      title: 'Ngay tao',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       width: 140,
       sortable: true,
@@ -102,7 +104,7 @@ const DeviceListComponent = ({
     },
     {
       key: 'actions',
-      title: 'Hanh dong',
+      title: 'Hành động',
       width: 120,
       fixed: 'right',
       render: (_: unknown, record: DeviceWithKey) => (
@@ -123,18 +125,20 @@ const DeviceListComponent = ({
               onClick={() => onUpdateStatus(record._id, !record.isActive)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xac nhan xoa"
-            description="Ban co chac chan muon xoa thiet bi nay?"
-            okText="Xoa"
-            cancelText="Huy"
-            onConfirm={() => onDelete(record._id)}
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Xóa">
-              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
-            </Tooltip>
-          </Popconfirm>
+          {!record.isActive && (
+            <Popconfirm
+              title="Xác nhận xóa"
+              description="ạn có chắc chắn muốn xóa thiết bị này?"
+              okText="Xóa"
+              cancelText="Hủy"
+              onConfirm={() => onDelete(record._id)}
+              okButtonProps={{ danger: true }}
+            >
+              <Tooltip title="Xóa">
+                <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+              </Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       )
     }
@@ -143,7 +147,7 @@ const DeviceListComponent = ({
   return (
     <>
       {isLoading ? (
-        <LoaderCommon size="lg" tip="Dang tai thiet bi..." />
+        <LoaderCommon size="lg" tip="Đang tải thiết bị..." />
       ) : (
         <TableCommon<DeviceWithKey>
           columns={tableColumns}

@@ -1,5 +1,5 @@
-import { Button, Space, Tag, Tooltip } from 'antd'
-import { Edit, Power } from 'lucide-react'
+import { Button, Popconfirm, Space, Tag, Tooltip } from 'antd'
+import { Edit, Power, Trash2 } from 'lucide-react'
 import dayjs from 'dayjs'
 import { LoaderCommon, TableCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
@@ -22,6 +22,7 @@ interface BranchListProps {
   }
   onEdit: (branch: Branch) => void
   onUpdateStatus: (id: string, isActive: boolean) => void
+  onDelete: (id: string) => void
   onPageChange: (page: number, pageSize: number) => void
 }
 
@@ -32,6 +33,7 @@ const BranchListComponent = ({
   pagination,
   onEdit,
   onUpdateStatus,
+  onDelete,
   onPageChange
 }: BranchListProps) => {
   const rows: BranchWithKey[] = branches.map(b => ({
@@ -106,6 +108,23 @@ const BranchListComponent = ({
               onClick={() => onUpdateStatus(record._id, !record.isActive)}
             />
           </Tooltip>
+          {!record.isActive && (
+            <Popconfirm
+              title="Xác nhận xóa chi nhánh?"
+              onConfirm={() => onDelete(record._id)}
+              okText="Xác nhận"
+              cancelText="Hủy"
+            >
+              <Tooltip title="Xóa chi nhánh">
+                <Button
+                  size="small"
+                  danger
+                  icon={<Trash2 className="w-4 h-4" />}
+                >
+                </Button>
+              </Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       )
     }

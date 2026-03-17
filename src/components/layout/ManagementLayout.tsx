@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Layout, Button, Dropdown, Avatar, Badge } from 'antd'
+import { useEffect, useState } from 'react'
+import { Layout, Button, Dropdown, Avatar } from 'antd'
 import type { MenuProps } from 'antd'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  BellOutlined,
   UserOutlined,
   LogoutOutlined,
   SettingOutlined
 } from '@ant-design/icons'
 import { Outlet } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import SidebarLayout from './SidebarLayout'
 import ProfileModal from '../auth/ProfileModal'
@@ -22,6 +22,14 @@ const ManagementLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const { user, logout } = useAuth()
+  const location = useLocation()
+
+  useEffect(() => {
+    const el = document.getElementById('management-content-scroll')
+    if (el) {
+      el.scrollTo({ top: 0, left: 0 })
+    }
+  }, [location.pathname, location.search, location.hash])
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -69,14 +77,6 @@ const ManagementLayout = () => {
           />
 
           <div className='flex items-center gap-4'>
-            <Badge count={5} size='small'>
-              <Button
-                type='text'
-                icon={<BellOutlined />}
-                className='text-lg'
-              />
-            </Badge>
-
             <Dropdown menu={{ items: userMenuItems }} placement='bottomRight' trigger={['click']}>
               <div className='flex items-center gap-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg'>
                 <Avatar
@@ -97,7 +97,7 @@ const ManagementLayout = () => {
           </div>
         </Header>
 
-        <Content className='m-4 p-6 bg-white rounded-lg flex-1 min-h-0 overflow-y-auto'>
+        <Content id='management-content-scroll' className='m-4 p-6 bg-white rounded-lg flex-1 min-h-0 overflow-y-auto'>
           <Outlet />
         </Content>
       </Layout>

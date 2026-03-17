@@ -5,12 +5,15 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { useCallback, useEffect, useState, useRef } from 'react'
 import toast from '@/utils/toast'
 import useUser from '@/hooks/useUser'
+import { useAppDispatch, useAppSelector } from '@/apps/hooks'
+import { setCredentials } from '@/features/auth/authSlices'
 import ProfileHeader from './ProfileHeader'
 import ProfileContentLeft from './ProfileContentLeft'
 import ProfileContentRight from './ProfileContentRight'
 import uploadApi from '@/apis/upload'
 import type { UpdateProfilePayload } from '@/features/user/userTypes'
-import provinceApi from '@/apis/province'
+import { vietnamAddressService } from '@/services/vietnamAddressService'
+import { getAvatarUrl } from '@/utils/getAvatar'
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -28,6 +31,8 @@ const normalizeLocationName = (value: string): string => {
 
 const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
   const { profile, updateProfile, isLoading, fetchProfile } = useUser()
+  const dispatch = useAppDispatch()
+  const { accessToken, refreshToken } = useAppSelector((state) => state.auth)
   const [isEditMode, setIsEditMode] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -54,60 +59,51 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
   useEffect(() => {
     if (!profile) return
 
-    let isCancelled = false
+    const rawAddresses = profile.addresses || []
+    const provinces = vietnamAddressService.getProvinces()
 
-    const hydrateAddressCodes = async () => {
-      const rawAddresses = profile.addresses || []
+    const hydratedAddresses = rawAddresses.map((address) => {
+      if (!address.city || !address.ward) {
+        return address
+      }
 
-      const provinces = await provinceApi.listProvinces('')
-
-      const hydratedAddresses = await Promise.all(
-        rawAddresses.map(async (address) => {
-          if (!address.city || !address.ward) {
-            return address
-          }
-
-          const matchedProvince = provinces.find((province) =>
-            normalizeLocationName(province.name) === normalizeLocationName(address.city)
-          )
-
-          if (!matchedProvince) {
-            return address
-          }
-
-          const wards = await provinceApi.listWardsByProvince(matchedProvince.code, '')
-          const matchedWard = wards.find((ward) =>
-            normalizeLocationName(ward.name) === normalizeLocationName(address.ward)
-          )
-
-          return {
-            ...address,
-            provinceCode: matchedProvince.code,
-            districtCode: matchedWard?.district_code,
-            wardCode: matchedWard?.code,
-            district: matchedWard?.district_name || address.district
-          }
-        })
+      const matchedProvince = provinces.find((province) =>
+        normalizeLocationName(province.name) === normalizeLocationName(address.city)
       )
 
-      if (isCancelled) return
+      if (!matchedProvince) {
+        return address
+      }
 
-      reset({
-        fullname: profile.fullname || '',
-        email: profile.email,
-        phone: profile.phone || '',
-        addresses: hydratedAddresses,
-        avatar: profile.avatarId || ''
-      })
-      setAvatarPreview(profile.avatar)
+      const wards = vietnamAddressService.getWardsByProvinceCode(matchedProvince.province_code)
+      const matchedWard = wards.find((ward) =>
+        normalizeLocationName(ward.name) === normalizeLocationName(address.ward)
+      )
+
+      return {
+        ...address,
+        provinceCode: matchedProvince.province_code,
+        wardCode: matchedWard?.ward_code
+      }
+    })
+
+    reset({
+      fullname: profile.fullname || '',
+      email: profile.email,
+      phone: profile.phone || '',
+      addresses: hydratedAddresses,
+      avatar: profile.avatarId || ''
+    })
+    setAvatarPreview(profile.avatar)
+
+    if (profile && accessToken && refreshToken) {
+      dispatch(setCredentials({
+        user: profile,
+        accessToken,
+        refreshToken
+      }))
     }
-
-    void hydrateAddressCodes()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [profile, reset])
+  }, [profile, reset, dispatch, accessToken, refreshToken])
 
   const handleAvatarUpload = useCallback(
     async (file: File) => {
@@ -117,7 +113,6 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
         let { publicId } = response.data
         const { imageUrl } = response.data
 
-        // Strip 'uploads/' prefix if present
         if (publicId.startsWith('uploads/')) {
           publicId = publicId.replace(/^uploads\//, '')
         }
@@ -148,7 +143,6 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
           phone: address.phone,
           addressLine: address.addressLine,
           city: address.city,
-          district: address.district,
           ward: address.ward,
           isDefault: Boolean(address.isDefault)
         }))
@@ -156,19 +150,39 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
 
       const result = await updateProfile(payload)
 
-      if (result) {
+      if (result.success) {
         setIsEditMode(false)
         toast.success('Cập nhật thông tin thành công')
+        fetchProfile()
       } else {
-        toast.error('Cập nhật thông tin thất bại')
+        toast.error(result.error || 'Cập nhật thông tin thất bại')
       }
     },
-    [updateProfile]
+    [updateProfile, fetchProfile]
   )
 
   const handleButtonClick = () => {
     if (isEditMode) {
-      handleSubmit(onSubmit)()
+      handleSubmit(onSubmit, (errors) => {
+        // Show first validation error as toast
+        const firstError = Object.values(errors).flat()[0]
+        if (firstError && 'message' in firstError && firstError.message) {
+          toast.error(firstError.message as string)
+        } else if (errors.addresses) {
+          // Check nested address errors
+          const addrErrors = errors.addresses as Record<string, unknown>
+          for (const key of Object.keys(addrErrors)) {
+            const fieldErrors = addrErrors[key] as Record<string, { message?: string }>
+            if (fieldErrors) {
+              const msg = Object.values(fieldErrors).find((e) => e?.message)?.message
+              if (msg) {
+                toast.error(msg)
+                return
+              }
+            }
+          }
+        }
+      })()
     } else {
       setIsEditMode(true)
     }
@@ -198,7 +212,7 @@ const ProfileModalComponent = ({ isOpen, onClose }: ProfileModalProps) => {
             <ProfileContentLeft
               control={control}
               disabled={!isEditMode}
-              avatarUrl={avatarPreview || profile?.avatar}
+              avatarUrl={getAvatarUrl(profile, avatarPreview)}
               onAvatarUpload={handleAvatarUpload}
               uploading={uploadingAvatar}
             />

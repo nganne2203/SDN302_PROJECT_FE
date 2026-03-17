@@ -2,8 +2,10 @@ import { Popconfirm, Space, Button, Tooltip } from 'antd'
 import { TableCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import { Edit, Trash2, Power } from 'lucide-react'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import dayjs from 'dayjs'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import { SERVICE_PRODUCT_TYPE_COLORS, getServiceProductTypeLabel } from '@/constants/constant'
 
 interface ServiceProductWithKey extends ServiceProduct {
   [key: string]: unknown
@@ -17,7 +19,8 @@ const ServiceProductList = ({
   onPageChange,
   onEdit,
   onDelete,
-  onStatusChange
+  onStatusChange,
+  canManage
 }: {
   data: ServiceProduct[]
   loading: boolean
@@ -26,6 +29,7 @@ const ServiceProductList = ({
   onEdit: (item: ServiceProduct) => void
   onDelete: (item: ServiceProduct) => void
   onStatusChange: (id: string, status: boolean) => void
+  canManage?: boolean
 }) => {
   const dataWithKeys: ServiceProductWithKey[] = data.map((item) => ({
     ...item,
@@ -40,12 +44,17 @@ const ServiceProductList = ({
       render: (_, record) => (
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0'>
-            {record.product.images?.[0] ? (
-              <img
-                src={typeof record.product.images[0] === 'string' ? record.product.images[0] : record.product.images[0].imageUrl}
-                alt={record.product.name}
-                className='w-full h-full object-cover'
-              />
+            {record.product.images ? (
+              (() => {
+                const url = getProductImageUrl(record.product.images)
+                return (
+                  <img
+                    src={url}
+                    alt={record.product.name}
+                    className='w-full h-full object-cover'
+                  />
+                )
+              })()
             ) : (
               <div className='w-full h-full flex items-center justify-center text-xs text-gray-400'>No img</div>
             )}
@@ -76,19 +85,16 @@ const ServiceProductList = ({
       key: 'type',
       title: 'Loại',
       dataIndex: 'type',
-      width: 120,
-      render: (value) => {
-        const colors: Record<string, string> = {
-          printing: 'bg-blue-50 text-blue-700 border-blue-200',
-          warranty: 'bg-purple-50 text-purple-700 border-purple-200',
-          other: 'bg-gray-50 text-gray-700 border-gray-200'
-        }
-        return (
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[value as string] || colors.other}`}>
-            {value === 'printing' ? 'In ấn' : value === 'warranty' ? 'Bảo hành' : 'Khác'}
-          </span>
-        )
-      }
+      width: 140,
+      render: (value) => (
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+            SERVICE_PRODUCT_TYPE_COLORS[value as string] || SERVICE_PRODUCT_TYPE_COLORS.other
+          }`}
+        >
+          {getServiceProductTypeLabel(value as string)}
+        </span>
+      )
     },
     {
       key: 'price',
@@ -129,8 +135,11 @@ const ServiceProductList = ({
       width: 150,
       sortable: true,
       render: (value) => <span className='text-gray-500'>{dayjs(value as string).format('DD/MM/YYYY')}</span>
-    },
-    {
+    }
+  ]
+
+  if (canManage) {
+    columns.push({
       key: 'actions',
       title: 'Hành động',
       width: 150,
@@ -153,22 +162,24 @@ const ServiceProductList = ({
               onClick={() => onStatusChange(record._id, !record.isActive)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xóa dịch vụ"
-            description={`Bạn có chắc muốn xóa dịch vụ "${record.name}"?`}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => onDelete(record)}
-          >
-            <Tooltip title="Xóa">
-              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
-            </Tooltip>
-          </Popconfirm>
+          {!record.isActive && (
+            <Popconfirm
+              title="Xóa dịch vụ"
+              description={`Bạn có chắc muốn xóa dịch vụ "${record.name}"?`}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => onDelete(record)}
+            >
+              <Tooltip title="Xóa">
+                <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+              </Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       )
-    }
-  ]
+    })
+  }
 
   return (
     <TableCommon<ServiceProductWithKey>

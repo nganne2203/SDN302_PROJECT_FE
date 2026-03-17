@@ -7,6 +7,27 @@ import type { Product } from '@/types/api'
 import type { PricingFilter, PricingRule } from '@/features/pricing/pricingTypes'
 import type { BulkTierForm } from '@/components/pricing/PricingBulkModal'
 
+let cachedPricingProducts: Product[] | null = null
+let cachedPricingProductsPromise: Promise<Product[]> | null = null
+
+const loadPricingProducts = async (): Promise<Product[]> => {
+  if (cachedPricingProducts) return cachedPricingProducts
+  if (cachedPricingProductsPromise) return cachedPricingProductsPromise
+
+  cachedPricingProductsPromise = productApi
+    .getAllProducts()
+    .then((response) => {
+      cachedPricingProducts = response.data || []
+      return cachedPricingProducts
+    })
+    .catch(() => [])
+    .finally(() => {
+      cachedPricingProductsPromise = null
+    })
+
+  return cachedPricingProductsPromise
+}
+
 const bulkTierSchema = z.object({
   minQuantity: z.number().min(1, 'Số lượng tối thiểu không hợp lệ'),
   maxQuantity: z.number().min(1, 'Số lượng tối đa không hợp lệ').nullable().optional(),
@@ -96,15 +117,10 @@ export const usePricingManagement = () => {
     let active = true
 
     const loadProducts = async () => {
-      const applyIfActive = (fn: () => void) => {
-        if (active) {
-          fn()
-        }
-      }
-
+      const applyIfActive = (fn: () => void) => { if (active) fn() }
       try {
-        const response = await productApi.getAllProducts()
-        applyIfActive(() => setProducts(response.data || []))
+        const productData = await loadPricingProducts()
+        applyIfActive(() => setProducts(productData))
       } catch {
         applyIfActive(() => setProducts([]))
       } finally {
@@ -206,13 +222,30 @@ export const usePricingManagement = () => {
 
   const handleFormChange = useCallback((field: string, value: string | number | null) => {
     setFormData(prev => {
+      const updated: PricingFormData = { ...prev }
+
       if (field === 'discountPercentage') {
-        return { ...prev, discountPercentage: value === null ? undefined : (value as number) }
+        updated.discountPercentage = value === null ? undefined : (value as number)
+      } else if (field === 'maxQuantity') {
+        updated.maxQuantity = value === null ? null : (value as number)
+      } else {
+        (updated as Record<string, unknown>)[field] = value
       }
-      if (field === 'maxQuantity') {
-        return { ...prev, maxQuantity: value === null ? null : (value as number) }
+
+      // Auto-compute discountPercentage from pricePerUnit relative to product base price
+      const productId = field === 'productId' ? (value as string) : prev.productId
+      const pricePerUnit = field === 'pricePerUnit' ? (value as number) : prev.pricePerUnit
+      const selectedProduct = products.find(p => p._id === productId)
+
+      if (selectedProduct && selectedProduct.price > 0 && field !== 'discountPercentage') {
+        if (pricePerUnit > 0 && pricePerUnit < selectedProduct.price) {
+          updated.discountPercentage = Math.round((1 - pricePerUnit / selectedProduct.price) * 10000) / 100
+        } else {
+          updated.discountPercentage = 0
+        }
       }
-      return { ...prev, [field]: value }
+
+      return updated
     })
     if (formErrors[field]) {
       setFormErrors(prev => {
@@ -221,7 +254,7 @@ export const usePricingManagement = () => {
         return newErrors
       })
     }
-  }, [formErrors])
+  }, [formErrors, products])
 
   const handleSubmit = useCallback(async () => {
     const validation = validatePricingForm(formData)
@@ -337,6 +370,7 @@ export const usePricingManagement = () => {
     formData,
     formErrors,
     isSubmitting,
+    selectedProductBasePrice: products.find(p => p._id === formData.productId)?.price ?? null,
     handleSetFilter,
     handleClearFilter,
     handleOpenModal,

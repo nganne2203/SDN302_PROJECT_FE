@@ -244,8 +244,6 @@ export const ROUTES = {
   PAYMENT_ERROR: '/payment/error',
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
-  PROFILE: '/profile',
-  EDIT_PROFILE: '/profile/edit',
   AUTH_CALLBACK: '/auth/callback',
   AUTH_ERROR: '/auth/error',
   MANAGEMENT: {
@@ -333,6 +331,11 @@ export const ORDER_STATUS_LABELS = {
 } as const
 
 export const PAYMENT_STATUS_LABELS = {
+  pending: 'Chưa thanh toán',
+  success: 'Đã thanh toán',
+  failed: 'Thanh toán thất bại',
+  refunded: 'Đã hoàn tiền',
+  canceled: 'Đã hủy thanh toán',
   PENDING: 'Chờ thanh toán',
   PAID: 'Đã thanh toán',
   FAILED: 'Thanh toán thất bại',
@@ -346,13 +349,32 @@ export const PAYMENT_METHOD_LABELS = {
   E_WALLET: 'Ví điện tử'
 } as const
 
-export const SERVICE_PRODUCT_TYPE = [
-  { value: 'engraving', label: 'Khắc tên' },
-  { value: 'printing', label: 'In ảnh' },
-  { value: 'drilling', label: 'Đục lỗ' },
-  { value: 'cutting', label: 'Cắt' },
-  { value: 'embossing', label: 'Nổi chữ' },
-  { value: 'coating', label: 'Phủ' },
-  { value: 'lamination', label: 'Dán bìa' },
-  { value: 'other', label: 'Khác' }
-]
+export const SERVICE_PRODUCT_TYPE_LABELS = {
+  engraving: 'Khắc',
+  printing: 'In ảnh',
+  drilling: 'Đục lỗ',
+  cutting: 'Cắt',
+  embossing: 'Nổi chữ',
+  coating: 'Phủ',
+  lamination: 'Dán bìa',
+  other: 'Khác'
+} as const
+
+export const SERVICE_PRODUCT_TYPE_COLORS: Record<string, string> = {
+  engraving: 'bg-amber-50 text-amber-700 border-amber-200',
+  printing: 'bg-blue-50 text-blue-700 border-blue-200',
+  drilling: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  cutting: 'bg-red-50 text-red-700 border-red-200',
+  embossing: 'bg-purple-50 text-purple-700 border-purple-200',
+  coating: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  lamination: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  other: 'bg-gray-50 text-gray-700 border-gray-200'
+}
+
+export const getServiceProductTypeLabel = (type: string) =>
+  SERVICE_PRODUCT_TYPE_LABELS[type as keyof typeof SERVICE_PRODUCT_TYPE_LABELS] ?? type
+
+export const SERVICE_PRODUCT_TYPE = Object.entries(SERVICE_PRODUCT_TYPE_LABELS).map(([value, label]) => ({
+  value,
+  label
+}))

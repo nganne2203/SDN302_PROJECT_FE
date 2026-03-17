@@ -5,6 +5,7 @@ import type { User } from '@/features/user/userTypes'
 import dayjs from 'dayjs'
 import { ROLE_LABELS } from '@/constants/constant'
 import { Eye, Pencil, Power } from 'lucide-react'
+import useAuth from '@/hooks/useAuth'
 
 interface UserWithKey extends Record<string, unknown> {
   key: string
@@ -24,6 +25,7 @@ interface UserListProps {
   onPageChange: (page: number, pageSize: number) => void
   onViewUser?: (user: User) => void
   onEditUser?: (user: User) => void
+  canEditUser?: (user: User) => boolean
   hideStatusToggle?: boolean
 }
 
@@ -35,12 +37,37 @@ const UserListComponent = ({
   onPageChange,
   onViewUser,
   onEditUser,
+  canEditUser,
   hideStatusToggle = false
 }: UserListProps) => {
-  const usersWithKeys: UserWithKey[] = users.map(user => ({
+  const { user: currentUser } = useAuth()
+  const currentUserId = currentUser?.id ? String(currentUser.id) : null
+  const currentUserRole = currentUser?.role
+  const currentUserBranch = typeof currentUser?.branch === 'string' ? currentUser.branch : null
+
+  const shouldHideSelfRow = currentUserRole ? ['admin', 'manager', 'staff'].includes(currentUserRole) : false
+  const filteredUsers = shouldHideSelfRow && currentUserId
+    ? users.filter((user) => user._id !== currentUserId)
+    : users
+
+  const usersWithKeys: UserWithKey[] = filteredUsers.map((user) => ({
     ...user,
     key: user._id
   }))
+
+  const canToggleStatusForUser = (targetUser: User) => {
+    if (hideStatusToggle || !onUpdateStatus) return false
+    if (currentUserId && targetUser._id === currentUserId) return false
+
+    if (currentUserRole === 'admin') return true
+
+    if (currentUserRole === 'manager') {
+      return targetUser.role === 'staff' && Boolean(currentUserBranch) && targetUser.branch === currentUserBranch
+    }
+
+    // Giữ hành vi cũ cho các role khác (staff/customer): chỉ thao tác với account staff.
+    return targetUser.role === 'staff'
+  }
 
   const tableColumns: TableColumn<UserWithKey>[] = [
     {
@@ -111,7 +138,7 @@ const UserListComponent = ({
               />
             </Tooltip>
           )}
-          {onEditUser && (
+          {onEditUser && (!canEditUser || canEditUser(record as unknown as User)) && (
             <Tooltip title="Chỉnh sửa">
               <Button
                 type="primary"
@@ -121,7 +148,7 @@ const UserListComponent = ({
               />
             </Tooltip>
           )}
-          {!hideStatusToggle && onUpdateStatus && (
+          {canToggleStatusForUser(record as unknown as User) && (
             <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
               <Button
                 size="small"

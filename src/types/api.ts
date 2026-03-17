@@ -63,10 +63,8 @@ export interface RegisterRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     provinceCode?: number;
-    districtCode?: number;
     wardCode?: number;
     isDefault: boolean;
   }>;
@@ -206,10 +204,17 @@ export interface Product {
   price: number;
   images: Image[] | Image | string[]; // Support multiple formats from different APIs
   material?: string;
-  compatibility?: string[];
+  compatibility?: (string | { _id: string; name: string })[];
   ratingAvg: number;
   ratingCount: number;
   isActive: boolean;
+  totalStock?: number;
+  inStock?: boolean;
+  stockByBranch?: Array<{
+    branch: Branch;
+    quantity: number;
+    inStock: boolean;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -306,13 +311,14 @@ export interface StoreInventoryRecord {
   updatedAt: string;
 }
 
-export type StockRequestStatus = 'pending' | 'approved' | 'rejected';
+export type StockRequestStatus = 'pending' | 'approved' | 'partially_approved' | 'rejected';
 
 export interface StockRequestRecord {
   _id: string;
   branch: Branch;
   product: Product;
   quantity: number;
+  approvedQuantity?: number;
   requester: BackendUser;
   reason?: string;
   status: StockRequestStatus;
@@ -329,6 +335,9 @@ export interface CartItem {
   product: Product;
   quantity: number;
   price: number;
+  services?: { serviceId: string; name: string; price: number }[];
+  serviceFee?: number;
+  totalPrice?: number;
 }
 
 export interface Cart {
@@ -340,16 +349,37 @@ export interface Cart {
 }
 
 export interface Order {
+  _id?: string;
+  orderNumber?: string;
   id: string;
   userId: string;
   items: OrderItem[];
+  subtotal?: number;
+  shippingFee?: number;
   totalAmount: number;
   status: OrderStatus;
   shippingAddress: ShippingAddress;
-  paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod | 'cod' | 'vnpay' | 'bank_transfer' | 'credit_card' | 'e_wallet';
+  paymentStatus?: PaymentStatus | string;
+  payment?: {
+    status?: string;
+    paidAt?: string;
+    failureReason?: string;
+  } | null;
+  delivery?: DeliveryInfo | null;
+  message?: string;
+  branch?: Branch | string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DeliveryInfo {
+  status?: 'pending' | 'shipping' | 'delivered' | 'cancelled' | 'failed' | string;
+  providerName?: string;
+  trackingCode?: string;
+  estimatedDeliveryDate?: string | null;
+  deliveredAt?: string | null;
+  recipientName?: string;
 }
 
 export interface OrderItem {
@@ -366,22 +396,37 @@ export type OrderStatus =
   | 'CONFIRMED'
   | 'SHIPPING'
   | 'DELIVERED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'pending'
+  | 'confirmed'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
 export type PaymentMethod =
   | 'COD'
   | 'BANK_TRANSFER'
   | 'CREDIT_CARD'
   | 'E_WALLET';
-export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+// BE now returns lowercase payment status strings on order detail/list.
+// Keep legacy uppercase variants for backward compatibility.
+export type PaymentStatus =
+  | 'pending'
+  | 'success'
+  | 'failed'
+  | 'refunded'
+  | 'canceled'
+  | 'cancelled'
+  | 'PENDING'
+  | 'PAID'
+  | 'FAILED'
+  | 'REFUNDED';
 
 export interface ShippingAddress {
   fullName: string;
   phoneNumber: string;
   province: string;
-  district: string;
   ward: string;
   provinceCode?: number;
-  districtCode?: number;
   wardCode?: number;
   address: string;
 }
@@ -406,10 +451,8 @@ export interface CreateUserRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     provinceCode?: number;
-    districtCode?: number;
     wardCode?: number;
     isDefault: boolean;
   }>;
@@ -428,7 +471,6 @@ export interface UpdateUserRequest {
     phone: string;
     addressLine: string;
     city: string;
-    district: string;
     ward: string;
     isDefault: boolean;
   }>;

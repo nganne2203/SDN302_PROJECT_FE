@@ -1,5 +1,5 @@
 import { Input, Select, Button, Space, Row, Col, Switch, Checkbox } from 'antd'
-import { SearchOutlined, ReloadOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons'
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { FilterOption, SortOrder } from '../../types/filter'
 import type { ReactNode } from 'react'
 import CardCommon from './CardCommon'
@@ -80,18 +80,6 @@ const FilterCommon = ({
   extra,
   compact = false
 }: FilterCommonProps) => {
-  const handleSortToggle = () => {
-    if (!sortBy) return
-    const newOrder: SortOrder = sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? '' : 'asc'
-    onSortChange?.(sortBy, newOrder)
-  }
-
-  const getSortIcon = () => {
-    if (sortOrder === 'asc') return <SortAscendingOutlined />
-    if (sortOrder === 'desc') return <SortDescendingOutlined />
-    return <SortAscendingOutlined />
-  }
-
   const renderFilterField = (field: FilterField) => {
     const rawValue = filterValues[field.key]
 
@@ -145,8 +133,8 @@ const FilterCommon = ({
 
   if (compact) {
     return (
-      <div className={`filter-common-compact ${className}`}>
-        <Space wrap size="middle" style={{ width: '100%', marginBottom: 16 }}>
+      <CardCommon className={`filter-common-compact ${className}`} style={{ marginBottom: 16 }}>
+        <div className="flex flex-wrap items-center gap-3 w-full">
           {showSearch && (
             <Input
               placeholder={searchPlaceholder}
@@ -154,7 +142,7 @@ const FilterCommon = ({
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
               allowClear
-              style={{ width: 250 }}
+              style={{ width: 250, minWidth: 220 }}
             />
           )}
 
@@ -165,31 +153,19 @@ const FilterCommon = ({
           ))}
 
           {showSort && sortOptions.length > 0 && (
-            <>
-              <Select
-                placeholder="Sort by"
-                value={sortBy || undefined}
-                onChange={(value) => onSortChange?.(value, sortOrder || 'asc')}
-                allowClear
-                style={{ width: 150 }}
-              >
-                {sortOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-
-              {sortBy && (
-                <Button
-                  icon={getSortIcon()}
-                  onClick={handleSortToggle}
-                  type={sortOrder ? 'primary' : 'default'}
-                >
-                  {sortOrder === 'asc' ? 'Ascending' : sortOrder === 'desc' ? 'Descending' : 'Sort'}
-                </Button>
-              )}
-            </>
+            <Select
+              placeholder="Sort by"
+              value={sortBy || undefined}
+              onChange={(value) => onSortChange?.(value, sortOrder || 'desc')}
+              allowClear
+              style={{ width: 150 }}
+            >
+              {sortOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
           )}
 
           {showReset && (
@@ -199,7 +175,7 @@ const FilterCommon = ({
           )}
 
           {extra}
-        </Space>
+        </div>
 
         {showPagination && total > 0 && (
           <div style={{ marginTop: 16, textAlign: 'right' }}>
@@ -214,7 +190,7 @@ const FilterCommon = ({
             />
           </div>
         )}
-      </div>
+      </CardCommon>
     )
   }
 
@@ -259,7 +235,7 @@ const FilterCommon = ({
                 <Select
                   placeholder="Select field"
                   value={sortBy || undefined}
-                  onChange={(value) => onSortChange?.(value, sortOrder || 'asc')}
+                  onChange={(value) => onSortChange?.(value, sortOrder || 'desc')}
                   allowClear
                   style={{ width: '100%' }}
                 >
@@ -271,37 +247,23 @@ const FilterCommon = ({
                 </Select>
               </div>
             </Col>
-
-            {sortBy && (
-              <Col xs={24} sm={12} md={8} lg={6}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
-                    Sort Order
-                  </label>
-                  <Button
-                    icon={getSortIcon()}
-                    onClick={handleSortToggle}
-                    type={sortOrder ? 'primary' : 'default'}
-                    block
-                  >
-                    {sortOrder === 'asc' ? 'Ascending' : sortOrder === 'desc' ? 'Descending' : 'No Sort'}
-                  </Button>
-                </div>
-              </Col>
-            )}
           </>
         )}
 
-        <Col xs={24} sm={24} md={24} lg={24}>
-          <Space>
-            {showReset && (
-              <Button icon={<ReloadOutlined />} onClick={onReset}>
-                Reset Filters
-              </Button>
-            )}
-            {extra}
-          </Space>
-        </Col>
+        {(showReset || extra) && (
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
+              <Space>
+                {showReset && (
+                  <Button icon={<ReloadOutlined />} onClick={onReset}>
+                    Reset Filters
+                  </Button>
+                )}
+                {extra}
+              </Space>
+            </div>
+          </Col>
+        )}
       </Row>
 
       {showPagination && total > 0 && (

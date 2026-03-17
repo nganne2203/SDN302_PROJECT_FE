@@ -10,8 +10,6 @@ export const passwordSchema = z
   .min(1, 'Mật khẩu là bắt buộc')
   .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
   .max(20, 'Mật khẩu không được quá 20 ký tự')
-  .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất một chữ hoa')
-  .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
   .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số')
   .regex(
     /[!@#$%^&*(),.?':{}|<>]/,
@@ -101,10 +99,8 @@ export const shippingAddressSchema = z.object({
     .string()
     .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ'),
   province: z.string().min(1, 'Tỉnh/Thành phố là bắt buộc'),
-  district: z.string().min(1, 'Quận/Huyện là bắt buộc'),
   ward: z.string().min(1, 'Phường/Xã là bắt buộc'),
   provinceCode: z.string().optional(),
-  districtCode: z.string().optional(),
   wardCode: z.string().optional(),
   address: z.string().min(1, 'Địa chỉ chi tiết là bắt buộc')
 })
@@ -114,10 +110,8 @@ export const userAddressSchema = z.object({
   phone: z.string().regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
   addressLine: z.string().min(1, 'Vui lòng nhập địa chỉ chi tiết').trim(),
   city: z.string().min(1, 'Vui lòng nhập thành phố').trim(),
-  district: z.string().min(1, 'Vui lòng nhập quận/huyện').trim(),
   ward: z.string().min(1, 'Vui lòng nhập phường/xã').trim(),
   provinceCode: z.string().optional(),
-  districtCode: z.string().optional(),
   wardCode: z.string().optional(),
   isDefault: z.boolean().optional()
 })
@@ -159,14 +153,12 @@ export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>
 
 export const createReviewSchema = z.object({
   rating: z.number({ error: 'Vui lòng chọn số sao đánh giá' }).min(1, 'Vui lòng chọn ít nhất 1 sao').max(5),
-  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
-  imageUrls: z.string().optional()
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional()
 })
 
 export const updateReviewSchema = z.object({
   rating: z.number().min(1, 'Vui lòng chọn ít nhất 1 sao').max(5).optional(),
-  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
-  imageUrls: z.string().optional()
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional()
 })
 
 export type CreateReviewFormData = z.infer<typeof createReviewSchema>

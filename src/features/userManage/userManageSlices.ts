@@ -2,6 +2,8 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { UserManageState, FetchUsersPayload, User } from './userManageTypes'
 import {
   fetchUsersThunk,
+  fetchManagerUsersThunk,
+  fetchCustomersThunk,
   createUserThunk,
   getUserByIdThunk,
   updateUserThunk,
@@ -57,6 +59,38 @@ const userManageSlice = createSlice({
         state.pagination = action.payload.pagination
       })
       .addCase(fetchUsersThunk.rejected, (state, action) => {
+        state.listLoading = false
+        state.error = action.payload as string
+      })
+
+    // Fetch manager users
+    builder
+      .addCase(fetchManagerUsersThunk.pending, (state) => {
+        state.listLoading = true
+        state.error = null
+      })
+      .addCase(fetchManagerUsersThunk.fulfilled, (state, action: PayloadAction<FetchUsersPayload>) => {
+        state.listLoading = false
+        state.users = action.payload.items
+        state.pagination = action.payload.pagination
+      })
+      .addCase(fetchManagerUsersThunk.rejected, (state, action) => {
+        state.listLoading = false
+        state.error = action.payload as string
+      })
+
+    // Fetch customers for staff
+    builder
+      .addCase(fetchCustomersThunk.pending, (state) => {
+        state.listLoading = true
+        state.error = null
+      })
+      .addCase(fetchCustomersThunk.fulfilled, (state, action: PayloadAction<FetchUsersPayload>) => {
+        state.listLoading = false
+        state.users = action.payload.items
+        state.pagination = action.payload.pagination
+      })
+      .addCase(fetchCustomersThunk.rejected, (state, action) => {
         state.listLoading = false
         state.error = action.payload as string
       })

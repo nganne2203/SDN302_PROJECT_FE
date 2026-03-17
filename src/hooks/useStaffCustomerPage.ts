@@ -7,6 +7,7 @@ import { toast } from '@/utils/toast'
 import { USER_ROLES } from '@/constants/constant'
 import type { UserManageFilter, UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
+import { getChangedEmailField } from '@/utils/userUpdate'
 
 // ─── Zod schemas ────────────────────────────────────────────────────
 const phoneValidation = z
@@ -184,7 +185,7 @@ export const useStaffCustomerPage = () => {
       if (isEditMode && selectedUser) {
         const result = await updateUser(selectedUser._id, {
           fullname: data.fullname,
-          email: data.email,
+          ...getChangedEmailField(selectedUser, data.email),
           phone: data.phone || undefined
         })
         if (result.type.includes('fulfilled')) {

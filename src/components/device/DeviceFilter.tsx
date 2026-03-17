@@ -1,5 +1,6 @@
 import { FilterCommon } from '@/components/common'
 import type { FilterField } from '@/components/common/FilterCommon'
+import type { FilterOption } from '@/types/filter'
 import type { DeviceFilter } from '@/features/device/deviceTypes'
 
 /* eslint-disable no-unused-vars */
@@ -22,23 +23,14 @@ const DeviceFilterComponent = ({
   onSearchChange,
   filter,
   onFilterChange,
-  pagination,
-  onPageChange,
   onReset
 }: DeviceFilterProps) => {
-  const filterFields: FilterField[] = [
-    {
-      key: 'sortBy',
-      label: 'Sắp xếp theo',
-      type: 'select',
-      options: [
-        { label: 'Tên', value: 'name' },
-        { label: 'Thương hiệu', value: 'brand' },
-        { label: 'Model', value: 'model' },
-        { label: 'Ngày tạo', value: 'createdAt' },
-        { label: 'Ngày cập nhật', value: 'updatedAt' }
-      ]
-    }
+  const filterFields: FilterField[] = []
+
+  const sortOptions: FilterOption[] = [
+    { label: 'Tên', value: 'name' },
+    { label: 'Ngày tạo', value: 'createdAt' },
+    { label: 'Ngày cập nhật', value: 'updatedAt' }
   ]
 
   return (
@@ -50,13 +42,15 @@ const DeviceFilterComponent = ({
       filters={filterFields}
       filterValues={filter as Record<string, unknown>}
       onFilterChange={onFilterChange}
-      page={pagination?.page || 1}
-      limit={pagination?.limit || 10}
-      total={pagination?.total || 0}
-      onPageChange={onPageChange}
-      showPagination={true}
+      sortOptions={sortOptions}
+      sortBy={filter.sortBy || 'createdAt'}
+      sortOrder={filter.sortOrder || 'desc'}
+      onSortChange={(field, order) => onFilterChange('sort', { field, order })}
+      showSort
+      showPagination={false}
       onReset={onReset}
       showReset={true}
+      compact
     />
   )
 }

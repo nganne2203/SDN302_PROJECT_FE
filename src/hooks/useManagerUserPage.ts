@@ -8,6 +8,7 @@ import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import type { UserManageFilter, UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 import useAuth from '@/hooks/useAuth'
+import { getChangedEmailField } from '@/utils/userUpdate'
 
 // ─── Zod schemas ────────────────────────────────────────────────────
 const MANAGER_ALLOWED_ROLES = [USER_ROLES.STAFF, USER_ROLES.CUSTOMER] as const
@@ -51,6 +52,11 @@ export const useManagerUserPage = () => {
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const lastFetchParamsRef = useRef<string>('')
+
+  // Clear shared filter state when page mounts
+  useEffect(() => {
+    handleClearFilter()
+  }, [handleClearFilter])
 
   const formMethods = useForm<ManagerUserForm>({
     resolver: zodResolver(managerUserSchema),
@@ -188,12 +194,12 @@ export const useManagerUserPage = () => {
     }
     try {
       if (isEditMode && selectedUser) {
+        const isStaffRole = data.role === USER_ROLES.STAFF
         const result = await updateUser(selectedUser._id, {
           fullname: data.fullname,
-          email: data.email,
+          ...getChangedEmailField(selectedUser, data.email),
           phone: data.phone || undefined,
-          role: data.role as UserRole,
-          branch: currentUser?.branch || undefined
+          branch: isStaffRole ? currentUser?.branch?._id : undefined
         })
         if (result.type.includes('fulfilled')) {
           toast.success('Cập nhật người dùng thành công')
@@ -209,8 +215,9 @@ export const useManagerUserPage = () => {
           password: data.password!,
           phone: data.phone || undefined,
           role: data.role as UserRole,
-          branch: data.role === USER_ROLES.STAFF ? (currentUser?.branch || undefined) : undefined
+          branch: data.role === USER_ROLES.STAFF ? currentUser?.branch?._id : undefined
         })
+
         if (result.type.includes('fulfilled')) {
           toast.success('Tạo người dùng thành công')
           handleCloseForm()

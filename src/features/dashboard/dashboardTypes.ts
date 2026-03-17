@@ -29,15 +29,21 @@ export interface DashboardOverview {
   totalProductsSold: number
   totalCustomers: number
   averageOrderValue: number
+  pendingProcessing?: number
+  confirmedOrders?: number
+  shippedOrders?: number
+  deliveredOrders?: number
+  cancelledOrders?: number
 }
 
 export interface DashboardOrders {
   total: number
   pending: number
+  pendingProcessing?: number
   confirmed: number
   shipped: number
   delivered: number
-  canceled: number
+  cancelled: number
   activeTransactions: number
 }
 
@@ -63,20 +69,14 @@ export interface DashboardPerformance {
 }
 
 export interface RecentOrder {
-  _id: string
+  _id?: string
   orderNumber: string
-  customer?: {
-    _id: string
-    fullname: string
-    email: string
-  }
+  customer?: string
   totalAmount: number
   status: string
+  paymentMethod?: string
   createdAt: string
-  branch?: {
-    _id: string
-    name: string
-  }
+  branch?: string
 }
 
 export interface DashboardData {
@@ -258,8 +258,8 @@ export interface InventoryStatisticsFilter {
 
 export interface InventoryStatisticsData {
   summary: Record<string, unknown>
-  lowStockProducts: Record<string, unknown>[]
-  outOfStockProducts: Record<string, unknown>[]
+  lowStockItems: Record<string, unknown>[]
+  outOfStockItems: Record<string, unknown>[]
   stockByBranch: Record<string, unknown>[]
 }
 

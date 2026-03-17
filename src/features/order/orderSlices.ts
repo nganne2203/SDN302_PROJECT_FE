@@ -10,6 +10,12 @@ import {
   updateOrderStatusThunk
 } from './orderThunks'
 
+// Orders from the backend don't include the Mongoose `id` virtual (no toJSON virtuals).
+// The actual identifier is `_id`. Always extract via this helper to avoid undefined === undefined bugs.
+const getOrderMongoId = (order: Order | Partial<Order>): string =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (order as any)?._id?.toString?.() || (order as Order).id || ''
+
 const initialState: OrderState = {
   orders: [],
   selectedOrder: null,
@@ -101,11 +107,12 @@ const orderSlice = createSlice({
       })
       .addCase(cancelOrderThunk.fulfilled, (state, action: PayloadAction<Order>) => {
         state.isLoading = false
-        const index = state.orders.findIndex((o) => o.id === action.payload.id)
+        const payloadId = getOrderMongoId(action.payload)
+        const index = state.orders.findIndex((o) => getOrderMongoId(o) === payloadId)
         if (index !== -1) {
           state.orders[index] = action.payload
         }
-        if (state.selectedOrder?.id === action.payload.id) {
+        if (state.selectedOrder && getOrderMongoId(state.selectedOrder) === payloadId) {
           state.selectedOrder = action.payload
         }
       })
@@ -121,11 +128,12 @@ const orderSlice = createSlice({
       })
       .addCase(updateOrderStatusThunk.fulfilled, (state, action: PayloadAction<Order>) => {
         state.isLoading = false
-        const index = state.orders.findIndex((o) => o.id === action.payload.id)
+        const payloadId = getOrderMongoId(action.payload)
+        const index = state.orders.findIndex((o) => getOrderMongoId(o) === payloadId)
         if (index !== -1) {
           state.orders[index] = action.payload
         }
-        if (state.selectedOrder?.id === action.payload.id) {
+        if (state.selectedOrder && getOrderMongoId(state.selectedOrder) === payloadId) {
           state.selectedOrder = action.payload
         }
       })

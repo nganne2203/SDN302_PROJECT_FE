@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ButtonCommon, LoaderCommon } from '@/components/common'
+import { SERVICE_PRODUCT_TYPE_COLORS, getServiceProductTypeLabel } from '@/constants/constant'
 import type { Branch, Product } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
+/* eslint-disable no-unused-vars */
 interface ProductDetailProps {
   product: Product
   relatedProducts?: Product[]
@@ -51,7 +52,12 @@ const ProductDetail = ({
   onBuyNow
 }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0)
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'warranty'>('description')
+  const [quantityInput, setQuantityInput] = useState(String(quantity))
+
+  useEffect(() => {
+    setQuantityInput(String(quantity))
+  }, [quantity])
+  const [activeTab, setActiveTab] = useState<'description' | 'specs'>('description')
 
   const imageUrls = useMemo(() => {
     const imgs = Array.isArray(product.images)
@@ -69,14 +75,16 @@ const ProductDetail = ({
   const ratingCount = product.ratingCount || 0
   const serviceTotal = selectedServices.reduce((sum, svc) => sum + (svc.price || 0), 0)
   const pricingInfo = pricingData?.pricing
+  const pricingQuantity = pricingData?.quantity && pricingData.quantity > 0 ? pricingData.quantity : 1
   const unitPrice = pricingInfo?.pricePerUnit ?? product.price
-  const originalUnitPrice = pricingInfo?.originalTotal && quantity > 0
-    ? pricingInfo.originalTotal / quantity
+  const originalUnitPrice = pricingInfo?.originalTotal
+    ? pricingInfo.originalTotal / pricingQuantity
     : product.price
   const discountPercent = pricingInfo?.discountPercentage ?? 0
-  const productTotal = pricingInfo?.totalPrice ?? product.price * quantity
+  const hasDiscount = discountPercent > 0 && unitPrice < originalUnitPrice
+  const productTotal = quantity > 0 ? (pricingInfo?.totalPrice ?? product.price * quantity) : 0
   const totalPrice = productTotal + serviceTotal * quantity
-  const isOutOfStock = !isStockLoading && branchStock !== null && branchStock === 0
+  const isOutOfStock = !isStockLoading && selectedBranchId !== null && (branchStock === null || branchStock === 0)
   const maxQuantity = branchStock !== null && branchStock > 0 ? branchStock : 99
   const selectedBranch = branches.find((branch) => branch._id === selectedBranchId)
 
@@ -149,18 +157,6 @@ const ProductDetail = ({
               <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                 {categoryName}
               </div>
-              <div className="flex items-center gap-2">
-                <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </button>
-                <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 8a3 3 0 10-2.83-4H12a3 3 0 000 6h.17A3 3 0 0015 8zm-6 8a3 3 0 10-2.83-4H6a3 3 0 000 6h.17A3 3 0 009 16zm9 0a3 3 0 10-2.83-4H12a3 3 0 000 6h.17A3 3 0 0018 16z" />
-                  </svg>
-                </button>
-              </div>
             </div>
 
             <h1 className="text-3xl font-bold text-gray-900">
@@ -197,13 +193,13 @@ const ProductDetail = ({
                 <span className="text-4xl font-bold text-blue-600">
                   {formatCurrency(unitPrice)}
                 </span>
-                {discountPercent > 0 && originalUnitPrice > unitPrice && (
+                {hasDiscount && (
                   <>
                     <span className="text-sm text-gray-400 line-through">
                       {formatCurrency(Math.round(originalUnitPrice))}
                     </span>
                     <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                      -{discountPercent}%
+                      -{Math.round(discountPercent)}%
                     </span>
                   </>
                 )}
@@ -250,7 +246,7 @@ const ProductDetail = ({
                 {isStockLoading ? (
                   <span className='text-gray-500'>Đang kiểm tra tồn kho...</span>
                 ) : branchStock === null ? (
-                  <span className='text-gray-400'>Chưa cập nhật</span>
+                  <span className='text-red-600'>Hết hàng</span>
                 ) : branchStock > 0 ? (
                   <span className='text-green-600'>Còn hàng ({branchStock} sản phẩm)</span>
                 ) : (
@@ -260,27 +256,76 @@ const ProductDetail = ({
 
               <div className="flex items-center gap-4">
                 <span className="text-gray-700 font-medium">Số lượng:</span>
+
                 <div className={`flex items-center border rounded-lg ${isOutOfStock ? 'border-gray-200 opacity-50' : 'border-gray-300'}`}>
+
                   <button
-                    onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+                    onClick={() => {
+                      const next = Math.max(1, quantity - 1)
+                      onQuantityChange(next)
+                      setQuantityInput(String(next))
+                    }}
                     disabled={isOutOfStock}
                     className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
-                    -
+      -
                   </button>
-                  <span className="px-6 py-2 border-x border-gray-300 font-medium">
-                    {quantity}
-                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={quantityInput}
+                    disabled={isOutOfStock}
+                    onChange={(e) => {
+                      const val = e.target.value
+
+                      if (/^\d*$/.test(val)) {
+                        setQuantityInput(val)
+
+                        if (val !== '') {
+                          const num = Number(val)
+                          if (num >= 1 && num <= maxQuantity) {
+                            onQuantityChange(num)
+                          }
+                        }
+                      }
+                    }}
+                    onBlur={() => {
+                      let num = Number(quantityInput)
+
+                      if (!quantityInput || isNaN(num) || num < 1) {
+                        num = 1
+                      }
+
+                      if (num > maxQuantity) {
+                        num = maxQuantity
+                      }
+
+                      setQuantityInput(String(num))
+                      onQuantityChange(num)
+                    }}
+                    className="w-16 text-center border-x border-gray-300 py-2 outline-none"
+                  />
+
                   <button
-                    onClick={() => onQuantityChange(Math.min(maxQuantity, quantity + 1))}
+                    onClick={() => {
+                      const next = Math.min(maxQuantity, quantity + 1)
+                      onQuantityChange(next)
+                      setQuantityInput(String(next))
+                    }}
                     disabled={isOutOfStock}
                     className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
-                    +
+      +
                   </button>
+
                 </div>
+
                 {!isOutOfStock && branchStock !== null && (
-                  <span className="text-xs text-gray-500">Tối đa: {branchStock}</span>
+                  <span className="text-xs text-gray-500">
+      Tối đa: {branchStock}
+                  </span>
                 )}
               </div>
 
@@ -290,7 +335,7 @@ const ProductDetail = ({
                   size="lg"
                   className="flex-1 !bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900 disabled:!bg-gray-400 disabled:!border-gray-400 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || quantity <= 0}
                 >
                   {isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
                 </ButtonCommon>
@@ -299,7 +344,7 @@ const ProductDetail = ({
                   size="lg"
                   className="flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBuyNow}
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || quantity <= 0}
                 >
                   Mua ngay
                 </ButtonCommon>
@@ -345,8 +390,12 @@ const ProductDetail = ({
                           </div>
                         </div>
                         <p className="text-xs text-gray-500">{svc.description}</p>
-                        <span className="inline-block mt-2 text-[10px] uppercase px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-                          {svc.type}
+                        <span
+                          className={`inline-block mt-2 text-[10px] uppercase px-2 py-1 rounded-full border ${
+                            SERVICE_PRODUCT_TYPE_COLORS[svc.type] || SERVICE_PRODUCT_TYPE_COLORS.other
+                          }`}
+                        >
+                          {getServiceProductTypeLabel(svc.type)}
                         </span>
                       </div>
                     </label>
@@ -355,30 +404,32 @@ const ProductDetail = ({
               )}
             </div>
 
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Giá sản phẩm:</span>
-                <span>{formatCurrency(productTotal)}</span>
-              </div>
-              {discountPercent > 0 && pricingInfo && (
-                <div className="flex justify-between text-xs text-green-600">
-                  <span>Tiet kiem:</span>
-                  <span>{formatCurrency(pricingInfo.savings)}</span>
+            {quantity > 0 && (
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Giá sản phẩm:</span>
+                  <span>{formatCurrency(productTotal)}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Dịch vụ bổ sung:</span>
-                <span>{formatCurrency(serviceTotal)}</span>
+                {hasDiscount && pricingInfo && (
+                  <div className="flex justify-between text-xs text-green-600">
+                    <span>Tiet kiem:</span>
+                    <span>{formatCurrency(pricingInfo.savings)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Dịch vụ bổ sung:</span>
+                  <span>{formatCurrency(serviceTotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Số lượng:</span>
+                  <span>{quantity}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-blue-600">
+                  <span>Tổng cộng:</span>
+                  <span>{formatCurrency(totalPrice)}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Số lượng:</span>
-                <span>{quantity}</span>
-              </div>
-              <div className="flex justify-between font-semibold text-blue-600">
-                <span>Tổng cộng:</span>
-                <span>{formatCurrency(totalPrice)}</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -390,7 +441,7 @@ const ProductDetail = ({
             { key: 'specs', label: 'Thông số kỹ thuật' },
             { key: 'reviews', label: `Đánh giá (${ratingCount})` },
             { key: 'warranty', label: 'Chính sách bảo hành' }
-          ].map((tab) => (
+          ].filter((tab) => tab.key === 'description' || tab.key === 'specs').map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
@@ -414,23 +465,12 @@ const ProductDetail = ({
             <div className="space-y-2">
               <div><span className="font-medium text-gray-700">Chất liệu:</span> {product.material || 'Đang cập nhật'}</div>
               <div><span className="font-medium text-gray-700">Danh mục:</span> {categoryName}</div>
-              <div><span className="font-medium text-gray-700">Slug:</span> {product.slug}</div>
               <div>
                 <span className="font-medium text-gray-700">Thiết bị tương thích:</span>{' '}
                 {product.compatibility && product.compatibility.length > 0
                   ? product.compatibility.map((c: { name: string } | string) => typeof c === 'string' ? c : c.name).join(', ')
                   : 'Đang cập nhật'}
               </div>
-            </div>
-          )}
-          {activeTab === 'reviews' && (
-            <div>
-              <p>Chưa có đánh giá chi tiết. Hãy là người đầu tiên đánh giá sản phẩm này.</p>
-            </div>
-          )}
-          {activeTab === 'warranty' && (
-            <div>
-              <p>Sản phẩm được bảo hành chính hãng 12 tháng tại tất cả các chi nhánh.</p>
             </div>
           )}
         </div>
@@ -450,26 +490,21 @@ const ProductDetail = ({
               >
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
                   {(() => {
-                    const rimgs = Array.isArray(relatedProduct.images)
-                      ? relatedProduct.images
-                      : relatedProduct.images
-                        ? [relatedProduct.images]
-                        : []
-                    const first = rimgs[0] as string | { imageUrl: string } | undefined
-                    const firstUrl = first ? (typeof first === 'string' ? first : first.imageUrl) : null
-                    return firstUrl ? (
-                    <img
-                      src={firstUrl}
-                      alt={relatedProduct.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )
+                    const imgUrl = getProductImageUrl(relatedProduct.images)
+                    return imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )
                   })()}
                 </div>
                 <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">

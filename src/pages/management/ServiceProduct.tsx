@@ -5,9 +5,12 @@ import ServiceProductHeader from '@/components/serviceProduct/ServiceHeader'
 import ServiceProductList from '@/components/serviceProduct/ServiceList'
 import ServiceDetailModal from '@/components/serviceProduct/ServiceDetailModal'
 import useServiceProduct from '@/hooks/useServiceProduct'
+import useAuth from '@/hooks/useAuth'
 import type { ServiceProduct, ServiceProductFilter as FilterType, CreateServiceProductRequest, UpdateServiceProductRequest } from '@/features/serviceProduct/serviceProductTypes'
 
 const ManagementServiceProduct = () => {
+  const { isAdmin } = useAuth()
+
   const {
     services,
     listLoading,
@@ -149,7 +152,7 @@ const ManagementServiceProduct = () => {
 
   return (
     <div className='p-4 max-w-[1600px] mx-auto'>
-      <ServiceProductHeader onCreate={handleCreate} />
+      <ServiceProductHeader onCreate={handleCreate} canCreate={Boolean(isAdmin)} />
 
       <div className='mb-6 bg-white p-4 rounded-lg border border-gray-100 shadow-sm'>
         <ServiceProductFilter
@@ -163,6 +166,7 @@ const ManagementServiceProduct = () => {
         <ServiceProductList
           data={services}
           loading={listLoading}
+          canManage={Boolean(isAdmin)}
           pagination={{
             page: pagination?.currentPage || 1,
             limit: pagination?.pageSize || 10,

@@ -13,10 +13,8 @@ export interface CreateCodOrderRequest {
     phone: string
     addressLine: string
     city: string
-    district: string
     ward: string
     provinceCode?: string
-    districtCode?: string
     wardCode?: string
   }
   paymentMethod: 'cod'
@@ -24,17 +22,28 @@ export interface CreateCodOrderRequest {
 }
 
 export interface CreateOfflineOrderRequest {
+  type?: 'offline'
   customerId?: string
   branchId: string
-  items: { productId: string; quantity: number; services?: { serviceId: string }[] }[]
-  paymentMethod?: string
-  note?: string
+  items: { product: string; quantity: number; services?: string[] }[]
+  shippingAddress?: {
+    fullname: string
+    phone: string
+    addressLine: string
+    city: string
+    ward: string
+    provinceCode?: string
+    wardCode?: string
+  }
+  paymentMethod: 'cod'
+  message?: string
+  hasDelivery?: boolean
 }
 
 export interface OrderFilter {
   page?: number
   limit?: number
-  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'
+  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
   sortBy?: 'createdAt' | 'totalAmount' | 'orderNumber'
   sortOrder?: 'asc' | 'desc'
   search?: string
