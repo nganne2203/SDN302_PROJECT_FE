@@ -28,12 +28,12 @@ const getOrderStatus = (targetOrder: Order) => {
 
 const getShippingName = (targetOrder: Order) => {
   const shipping = targetOrder.shippingAddress as unknown as { fullname?: string; fullName?: string } | null
-  return shipping?.fullname || shipping?.fullName || 'Khach nhan tai quay'
+  return shipping?.fullname || shipping?.fullName || 'Khách nhận tại quầy'
 }
 
 const getShippingPhone = (targetOrder: Order) => {
   const shipping = targetOrder.shippingAddress as unknown as { phone?: string; phoneNumber?: string } | null
-  return shipping?.phone || shipping?.phoneNumber || 'N/A'
+  return shipping?.phone || shipping?.phoneNumber || 'Không có'
 }
 
 const getShippingAddressText = (targetOrder: Order) => {
@@ -45,7 +45,7 @@ const getShippingAddressText = (targetOrder: Order) => {
     province?: string
   } | null
 
-  if (!shipping) return 'Nhan tai quay'
+  if (!shipping) return 'Nhận tại quầy'
 
   const parts = [
     shipping.addressLine || shipping.address,
@@ -53,11 +53,11 @@ const getShippingAddressText = (targetOrder: Order) => {
     shipping.city || shipping.province
   ].filter(Boolean)
 
-  return parts.length > 0 ? parts.join(', ') : 'Nhan tai quay'
+  return parts.length > 0 ? parts.join(', ') : 'Nhận tại quầy'
 }
 
 const formatDate = (dateString?: string | null) => {
-  if (!dateString) return 'N/A'
+  if (!dateString) return 'Không có'
 
   return new Date(dateString).toLocaleDateString('vi-VN', {
     year: 'numeric',
@@ -81,11 +81,11 @@ const getNextStatus = (currentStatus: string) => {
 
 const getStatusActionLabel = (status: string) => {
   const labels: Record<string, string> = {
-    confirmed: 'Xac nhan don hang',
-    shipped: 'Chuyen sang giao hang',
-    delivered: 'Hoan thanh don hang'
+    confirmed: 'Xác nhận đơn hàng',
+    shipped: 'Chuyển sang giao hàng',
+    delivered: 'Hoàn thành đơn hàng'
   }
-  return labels[status] || 'Cap nhat'
+  return labels[status] || 'Cập nhật'
 }
 
 const extractItemServices = (services: unknown[]): Array<{ name: string; price: number }> => {
@@ -121,9 +121,9 @@ const OrderDetailModal = ({
   onClose,
   onUpdateStatus,
   onCancelOrder,
-  onEditShippingFee,
-  canManage = false,
-  canEditShippingFee = false
+  // onEditShippingFee,
+  canManage = false
+  // canEditShippingFee = false
 }: OrderDetailModalProps) => {
   if (!order) return null
 
@@ -146,57 +146,57 @@ const OrderDetailModal = ({
 
   return (
     <ModalCommon isOpen={isOpen} onClose={onClose} size="lg">
-      <div className="p-6">
-        <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="max-h-[85vh] overflow-y-auto p-4 md:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Chi tiet don hang</h2>
-            <p className="mt-1 text-gray-500">
-              Ma: {order.orderNumber || getOrderId(order)}
+            <h2 className="text-xl font-bold text-gray-800 md:text-2xl">Chi tiết đơn hàng</h2>
+            <p className="mt-0.5 text-sm text-gray-500">
+              Mã: {order.orderNumber || getOrderId(order)}
             </p>
           </div>
           <OrderStatusBadge status={orderStatus} />
         </div>
 
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-gray-500">Ngay tao</p>
+        <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-sm text-gray-500">Ngày tạo</p>
             <p className="mt-1 font-medium text-gray-900">{formatDate(order.createdAt)}</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-gray-500">Tong thanh toan</p>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-sm text-gray-500">Tổng thanh toán</p>
             <p className="mt-1 font-semibold text-blue-600">{formatCurrency(order.totalAmount)}</p>
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="mb-3 flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-800">Dia chi giao hang</h3>
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <MapPin className="h-[18px] w-[18px] text-gray-500" />
+            <h3 className="text-base font-semibold text-gray-800 md:text-lg">Địa chỉ giao hàng</h3>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4">
+          <div className="rounded-lg bg-gray-50 p-3">
             <p className="font-medium text-gray-900">{getShippingName(order)}</p>
             <p className="mt-1 text-sm text-gray-600">{getShippingPhone(order)}</p>
             <p className="mt-1 text-sm text-gray-600">{getShippingAddressText(order)}</p>
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="mb-3 flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-800">Thanh toan</h3>
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <CreditCard className="h-[18px] w-[18px] text-gray-500" />
+            <h3 className="text-base font-semibold text-gray-800 md:text-lg">Thanh toán</h3>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4">
-            <div className="flex items-center justify-between gap-4">
+          <div className="rounded-lg bg-gray-50 p-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-gray-600">Phuong thuc</p>
+                <p className="text-sm text-gray-600">Phương thức</p>
                 <p className="font-medium text-gray-900">
                   {String(order.paymentMethod).toUpperCase() === 'COD'
-                    ? 'Thanh toan khi nhan hang'
-                    : 'Thanh toan truc tuyen'}
+                    ? 'Thanh toán khi nhận hàng'
+                    : 'Thanh toán trực tuyến'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Trang thai</p>
+                <p className="text-sm text-gray-600">Trạng thái</p>
                 {(() => {
                   const paymentDisplay = getOrderPaymentDisplay(order, order.paymentStatus)
                   return (
@@ -219,19 +219,19 @@ const OrderDetailModal = ({
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="mb-3 flex items-center gap-2">
-            <Package className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-800">San pham</h3>
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Package className="h-[18px] w-[18px] text-gray-500" />
+            <h3 className="text-base font-semibold text-gray-800 md:text-lg">Sản phẩm</h3>
           </div>
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">San pham</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">So luong</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">Don gia</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">Thanh tien</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Sản phẩm</th>
+                  <th className="px-3 py-2.5 text-center text-[11px] font-medium uppercase text-gray-500">Số lượng</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500">Đơn giá</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500">Thành tiền</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -253,7 +253,7 @@ const OrderDetailModal = ({
                   }
 
                   const itemKey = itemRecord._id || itemRecord.id || itemRecord.productId || itemRecord.product?._id || `order-item-${index}`
-                  const itemName = itemRecord.productName || itemRecord.product?.name || 'San pham'
+                  const itemName = itemRecord.productName || itemRecord.product?.name || 'Sản phẩm'
                   const itemImage = itemRecord.productImage || getProductImageUrl(itemRecord.product?.images as never) || '/placeholder.png'
                   const itemQuantity = itemRecord.quantity || 0
                   const itemPrice = itemRecord.price || 0
@@ -261,9 +261,9 @@ const OrderDetailModal = ({
 
                   return (
                     <tr key={itemKey}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <img src={itemImage} alt={itemName} className="h-12 w-12 rounded object-cover" />
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <img src={itemImage} alt={itemName} className="h-11 w-11 rounded object-cover" />
                           <div>
                             <p className="text-sm font-medium text-gray-900">{itemName}</p>
                             {itemServices.length > 0 && (
@@ -273,7 +273,7 @@ const OrderDetailModal = ({
                                     key={`${itemKey}-service-${serviceIndex}`}
                                     className="text-xs text-gray-500"
                                   >
-                                    Dich vu: {service.name} ({formatCurrency(service.price)})
+                                    Dịch vụ: {service.name} ({formatCurrency(service.price)})
                                   </p>
                                 ))}
                               </div>
@@ -281,9 +281,9 @@ const OrderDetailModal = ({
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center text-sm text-gray-900">{itemQuantity}</td>
-                      <td className="px-4 py-3 text-right text-sm text-gray-900">{formatCurrency(itemPrice)}</td>
-                      <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                      <td className="px-3 py-2.5 text-center text-sm text-gray-900">{itemQuantity}</td>
+                      <td className="px-3 py-2.5 text-right text-sm text-gray-900">{formatCurrency(itemPrice)}</td>
+                      <td className="px-3 py-2.5 text-right text-sm font-medium text-gray-900">
                         {formatCurrency(itemPrice * itemQuantity)}
                       </td>
                     </tr>
@@ -294,52 +294,52 @@ const OrderDetailModal = ({
           </div>
         </div>
 
-        <div className="mb-6 rounded-lg border border-gray-200 p-4">
+        <div className="mb-4 rounded-lg border border-gray-200 p-3 md:p-4">
           <div className="flex items-center justify-between py-1">
-            <span className="text-gray-600">Tam tinh hang hoa</span>
+            <span className="text-gray-600">Tạm tính hàng hóa</span>
             <span className="font-medium text-gray-900">{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-gray-600">Phi ship</span>
+            <span className="text-gray-600">Phí ship</span>
             <span className="font-medium text-gray-900">{formatCurrency(shippingFee)}</span>
           </div>
-          <div className="mt-2 border-t border-gray-200 pt-3">
+          <div className="mt-2 border-t border-gray-200 pt-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-800">Tong cong</span>
+              <span className="text-lg font-semibold text-gray-800">Tổng cộng</span>
               <span className="text-2xl font-bold text-blue-600">{formatCurrency(order.totalAmount)}</span>
             </div>
           </div>
-          {canEditShippingFee && onEditShippingFee && (
-            <div className="mt-4 flex justify-end">
+          {/* {canEditShippingFee && onEditShippingFee && (
+            <div className="mt-3 flex justify-end">
               <ButtonCommon variant="outline" size="sm" onClick={() => onEditShippingFee(order)}>
-                Cap nhat phi ship
+                Cập nhật phí ship
               </ButtonCommon>
             </div>
-          )}
+          )} */}
         </div>
 
-        <div className="flex justify-end gap-3">
-          <ButtonCommon variant="outline" size="md" onClick={onClose}>
-            Dong
+        <div className="flex justify-end gap-2">
+          <ButtonCommon variant="outline" size="sm" onClick={onClose}>
+            Đóng
           </ButtonCommon>
 
           {canCancel && (
             <ButtonCommon
               variant="danger"
-              size="md"
+              size="sm"
               onClick={() => {
                 onCancelOrder?.(getOrderId(order))
                 onClose()
               }}
             >
-              Huy don hang
+              Hủy đơn hàng
             </ButtonCommon>
           )}
 
           {canUpdate && nextStatus && (
             <ButtonCommon
               variant="primary"
-              size="md"
+              size="sm"
               onClick={() => {
                 onUpdateStatus?.(getOrderId(order), nextStatus)
                 onClose()

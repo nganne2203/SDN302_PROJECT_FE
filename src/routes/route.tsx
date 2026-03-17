@@ -63,7 +63,6 @@ const ServiceProductManagement = lazy(() => import('@/pages/management/ServicePr
 const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
 const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
 
-/* eslint-disable no-console */
 const LoadingFallback = () => (
   <div className='flex items-center justify-center min-h-screen'>
     <LoaderCommon />

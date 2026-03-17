@@ -63,12 +63,6 @@ const CategoryListComponent = ({
       ellipsis: true
     },
     {
-      key: 'slug',
-      title: 'Slug',
-      dataIndex: 'slug',
-      width: 100
-    },
-    {
       key: 'isActive',
       title: 'Trạng thái',
       dataIndex: 'isActive',
@@ -116,18 +110,20 @@ const CategoryListComponent = ({
               onClick={() => onUpdateStatus(record._id, !record.isActive)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc chắn muốn xóa danh mục này?"
-            okText="Xóa"
-            cancelText="Hủy"
-            onConfirm={() => onDelete(record._id as string)}
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Xóa">
-              <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
-            </Tooltip>
-          </Popconfirm>
+          {!record.isActive && (
+            <Popconfirm
+              title="Xác nhận xóa"
+              description="Bạn có chắc chắn muốn xóa danh mục này?"
+              okText="Xóa"
+              cancelText="Hủy"
+              onConfirm={() => onDelete(record._id as string)}
+              okButtonProps={{ danger: true }}
+            >
+              <Tooltip title="Xóa">
+                <Button danger size="small" icon={<Trash2 className="w-4 h-4" />} />
+              </Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       )
     }

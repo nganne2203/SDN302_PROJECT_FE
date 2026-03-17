@@ -217,10 +217,9 @@ const ProductDetailPage = () => {
   const handleAddToCart = async (productId: string, qty: number) => {
     if (!isAuthenticated) {
       setShowLoginModal(true)
-      return;
+      return
     }
 
-    
     if (qty <= 0) {
       toast.warning('Vui lòng chọn số lượng sản phẩm')
       return
@@ -246,7 +245,6 @@ const ProductDetailPage = () => {
       return
     }
 
-    
     if (qty <= 0) {
       toast.warning('Vui lòng chọn số lượng sản phẩm')
       return
@@ -314,6 +312,6 @@ const ProductDetailPage = () => {
       />
     </div>
   )
-};
+}
 
 export default ProductDetailPage

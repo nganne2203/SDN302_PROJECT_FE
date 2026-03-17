@@ -6,6 +6,16 @@ export const DEVICE_TYPES = {
   TABLET: 'tablet'
 } as const
 
+export const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
+  [DEVICE_TYPES.SMARTPHONE]: 'Điện thoại',
+  [DEVICE_TYPES.TABLET]: 'Máy tính bảng'
+}
+
+export const getDeviceTypeLabel = (type?: string) => {
+  if (!type) return 'Không xác định'
+  return DEVICE_TYPE_LABELS[type as DeviceType] || type
+}
+
 export type DeviceType = (typeof DEVICE_TYPES)[keyof typeof DEVICE_TYPES]
 
 export interface Device {

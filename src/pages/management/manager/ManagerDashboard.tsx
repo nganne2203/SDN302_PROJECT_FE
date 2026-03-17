@@ -19,7 +19,7 @@ import useManagerOrders from '@/hooks/useManagerOrders'
 import useManagerStockRequests from '@/hooks/useManagerStockRequests'
 import useManagerLowStock from '@/hooks/useManagerLowStock'
 import dashboardApi from '@/apis/dashboard'
-import type { DashboardData } from '@/features/dashboard/dashboardTypes'
+import type { DashboardData, RecentOrder } from '@/features/dashboard/dashboardTypes'
 import type { StockRequestRecord, StoreInventoryRecord } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import dayjs from 'dayjs'
@@ -28,12 +28,14 @@ import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 const STOCK_STATUS_COLOR: Record<string, string> = {
   pending: 'warning',
   approved: 'success',
-  rejected: 'error'
+  rejected: 'error',
+  partially_approved: 'processing'
 }
 const STOCK_STATUS_LABEL: Record<string, string> = {
   pending: 'Chờ duyệt',
   approved: 'Đã duyệt',
-  rejected: 'Từ chối'
+  rejected: 'Từ chối',
+  partially_approved: 'Duyệt một phần'
 }
 const formatCurrency = (v: number) => v.toLocaleString('vi-VN') + ' ₫'
 
@@ -82,9 +84,7 @@ const ManagerDashboard = () => {
   }, [branchIdParam])
 
   const {
-    data: ordersData,
-    loading: ordersLoading,
-    error: ordersError
+    data: ordersData
   } = useManagerOrders({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
 
   const {
@@ -99,15 +99,14 @@ const ManagerDashboard = () => {
     refresh: refreshLowStock
   } = useManagerLowStock(branchId, 5)
 
-  const orders = ordersData?.data ?? []
   const totalOrders = ordersData?.pagination?.totalItems ?? 0
   const stockRequests = stockRequestsData?.data ?? []
   const pendingStockCount = stockRequests.filter(r => r.status === 'pending').length
   const lowStockItems = lowStockData?.data ?? []
-
-  const orderColumns = [
+  const recentOrders = dashboard?.recentOrders ?? []
+  const recentOrderColumns = [
     {
-      title: 'Mã đơn hàng',
+      title: 'Mã đơn',
       dataIndex: 'orderNumber',
       key: 'orderNumber',
       render: (v: string) => <span className="font-mono text-xs">{v}</span>
@@ -115,10 +114,13 @@ const ManagerDashboard = () => {
     {
       title: 'Khách hàng',
       key: 'customer',
-      render: (_: unknown, record: Record<string, unknown>) => {
-        const customer = record.customer as { fullname?: string; email?: string } | undefined
-        return customer?.fullname ?? customer?.email ?? '—'
-      }
+      render: (_: unknown, record: RecentOrder) =>
+        record.customer ?? '—'
+    },
+    {
+      title: 'Chi nhánh',
+      key: 'branch',
+      render: (_: unknown, record: RecentOrder) => record.branch ?? '—'
     },
     {
       title: 'Tổng tiền',
@@ -127,16 +129,16 @@ const ManagerDashboard = () => {
       render: (v: number) => formatCurrency(v)
     },
     {
-      title: 'Trạng thái đơn',
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => <OrderStatusBadge status={status} />
     },
     {
-      title: 'Ngày',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (v: string) => dayjs(v).format('DD/MM/YYYY')
+      render: (v: string) => dayjs(v).format('DD/MM/YYYY HH:mm')
     }
   ]
 
@@ -176,6 +178,55 @@ const ManagerDashboard = () => {
     }
   ]
 
+  const metricCards = [
+    {
+      title: 'Tổng đơn hàng',
+      value: totalOrders,
+      prefix: <ShoppingCartOutlined className="text-blue-600" />,
+      color: '#1890ff'
+    },
+    {
+      title: 'Sản phẩm sắp hết',
+      value: lowStockItems.length,
+      prefix: <AlertOutlined className="text-red-600" />,
+      color: '#cf1322',
+      subtitle: 'Cần nhập thêm hàng',
+      subtitleClassName: 'text-red-500'
+    },
+    {
+      title: 'Yêu cầu nhập kho',
+      value: pendingStockCount,
+      prefix: <TruckOutlined className="text-orange-600" />,
+      color: '#fa8c16',
+      subtitle: 'Chờ duyệt từ Admin',
+      subtitleClassName: 'text-orange-500'
+    },
+    {
+      title: 'Đơn đã giao',
+      value: dashboard?.overview.deliveredOrders ?? 0,
+      prefix: <CheckCircleOutlined className="text-green-600" />,
+      color: '#52c41a'
+    },
+    {
+      title: 'Đơn đang giao',
+      value: dashboard?.overview.shippedOrders ?? 0,
+      prefix: <TruckOutlined className="text-cyan-600" />,
+      color: '#08979c'
+    },
+    {
+      title: 'Đơn đã hủy',
+      value: dashboard?.overview.cancelledOrders ?? 0,
+      prefix: <StopOutlined className="text-red-400" />,
+      color: '#ff4d4f'
+    },
+    {
+      title: 'Đơn đã xác nhận',
+      value: dashboard?.overview.confirmedOrders ?? 0,
+      prefix: <DollarOutlined className="text-purple-600" />,
+      color: '#722ed1'
+    }
+  ]
+
   return (
     <div>
       <div className="mb-6">
@@ -188,7 +239,7 @@ const ManagerDashboard = () => {
       {/* Low stock alert */}
       {lowStockItems.length > 0 && (
         <Alert
-          message={`⚠️ Cảnh báo: ${lowStockItems.length} sản phẩm sắp hết hàng`}
+          message={`Cảnh báo: ${lowStockItems.length} sản phẩm sắp hết hàng`}
           description="Vui lòng tạo yêu cầu nhập kho từ kho tổng"
           type="warning"
           showIcon
@@ -197,95 +248,29 @@ const ManagerDashboard = () => {
         />
       )}
 
-      {/* Key Metrics */}
+      {/* Metrics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={8}>
-          <Card hoverable>
-            <Statistic
-              title="Tổng đơn hàng"
-              value={totalOrders}
-              prefix={<ShoppingCartOutlined className="text-blue-600" />}
-              styles={{ content: { color: '#1890ff' } }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={8}>
-          <Card hoverable>
-            <Statistic
-              title="Sản phẩm sắp hết"
-              value={lowStockItems.length}
-              prefix={<AlertOutlined className="text-red-600" />}
-              styles={{ content: { color: '#cf1322' } }}
-            />
-            <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={8}>
-          <Card hoverable>
-            <Statistic
-              title="Yêu cầu nhập kho"
-              value={pendingStockCount}
-              prefix={<TruckOutlined className="text-orange-600" />}
-              styles={{ content: { color: '#fa8c16' } }}
-            />
-            <p className="text-xs text-orange-500 mt-2">Chờ duyệt từ Admin</p>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Secondary Metrics */}
-      <Row gutter={[16, 16]} className="mt-4">
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn đã giao"
-              value={dashboard?.overview.deliveredOrders ?? 0}
-              prefix={<CheckCircleOutlined className="text-green-600" />}
-              styles={{ content: { color: '#52c41a' } }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn đang giao"
-              value={dashboard?.overview.shippedOrders ?? 0}
-              prefix={<TruckOutlined className="text-cyan-600" />}
-              styles={{ content: { color: '#08979c' } }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn đã hủy"
-              value={dashboard?.overview.cancelledOrders ?? 0}
-              prefix={<StopOutlined className="text-red-400" />}
-              styles={{ content: { color: '#ff4d4f' } }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable>
-            <Statistic
-              title="Đơn đã xác nhận"
-              value={dashboard?.overview.confirmedOrders ?? 0}
-              prefix={<DollarOutlined className="text-purple-600" />}
-              styles={{ content: { color: '#722ed1' } }}
-            />
-          </Card>
-        </Col>
+        {metricCards.map((metric) => (
+          <Col xs={24} sm={12} lg={6} key={metric.title}>
+            <Card hoverable className="h-full">
+              <Statistic
+                title={metric.title}
+                value={metric.value}
+                prefix={metric.prefix}
+                styles={{ content: { color: metric.color } }}
+              />
+              <p className={`mt-2 min-h-[20px] text-xs ${metric.subtitleClassName ?? 'text-transparent'}`}>
+                {metric.subtitle ?? '.'}
+              </p>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       {/* Low Stock Items */}
       <Card
-        className="mt-6"
-        title="⚠️ Sản phẩm sắp hết hàng"
+        style={{ marginTop: 16 }}
+        title="Sản phẩm sắp hết hàng"
         extra={
           <Button size="small" icon={<ReloadOutlined />} onClick={refreshLowStock} loading={lowStockLoading}>
             Làm mới
@@ -329,7 +314,7 @@ const ManagerDashboard = () => {
       </Card>
 
       {/* Stock Requests */}
-      <Card className="mt-6" title="📦 Yêu cầu nhập kho">
+      <Card style={{ marginTop: 16 }} title="Yêu cầu nhập kho">
         {stockRequestsError && (
           <Alert message={stockRequestsError} type="error" showIcon className="mb-3" />
         )}
@@ -345,23 +330,18 @@ const ManagerDashboard = () => {
       </Card>
 
       {/* Recent Orders */}
-      <Card className="mt-6" title="📋 Đơn hàng gần đây">
-        {ordersError && (
-          <Alert message={ordersError} type="error" showIcon className="mb-3" />
-        )}
-        <Spin spinning={ordersLoading}>
-          <Table
-            columns={orderColumns}
-            dataSource={orders.map((o, i) => ({ ...o, key: (o as unknown as { _id?: string })._id ?? i }))}
-            pagination={{ pageSize: 5, showSizeChanger: false }}
-            size="small"
-            locale={{ emptyText: ordersLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
-          />
-        </Spin>
+      <Card style={{ marginTop: 16 }} title="Đơn hàng gần đây">
+        <Table
+          columns={recentOrderColumns}
+          dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
+          pagination={false}
+          size="small"
+          // locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
+        />
       </Card>
 
       {/* Quick Actions */}
-      <Card className="mt-6" title="Quản lý nhanh">
+      <Card style={{ marginTop: 16, marginBottom: 16 }} title="Quản lý nhanh">
         <Row gutter={[16, 16]}>
           {[
             { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },

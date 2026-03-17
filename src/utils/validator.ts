@@ -153,12 +153,12 @@ export type UpdateServiceFormData = z.infer<typeof updateServiceSchema>
 
 export const createReviewSchema = z.object({
   rating: z.number({ error: 'Vui lòng chọn số sao đánh giá' }).min(1, 'Vui lòng chọn ít nhất 1 sao').max(5),
-  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional()
 })
 
 export const updateReviewSchema = z.object({
   rating: z.number().min(1, 'Vui lòng chọn ít nhất 1 sao').max(5).optional(),
-  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional(),
+  comment: z.string().max(1000, 'Nhận xét không được vượt quá 1000 ký tự').optional()
 })
 
 export type CreateReviewFormData = z.infer<typeof createReviewSchema>
