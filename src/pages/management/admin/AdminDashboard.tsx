@@ -35,12 +35,16 @@ const formatCurrency = (value: number) => value.toLocaleString('vi-VN') + ' ₫'
 
 const statCardStyles = {
   body: {
-    height: 148,
+    minHeight: 160,
+    padding: 20,
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between'
   }
 }
+
+const cardClassName =
+  'rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
@@ -133,146 +137,142 @@ const AdminDashboard = () => {
       )}
 
       <Spin spinning={loading}>
-        {/* Row 1: Key overview metrics */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Tổng doanh thu"
-                value={overview?.totalRevenue ?? 0}
-                prefix={<DollarOutlined className="text-green-600" />}
-                styles={{ content: { color: '#52c41a' } }}
-                formatter={(v) => formatCurrency(Number(v))}
-              />
+        <div className="space-y-6">
+          <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Overview</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Tổng doanh thu"
+                  value={overview?.totalRevenue ?? 0}
+                  prefix={<DollarOutlined className="text-green-600" />}
+                  styles={{ content: { color: '#52c41a' } }}
+                  valueStyle={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15 }}
+                  formatter={(v) => formatCurrency(Number(v))}
+                />
+              </Card>
 
-            </Card>
-          </Col>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Tổng đơn hàng"
+                  value={overview?.totalOrders ?? 0}
+                  prefix={<ShoppingCartOutlined className="text-blue-600" />}
+                  styles={{ content: { color: '#1890ff' } }}
+                  valueStyle={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15 }}
+                />
+              </Card>
 
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Tổng đơn hàng"
-                value={overview?.totalOrders ?? 0}
-                prefix={<ShoppingCartOutlined className="text-blue-600" />}
-                styles={{ content: { color: '#1890ff' } }}
-              />
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Sản phẩm đã bán"
+                  value={overview?.totalProductsSold ?? products?.totalSold ?? 0}
+                  prefix={<ShoppingOutlined className="text-orange-600" />}
+                  styles={{ content: { color: '#fa8c16' } }}
+                  valueStyle={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15 }}
+                />
+                <p className="text-xs text-orange-600 mt-2">
+                  {products?.totalActive ?? 0} sản phẩm đang bán
+                </p>
+              </Card>
 
-            </Card>
-          </Col>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Khách hàng mới"
+                  value={customers?.newCustomers ?? 0}
+                  prefix={<UserOutlined className="text-purple-600" />}
+                  styles={{ content: { color: '#722ed1' } }}
+                  valueStyle={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15 }}
+                />
+              </Card>
+            </div>
+          </section>
 
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Sản phẩm đã bán"
-                value={overview?.totalProductsSold ?? products?.totalSold ?? 0}
-                prefix={<ShoppingOutlined className="text-orange-600" />}
-                styles={{ content: { color: '#fa8c16' } }}
-              />
-              <p className="text-xs text-orange-600 mt-2">
-                {products?.totalActive ?? 0} sản phẩm đang bán
-              </p>
-            </Card>
-          </Col>
+          <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Order Status</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Đơn đã giao"
+                  value={orders?.delivered ?? 0}
+                  prefix={<CheckCircleOutlined className="text-green-600" />}
+                  styles={{ content: { color: '#52c41a' } }}
+                />
+              </Card>
 
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Khách hàng mới"
-                value={customers?.newCustomers ?? 0}
-                prefix={<UserOutlined className="text-purple-600" />}
-                styles={{ content: { color: '#722ed1' } }}
-              />
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Đã xác nhận"
+                  value={orders?.confirmed ?? 0}
+                  prefix={<FileTextOutlined className="text-blue-500" />}
+                  styles={{ content: { color: '#096dd9' } }}
+                />
+              </Card>
 
-            </Card>
-          </Col>
-        </Row>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Đang giao"
+                  value={orders?.shipped ?? 0}
+                  prefix={<TruckOutlined className="text-cyan-600" />}
+                  styles={{ content: { color: '#08979c' } }}
+                />
+              </Card>
 
-        {/* Row 2: Secondary metrics */}
-        <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={8}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Đơn đã giao"
-                value={orders?.delivered ?? 0}
-                prefix={<CheckCircleOutlined className="text-green-600" />}
-                styles={{ content: { color: '#52c41a' } }}
-              />
-            </Card>
-          </Col>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Đã hủy"
+                  value={orders?.cancelled ?? 0}
+                  prefix={<StopOutlined className="text-red-400" />}
+                  styles={{ content: { color: '#ff4d4f' } }}
+                />
+              </Card>
+            </div>
+          </section>
 
-          <Col xs={24} sm={12} lg={8}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Sản phẩm sắp hết"
-                value={products?.lowStock ?? 0}
-                prefix={<AlertOutlined className="text-red-600" />}
-                styles={{ content: { color: '#cf1322' } }}
-              />
-              <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
-            </Card>
-          </Col>
+          <section className="rounded-2xl bg-slate-50/80 p-4 sm:p-5">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Secondary Metrics</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Doanh thu TB / đơn"
+                  value={overview?.averageOrderValue ?? 0}
+                  prefix={<DollarOutlined className="text-teal-600" />}
+                  styles={{ content: { color: '#13c2c2' } }}
+                  formatter={(v) => formatCurrency(Number(v))}
+                />
+              </Card>
 
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Tỷ lệ hoàn thành"
-                value={performance?.completionRate ?? 0}
-                prefix={<PercentageOutlined className="text-green-600" />}
-                styles={{ content: { color: '#3f8600' } }}
-                suffix="%"
-                precision={1}
-              />
-            </Card>
-          </Col>
-        </Row>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Tỷ lệ hoàn thành"
+                  value={performance?.completionRate ?? 0}
+                  prefix={<PercentageOutlined className="text-green-600" />}
+                  styles={{ content: { color: '#3f8600' } }}
+                  suffix="%"
+                  precision={1}
+                />
+              </Card>
 
-        {/* Row 3: Order status breakdown */}
-        <Row gutter={[16, 16]} className="mt-4">
-          <Col xs={24} sm={12} lg={8}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Đã xác nhận"
-                value={orders?.confirmed ?? 0}
-                prefix={<FileTextOutlined className="text-blue-500" />}
-                styles={{ content: { color: '#096dd9' } }}
-              />
-            </Card>
-          </Col>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Sản phẩm sắp hết"
+                  value={products?.lowStock ?? 0}
+                  prefix={<AlertOutlined className="text-red-600" />}
+                  styles={{ content: { color: '#cf1322' } }}
+                />
+                <p className="text-xs text-red-500 mt-2">Cần nhập thêm hàng</p>
+              </Card>
 
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Đang giao"
-                value={orders?.shipped ?? 0}
-                prefix={<TruckOutlined className="text-cyan-600" />}
-                styles={{ content: { color: '#08979c' } }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Đã hủy"
-                value={orders?.cancelled ?? 0}
-                prefix={<StopOutlined className="text-red-400" />}
-                styles={{ content: { color: '#ff4d4f' } }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={statCardStyles}>
-              <Statistic
-                title="Doanh thu TB / đơn"
-                value={overview?.averageOrderValue ?? 0}
-                prefix={<DollarOutlined className="text-teal-600" />}
-                styles={{ content: { color: '#13c2c2' } }}
-                formatter={(v) => formatCurrency(Number(v))}
-              />
-            </Card>
-          </Col>
-        </Row>
+              <Card styles={statCardStyles} className={cardClassName}>
+                <Statistic
+                  title="Sản phẩm đang bán"
+                  value={products?.totalActive ?? 0}
+                  prefix={<ShoppingOutlined className="text-orange-500" />}
+                  styles={{ content: { color: '#fa8c16' } }}
+                />
+              </Card>
+            </div>
+          </section>
+        </div>
 
         {/* Branch Performance Table */}
         <Card

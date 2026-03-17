@@ -7,6 +7,7 @@ import { getProductImageUrl } from '@/utils/imageHelper'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
 import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 
+/* eslint-disable no-unused-vars */
 interface ProductDetailProps {
   product: Product
   relatedProducts?: Product[]
@@ -46,7 +47,6 @@ const ProductDetail = ({
   onQuantityChange,
   selectedServices,
   pricingData,
-  // eslint-disable-next-line no-unused-vars
   isPricingLoading: _isPricingLoading = false,
   onAddToCart,
   onBuyNow

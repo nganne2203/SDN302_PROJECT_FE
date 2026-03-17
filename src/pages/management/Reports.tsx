@@ -5,9 +5,7 @@ import {
   ShoppingCartOutlined,
   PercentageOutlined,
   BarChartOutlined,
-  ReloadOutlined,
-  InboxOutlined,
-  ShopOutlined
+  ReloadOutlined
 } from '@ant-design/icons'
 import {
   LineChart,
@@ -30,7 +28,6 @@ import dashboardApi from '@/apis/dashboard'
 import branchApi from '@/apis/branch'
 import type {
   DashboardData,
-  InventoryStatisticsData,
   OrderStatusSummaryData,
   PaymentStatisticsData,
   ProductStatisticsData,

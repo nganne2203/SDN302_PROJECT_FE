@@ -15,6 +15,7 @@ import { toast } from '@/utils/toast'
 import { extractApiError } from '@/utils/apiError'
 import { formatCurrency } from '@/utils/formatCurrency'
 
+/* eslint-disable no-unused-vars */
 type OfflineOrderLine = {
   productId: string
   quantity: number

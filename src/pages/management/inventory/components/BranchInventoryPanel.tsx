@@ -8,6 +8,7 @@ import type { BranchView } from '@/hooks/useInventory'
 import { InputField, SelectField } from '@/components/common'
 import { ROUTES } from '@/constants/constant'
 
+/* eslint-disable no-unused-vars */
 interface BranchInventoryPanelProps {
   isAdmin: boolean
   showAdvancedViews?: boolean

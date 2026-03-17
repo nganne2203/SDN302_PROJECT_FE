@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Card,
@@ -13,40 +13,40 @@ import {
   Spin,
   Tooltip,
   Typography,
-  message,
-} from 'antd';
+  message
+} from 'antd'
 import {
   EnvironmentOutlined,
   InfoCircleOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LoaderCommon } from '@/components/common';
-import { formatCurrency } from '@/utils/formatCurrency';
-import { getProductImageUrl } from '@/utils/imageHelper';
-import useCart from '@/hooks/useCart';
-import useUser from '@/hooks/useUser';
+  PlusOutlined
+} from '@ant-design/icons'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { LoaderCommon } from '@/components/common'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
+import useCart from '@/hooks/useCart'
+import useUser from '@/hooks/useUser'
 import paymentApi, {
   type BankInfo,
-  type VnpayCreateRequest,
-} from '@/apis/payment';
-import { orderApi, type CreateCodOrderRequest } from '@/apis/order';
-import cartApi from '@/apis/cart';
-import branchApi from '@/apis/branch';
-import type { Branch, CartItem, Product } from '@/types/api';
-import type { Address } from '@/features/user/userTypes';
-import { ROUTES } from '@/constants/constant';
-import { stripLocationCodes } from '@/utils/address';
-import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline';
-import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes';
-import type { PricingCalculation } from '@/features/pricing/pricingTypes';
+  type VnpayCreateRequest
+} from '@/apis/payment'
+import { orderApi, type CreateCodOrderRequest } from '@/apis/order'
+import cartApi from '@/apis/cart'
+import branchApi from '@/apis/branch'
+import type { Branch, CartItem, Product } from '@/types/api'
+import type { Address } from '@/features/user/userTypes'
+import { ROUTES } from '@/constants/constant'
+import { stripLocationCodes } from '@/utils/address'
+import useVietnamLocationsOffline from '@/hooks/useVietnamLocationsOffline'
+import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import type { PricingCalculation } from '@/features/pricing/pricingTypes'
 import {
   normalizeCartBackupItems,
   saveBuyNowCartBackup,
   type CartBackupItem
-} from '@/utils/cartBackup';
+} from '@/utils/cartBackup'
 
-const { Title, Text } = Typography;
+const { Title, Text } = Typography
 
 interface BuyNowState {
   product: Product;
@@ -56,53 +56,53 @@ interface BuyNowState {
   pricingData: PricingCalculation | null;
 }
 
-const INTER_PROVINCE_FEE = 50000;
-const INTRA_PROVINCE_FEE = 0;
+const INTER_PROVINCE_FEE = 50000
+const INTRA_PROVINCE_FEE = 0
 
 const normalizeText = (value: string) =>
   value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .trim();
+    .trim()
 
 /** Mirror the backend isInterProvince logic: check if any branch address contains the customer city */
 const estimateShippingFee = (city: string, branches: Branch[]): number => {
-  if (!city || branches.length === 0) return INTRA_PROVINCE_FEE;
-  const normalizedCity = normalizeText(city);
+  if (!city || branches.length === 0) return INTRA_PROVINCE_FEE
+  const normalizedCity = normalizeText(city)
   const hasSameProvinceBranch = branches.some((b) =>
-    normalizeText(b.address).includes(normalizedCity),
-  );
-  return hasSameProvinceBranch ? INTRA_PROVINCE_FEE : INTER_PROVINCE_FEE;
-};
+    normalizeText(b.address).includes(normalizedCity)
+  )
+  return hasSameProvinceBranch ? INTRA_PROVINCE_FEE : INTER_PROVINCE_FEE
+}
 
 const Checkout = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
   const buyNow =
-    (location.state as { buyNow?: BuyNowState } | null)?.buyNow ?? null;
+    (location.state as { buyNow?: BuyNowState } | null)?.buyNow ?? null
   type PaymentMethod = 'cod' | 'vnpay';
   interface CheckoutFormValues extends Omit<VnpayCreateRequest, 'message'> {
     paymentMethod: PaymentMethod;
     message?: string;
   }
 
-  const [form] = Form.useForm<CheckoutFormValues>();
-  const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart();
-  const { profile, fetchProfile, updateProfile } = useUser();
+  const [form] = Form.useForm<CheckoutFormValues>()
+  const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart()
+  const { profile, fetchProfile, updateProfile } = useUser()
 
-  const [banks, setBanks] = useState<BankInfo[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [shippingFee, setShippingFee] = useState<number>(INTRA_PROVINCE_FEE);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isMetaLoading, setIsMetaLoading] = useState(true);
+  const [banks, setBanks] = useState<BankInfo[]>([])
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [shippingFee, setShippingFee] = useState<number>(INTRA_PROVINCE_FEE)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMetaLoading, setIsMetaLoading] = useState(true)
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<
     number | 'new'
-  >('new');
-  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
-  const [addAddressForm] = Form.useForm();
-  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  >('new')
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false)
+  const [addAddressForm] = Form.useForm()
+  const [isSavingAddress, setIsSavingAddress] = useState(false)
   const {
     provinceOptions,
     wardOptions,
@@ -111,8 +111,8 @@ const Checkout = () => {
     fetchDistricts,
     fetchWardsByProvince,
     clearDistricts,
-    clearWards,
-  } = useVietnamLocationsOffline();
+    clearWards
+  } = useVietnamLocationsOffline()
 
   // Separate location hook for the add-address modal
   const {
@@ -123,15 +123,15 @@ const Checkout = () => {
     fetchDistricts: modalFetchDistricts,
     fetchWardsByProvince: modalFetchWardsByProvince,
     clearDistricts: modalClearDistricts,
-    clearWards: modalClearWards,
-  } = useVietnamLocationsOffline();
+    clearWards: modalClearWards
+  } = useVietnamLocationsOffline()
 
   const userAddresses = useMemo<Address[]>(
     () => profile?.addresses || [],
-    [profile?.addresses],
-  );
+    [profile?.addresses]
+  )
 
-  const hasItems = cartItems.length > 0;
+  const hasItems = cartItems.length > 0
 
   const fillFormWithAddress = useCallback(
     (address: Address) => {
@@ -143,16 +143,16 @@ const Checkout = () => {
           city: address.city,
           ward: address.ward,
           provinceCode: address.provinceCode,
-          wardCode: address.wardCode,
-        },
-      });
-      setShippingFee(estimateShippingFee(address.city, branches));
+          wardCode: address.wardCode
+        }
+      })
+      setShippingFee(estimateShippingFee(address.city, branches))
       // Load location dropdowns for the selected address
-      clearDistricts();
-      clearWards();
+      clearDistricts()
+      clearWards()
       if (address.provinceCode) {
-        fetchDistricts(address.provinceCode, '');
-        fetchWardsByProvince(address.provinceCode, '');
+        fetchDistricts(address.provinceCode, '')
+        fetchWardsByProvince(address.provinceCode, '')
       }
     },
     [
@@ -161,9 +161,9 @@ const Checkout = () => {
       clearDistricts,
       clearWards,
       fetchDistricts,
-      fetchWardsByProvince,
-    ],
-  );
+      fetchWardsByProvince
+    ]
+  )
 
   const clearShippingForm = useCallback(() => {
     form.setFieldsValue({
@@ -174,80 +174,80 @@ const Checkout = () => {
         city: '',
         ward: '',
         provinceCode: undefined,
-        wardCode: undefined,
-      },
-    });
-    setShippingFee(INTRA_PROVINCE_FEE);
-    clearDistricts();
-    clearWards();
-  }, [form, clearDistricts, clearWards]);
+        wardCode: undefined
+      }
+    })
+    setShippingFee(INTRA_PROVINCE_FEE)
+    clearDistricts()
+    clearWards()
+  }, [form, clearDistricts, clearWards])
 
   const handleAddressSelect = useCallback(
     (value: number | 'new') => {
-      setSelectedAddressIndex(value);
+      setSelectedAddressIndex(value)
       if (value === 'new') {
-        clearShippingForm();
+        clearShippingForm()
       } else {
-        const address = userAddresses[value];
-        if (address) fillFormWithAddress(address);
+        const address = userAddresses[value]
+        if (address) fillFormWithAddress(address)
       }
     },
-    [userAddresses, fillFormWithAddress, clearShippingForm],
-  );
+    [userAddresses, fillFormWithAddress, clearShippingForm]
+  )
 
   // Buy-now totals
   const buyNowServiceTotal =
-    buyNow?.services?.reduce((sum, svc) => sum + (svc.price || 0), 0) ?? 0;
+    buyNow?.services?.reduce((sum, svc) => sum + (svc.price || 0), 0) ?? 0
   const buyNowUnitPrice =
-    buyNow?.pricingData?.pricing?.pricePerUnit ?? buyNow?.product?.price ?? 0;
+    buyNow?.pricingData?.pricing?.pricePerUnit ?? buyNow?.product?.price ?? 0
   const buyNowTotal = buyNow
     ? (buyNow.pricingData?.pricing?.totalPrice ??
         buyNowUnitPrice * buyNow.quantity) +
       buyNowServiceTotal * buyNow.quantity
-    : 0;
+    : 0
 
   const loadMeta = async () => {
     try {
-      setIsMetaLoading(true);
+      setIsMetaLoading(true)
       const [bankRes, branchRes] = await Promise.all([
         paymentApi.getBanks(),
-        branchApi.getAllBranches({ isActive: true }),
-      ]);
-      setBanks(bankRes.data || []);
-      setBranches(branchRes.data || []);
+        branchApi.getAllBranches({ isActive: true })
+      ])
+      setBanks(bankRes.data || [])
+      setBranches(branchRes.data || [])
     } catch {
-      message.error('Không tải được dữ liệu thanh toán');
+      message.error('Không tải được dữ liệu thanh toán')
     } finally {
-      setIsMetaLoading(false);
+      setIsMetaLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadMeta();
-    fetchProfile();
+    loadMeta()
+    fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   useEffect(() => {
-    fetchProvinces('');
-  }, [fetchProvinces]);
+    fetchProvinces('')
+  }, [fetchProvinces])
 
   // Auto-fill default address when profile loads
   useEffect(() => {
     if (userAddresses.length > 0 && branches.length > 0) {
-      const defaultIdx = userAddresses.findIndex((a) => a.isDefault);
-      const idx = defaultIdx >= 0 ? defaultIdx : 0;
-      setSelectedAddressIndex(idx);
-      fillFormWithAddress(userAddresses[idx]);
+      const defaultIdx = userAddresses.findIndex((a) => a.isDefault)
+      const idx = defaultIdx >= 0 ? defaultIdx : 0
+      setSelectedAddressIndex(idx)
+      fillFormWithAddress(userAddresses[idx])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userAddresses, branches]);
+  }, [userAddresses, branches])
 
   useEffect(() => {
     if (!buyNow && !isLoading && !hasItems) {
-      navigate(ROUTES.CART, { replace: true });
+      navigate(ROUTES.CART, { replace: true })
     }
-  }, [buyNow, hasItems, isLoading, navigate]);
+  }, [buyNow, hasItems, isLoading, navigate])
 
   const orderSummary = useMemo(
     () => (
@@ -262,8 +262,8 @@ const Checkout = () => {
                   services: buyNow.services,
                   price: buyNowUnitPrice,
                   serviceFee: buyNowServiceTotal,
-                  totalPrice: buyNowTotal,
-                },
+                  totalPrice: buyNowTotal
+                }
               ]
               : cartItems.map((item) => ({
                 product: item.product,
@@ -275,7 +275,7 @@ const Checkout = () => {
                       ? item.serviceFee
                       : item.services?.reduce(
                         (s, svc) => s + (svc.price || 0),
-                        0,
+                        0
                       ) || 0,
                 totalPrice:
                     typeof item.totalPrice === 'number'
@@ -285,12 +285,12 @@ const Checkout = () => {
                           ? item.serviceFee
                           : item.services?.reduce(
                             (s, svc) => s + (svc.price || 0),
-                            0,
+                            0
                           ) || 0) *
-                          item.quantity,
-              }));
+                          item.quantity
+              }))
             return items.map((item, index) => {
-              const imageUrl = getProductImageUrl(item.product.images);
+              const imageUrl = getProductImageUrl(item.product.images)
               return (
                 <div key={index} className="flex gap-3">
                   <img
@@ -322,8 +322,8 @@ const Checkout = () => {
                     </div>
                   </div>
                 </div>
-              );
-            });
+              )
+            })
           })()}
         </div>
 
@@ -411,23 +411,23 @@ const Checkout = () => {
                             : item.services && item.services.length > 0
                               ? item.services.reduce(
                                 (s, svc) => s + (svc.price || 0),
-                                0,
+                                0
                               ) * item.quantity
-                              : 0);
-                  return sum + itemTotal;
-                }, 0) + shippingFee,
+                              : 0)
+                  return sum + itemTotal
+                }, 0) + shippingFee
             )}
           </Text>
         </div>
       </Card>
     ),
-    [buyNow, buyNowTotal, cartItems, totalAmount, shippingFee],
-  );
+    [buyNow, buyNowTotal, cartItems, totalAmount, shippingFee]
+  )
 
   const handleSaveNewAddress = async () => {
     try {
-      const values = await addAddressForm.validateFields();
-      setIsSavingAddress(true);
+      const values = await addAddressForm.validateFields()
+      setIsSavingAddress(true)
       const newAddress: Address = {
         fullname: values.fullname,
         phone: values.phone,
@@ -436,36 +436,36 @@ const Checkout = () => {
         ward: values.ward,
         provinceCode: values.provinceCode,
         wardCode: values.wardCode,
-        isDefault: userAddresses.length === 0,
-      };
-      const updatedAddresses = [...userAddresses, newAddress];
-      const result = await updateProfile({ addresses: updatedAddresses });
+        isDefault: userAddresses.length === 0
+      }
+      const updatedAddresses = [...userAddresses, newAddress]
+      const result = await updateProfile({ addresses: updatedAddresses })
       if (result.success) {
-        message.success('Đã thêm địa chỉ mới');
-        setShowAddAddressModal(false);
-        addAddressForm.resetFields();
-        await fetchProfile();
+        message.success('Đã thêm địa chỉ mới')
+        setShowAddAddressModal(false)
+        addAddressForm.resetFields()
+        await fetchProfile()
         // Auto-select the newly added address
-        const newIdx = updatedAddresses.length - 1;
-        setSelectedAddressIndex(newIdx);
-        fillFormWithAddress(newAddress);
+        const newIdx = updatedAddresses.length - 1
+        setSelectedAddressIndex(newIdx)
+        fillFormWithAddress(newAddress)
       } else {
-        message.error(result.error || 'Không thể lưu địa chỉ');
+        message.error(result.error || 'Không thể lưu địa chỉ')
       }
     } catch {
       // validation failed
     } finally {
-      setIsSavingAddress(false);
+      setIsSavingAddress(false)
     }
-  };
+  }
 
   const handleSubmit = async (values: CheckoutFormValues) => {
     if (!buyNow && !hasItems) {
-      message.warning('Giỏ hàng trống');
-      return;
+      message.warning('Giỏ hàng trống')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     // Buy-now currently reuses cart-based checkout APIs by temporarily replacing the cart.
     // To avoid losing the user's existing cart:
@@ -512,80 +512,80 @@ const Checkout = () => {
         cartBackup = normalized
 
         // Buy-now: set cart to exactly this item before payment
-        await cartApi.clearCart();
-        didReplaceCart = true;
+        await cartApi.clearCart()
+        didReplaceCart = true
         const servicesPayload = buyNow.serviceIds.map((serviceId) => ({
-          serviceId,
-        }));
+          serviceId
+        }))
         await cartApi.addToCart(
           buyNow.product._id,
           buyNow.quantity,
-          servicesPayload,
-        );
+          servicesPayload
+        )
       }
 
-      const sanitizedAddress = stripLocationCodes(values.shippingAddress);
+      const sanitizedAddress = stripLocationCodes(values.shippingAddress)
 
       if (values.paymentMethod === 'cod') {
-        await cartApi.validateBeforeCheckout();
+        await cartApi.validateBeforeCheckout()
         const codPayload: CreateCodOrderRequest = {
           shippingAddress: sanitizedAddress,
           paymentMethod: 'cod',
-          message: values.message,
-        };
-        await orderApi.createCodOrder(codPayload);
+          message: values.message
+        }
+        await orderApi.createCodOrder(codPayload)
 
         if (buyNow && didReplaceCart) {
-          await restoreCartFromBackup();
-          didReplaceCart = false;
+          await restoreCartFromBackup()
+          didReplaceCart = false
         }
 
         message.success(
-          'Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.',
-        );
-        navigate(ROUTES.ORDERS);
+          'Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.'
+        )
+        navigate(ROUTES.ORDERS)
       } else {
-        await cartApi.validateBeforeCheckout();
+        await cartApi.validateBeforeCheckout()
         const vnpayPayload: VnpayCreateRequest = {
           shippingAddress: sanitizedAddress,
           bankCode: values.bankCode,
           locale: values.locale,
-          message: values.message,
-        };
-        const response = await paymentApi.createVnpayPayment(vnpayPayload);
-        const paymentUrl = response.data?.paymentUrl;
+          message: values.message
+        }
+        const response = await paymentApi.createVnpayPayment(vnpayPayload)
+        const paymentUrl = response.data?.paymentUrl
         if (paymentUrl) {
           if (buyNow && didReplaceCart) {
             // Defer restore until PaymentResult so its clearCart doesn't wipe restored items.
             saveBuyNowCartBackup(cartBackup)
             isRedirectingToVnpay = true
           }
-          window.location.href = paymentUrl;
+          window.location.href = paymentUrl
         } else {
-          message.error('Không nhận được liên kết thanh toán');
+          message.error('Không nhận được liên kết thanh toán')
         }
       }
     } catch {
       message.error(
         values.paymentMethod === 'cod'
           ? 'Đặt hàng thất bại'
-          : 'Tạo thanh toán VNPay thất bại',
-      );
+          : 'Tạo thanh toán VNPay thất bại'
+      )
     } finally {
       // If something failed after we replaced the cart for buy-now, restore it.
       if (buyNow && didReplaceCart && !isRedirectingToVnpay) {
-        await restoreCartFromBackup();
+        await restoreCartFromBackup()
       }
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   if (isLoading || isMetaLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoaderCommon size="lg" tip="Đang tải dữ liệu..." />
       </div>
-    );
+    )
   }
 
   return (
@@ -619,8 +619,8 @@ const Checkout = () => {
                       type="link"
                       icon={<PlusOutlined />}
                       onClick={() => {
-                        setShowAddAddressModal(true);
-                        modalFetchProvinces('');
+                        setShowAddAddressModal(true)
+                        modalFetchProvinces('')
                       }}
                       className="!p-0"
                     >
@@ -670,8 +670,8 @@ const Checkout = () => {
                     type="link"
                     icon={<PlusOutlined />}
                     onClick={() => {
-                      setShowAddAddressModal(true);
-                      modalFetchProvinces('');
+                      setShowAddAddressModal(true)
+                      modalFetchProvinces('')
                     }}
                     className="!p-0"
                   >
@@ -692,7 +692,7 @@ const Checkout = () => {
                       name={['shippingAddress', 'fullname']}
                       label="Họ và tên"
                       rules={[
-                        { required: true, message: 'Vui lòng nhập họ tên' },
+                        { required: true, message: 'Vui lòng nhập họ tên' }
                       ]}
                     >
                       <Input placeholder="Nguyễn Văn A" />
@@ -705,8 +705,8 @@ const Checkout = () => {
                       rules={[
                         {
                           required: true,
-                          message: 'Vui lòng nhập số điện thoại',
-                        },
+                          message: 'Vui lòng nhập số điện thoại'
+                        }
                       ]}
                     >
                       <Input placeholder="0912345678" />
@@ -730,8 +730,8 @@ const Checkout = () => {
                       rules={[
                         {
                           required: true,
-                          message: 'Vui lòng nhập tỉnh/thành phố',
-                        },
+                          message: 'Vui lòng nhập tỉnh/thành phố'
+                        }
                       ]}
                     >
                       <Select
@@ -739,33 +739,33 @@ const Checkout = () => {
                         options={provinceOptions}
                         showSearch
                         filterOption={(input, option) => {
-                          const label = String(option?.label || '');
+                          const label = String(option?.label || '')
                           return normalizeText(label).includes(
-                            normalizeText(input),
-                          );
+                            normalizeText(input)
+                          )
                         }}
                         loading={locationLoading.provinces}
                         onChange={(value) => {
                           const selected = provinceOptions.find(
-                            (item) => item.value === value,
-                          );
-                          const cityLabel = selected?.label || '';
+                            (item) => item.value === value
+                          )
+                          const cityLabel = selected?.label || ''
                           form.setFieldsValue({
                             shippingAddress: {
                               city: cityLabel,
                               ward: '',
                               provinceCode: value,
-                              wardCode: undefined,
-                            },
-                          });
+                              wardCode: undefined
+                            }
+                          })
                           setShippingFee(
-                            estimateShippingFee(cityLabel, branches),
-                          );
-                          clearDistricts();
-                          clearWards();
+                            estimateShippingFee(cityLabel, branches)
+                          )
+                          clearDistricts()
+                          clearWards()
                           if (value) {
-                            fetchDistricts(value, '');
-                            fetchWardsByProvince(value, '');
+                            fetchDistricts(value, '')
+                            fetchWardsByProvince(value, '')
                           }
                         }}
                       />
@@ -776,7 +776,7 @@ const Checkout = () => {
                       name={['shippingAddress', 'ward']}
                       label="Phường/Xã"
                       rules={[
-                        { required: true, message: 'Vui lòng nhập phường/xã' },
+                        { required: true, message: 'Vui lòng nhập phường/xã' }
                       ]}
                     >
                       <Select
@@ -784,36 +784,36 @@ const Checkout = () => {
                         options={wardOptions}
                         showSearch
                         filterOption={(input, option) => {
-                          const label = String(option?.label || '');
+                          const label = String(option?.label || '')
                           return normalizeText(label).includes(
-                            normalizeText(input),
-                          );
+                            normalizeText(input)
+                          )
                         }}
                         loading={locationLoading.wards}
                         onSearch={(value) => {
                           const provinceCode = form.getFieldValue([
                             'shippingAddress',
-                            'provinceCode',
-                          ]);
+                            'provinceCode'
+                          ])
                           if (provinceCode) {
-                            fetchWardsByProvince(provinceCode, value);
+                            fetchWardsByProvince(provinceCode, value)
                           }
                         }}
                         onChange={(value) => {
                           const selected = wardOptions.find(
-                            (item) => item.value === value,
-                          );
+                            (item) => item.value === value
+                          )
                           form.setFieldsValue({
                             shippingAddress: {
                               ward: selected?.label || '',
-                              wardCode: value,
-                            },
-                          });
+                              wardCode: value
+                            }
+                          })
                         }}
                         disabled={
                           !form.getFieldValue([
                             'shippingAddress',
-                            'provinceCode',
+                            'provinceCode'
                           ])
                         }
                       />
@@ -834,8 +834,8 @@ const Checkout = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'Vui lòng chọn phương thức thanh toán',
-                    },
+                      message: 'Vui lòng chọn phương thức thanh toán'
+                    }
                   ]}
                 >
                   <Radio.Group
@@ -861,8 +861,8 @@ const Checkout = () => {
                         rules={[
                           {
                             required: paymentMethod === 'vnpay',
-                            message: 'Vui lòng chọn ngân hàng',
-                          },
+                            message: 'Vui lòng chọn ngân hàng'
+                          }
                         ]}
                       >
                         <Select
@@ -951,8 +951,8 @@ const Checkout = () => {
         title="Thêm địa chỉ mới"
         open={showAddAddressModal}
         onCancel={() => {
-          setShowAddAddressModal(false);
-          addAddressForm.resetFields();
+          setShowAddAddressModal(false)
+          addAddressForm.resetFields()
         }}
         onOk={handleSaveNewAddress}
         okText="Lưu địa chỉ"
@@ -979,8 +979,8 @@ const Checkout = () => {
                   { required: true, message: 'Vui lòng nhập số điện thoại' },
                   {
                     pattern: /^[0-9]{10,11}$/,
-                    message: 'Số điện thoại không hợp lệ',
-                  },
+                    message: 'Số điện thoại không hợp lệ'
+                  }
                 ]}
               >
                 <Input placeholder="0912345678" />
@@ -1002,7 +1002,7 @@ const Checkout = () => {
                 name="city"
                 label="Tỉnh/Thành phố"
                 rules={[
-                  { required: true, message: 'Vui lòng chọn tỉnh/thành phố' },
+                  { required: true, message: 'Vui lòng chọn tỉnh/thành phố' }
                 ]}
               >
                 <Select
@@ -1010,25 +1010,25 @@ const Checkout = () => {
                   options={modalProvinceOptions}
                   showSearch
                   filterOption={(input, option) => {
-                    const label = String(option?.label || '');
-                    return normalizeText(label).includes(normalizeText(input));
+                    const label = String(option?.label || '')
+                    return normalizeText(label).includes(normalizeText(input))
                   }}
                   loading={modalLocationLoading.provinces}
                   onChange={(value) => {
                     const selected = modalProvinceOptions.find(
-                      (item) => item.value === value,
-                    );
+                      (item) => item.value === value
+                    )
                     addAddressForm.setFieldsValue({
                       city: selected?.label || '',
                       ward: '',
                       provinceCode: value,
-                      wardCode: undefined,
-                    });
-                    modalClearDistricts();
-                    modalClearWards();
+                      wardCode: undefined
+                    })
+                    modalClearDistricts()
+                    modalClearWards()
                     if (value) {
-                      modalFetchDistricts(value, '');
-                      modalFetchWardsByProvince(value, '');
+                      modalFetchDistricts(value, '')
+                      modalFetchWardsByProvince(value, '')
                     }
                   }}
                 />
@@ -1045,25 +1045,25 @@ const Checkout = () => {
                   options={modalWardOptions}
                   showSearch
                   filterOption={(input, option) => {
-                    const label = String(option?.label || '');
-                    return normalizeText(label).includes(normalizeText(input));
+                    const label = String(option?.label || '')
+                    return normalizeText(label).includes(normalizeText(input))
                   }}
                   loading={modalLocationLoading.wards}
                   onSearch={(value) => {
                     const provinceCode =
-                      addAddressForm.getFieldValue('provinceCode');
+                      addAddressForm.getFieldValue('provinceCode')
                     if (provinceCode) {
-                      modalFetchWardsByProvince(provinceCode, value);
+                      modalFetchWardsByProvince(provinceCode, value)
                     }
                   }}
                   onChange={(value) => {
                     const selected = modalWardOptions.find(
-                      (item) => item.value === value,
-                    );
+                      (item) => item.value === value
+                    )
                     addAddressForm.setFieldsValue({
                       ward: selected?.label || '',
-                      wardCode: value,
-                    });
+                      wardCode: value
+                    })
                   }}
                   disabled={!addAddressForm.getFieldValue('provinceCode')}
                 />
@@ -1080,7 +1080,7 @@ const Checkout = () => {
         </Form>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
 export default Checkout

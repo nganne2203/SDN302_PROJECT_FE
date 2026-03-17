@@ -4,12 +4,18 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import ModalCommon from '@/components/common/ModalCommon'
-import { ControlledField, TextAreaField } from '@/components/common'
+import { ControlledField, NumberField, TextAreaField } from '@/components/common'
 
 export type StockRequestAction = 'approve' | 'reject'
 
-const buildSchema = (action: StockRequestAction) => {
+const buildSchema = (action: StockRequestAction, maxApprovable?: number) => {
   return z.object({
+    approvedQuantity: action === 'approve'
+      ? z.coerce.number()
+        .int('Số lượng duyệt phải là số nguyên')
+        .positive('Số lượng duyệt phải lớn hơn 0')
+        .max(maxApprovable || Number.MAX_SAFE_INTEGER, 'Số lượng duyệt vượt quá số lượng cho phép')
+      : z.number().optional(),
     note: action === 'reject'
       ? z.string().min(1, 'Vui lòng nhập lý do từ chối').max(500, 'Tối đa 500 ký tự')
       : z.string().max(500, 'Tối đa 500 ký tự').optional()
@@ -24,6 +30,8 @@ interface StockRequestActionModalProps {
   actionType: StockRequestAction
   onClose: () => void
   onSubmit: (_values: StockRequestActionValues) => void | Promise<void>
+  requestedQuantity?: number
+  availableQuantity?: number
   isSubmitting?: boolean
 }
 
@@ -32,19 +40,31 @@ const StockRequestActionModal = ({
   actionType,
   onClose,
   onSubmit,
+  requestedQuantity,
+  availableQuantity,
   isSubmitting = false
 }: StockRequestActionModalProps) => {
-  const schema = useMemo(() => buildSchema(actionType), [actionType])
+  const maxApprovable = useMemo(() => {
+    if (actionType !== 'approve') return undefined
+    return Math.max(0, availableQuantity || 0)
+  }, [actionType, availableQuantity])
+
+  const initialApprovedQuantity = useMemo(() => {
+    if (actionType !== 'approve') return undefined
+    return requestedQuantity || 0
+  }, [actionType, requestedQuantity])
+
+  const schema = useMemo(() => buildSchema(actionType, maxApprovable), [actionType, maxApprovable])
   const { control, handleSubmit, reset } = useForm<StockRequestActionValues>({
     resolver: zodResolver(schema),
-    defaultValues: { note: '' }
+    defaultValues: { approvedQuantity: initialApprovedQuantity, note: '' }
   })
 
   useEffect(() => {
     if (isOpen) {
-      reset({ note: '' })
+      reset({ approvedQuantity: initialApprovedQuantity, note: '' })
     }
-  }, [isOpen, reset, actionType])
+  }, [actionType, initialApprovedQuantity, isOpen, reset])
 
   return (
     <ModalCommon
@@ -63,6 +83,31 @@ const StockRequestActionModal = ({
       }
     >
       <form>
+        {actionType === 'approve' && (
+          <>
+            <div className="mb-3 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+              <div>Số lượng yêu cầu: <strong>{requestedQuantity || 0}</strong></div>
+              <div>Tồn kho khả dụng: <strong>{availableQuantity ?? 0}</strong></div>
+            </div>
+            <ControlledField
+              name="approvedQuantity"
+              control={control}
+              render={({ value, onChange, error }) => (
+                <NumberField
+                  label="Số lượng duyệt"
+                  value={value as number | undefined}
+                  onChange={(nextValue) => onChange(Number(nextValue || 0))}
+                  error={error}
+                  min={1}
+                  max={maxApprovable}
+                  precision={0}
+                  placeholder="Nhập số lượng duyệt"
+                  required
+                />
+              )}
+            />
+          </>
+        )}
         <ControlledField
           name="note"
           control={control}

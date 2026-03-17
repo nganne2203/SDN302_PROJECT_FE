@@ -33,6 +33,7 @@ const StockRequestFilters = ({
             { label: 'Tất cả trạng thái', value: 'all' },
             { label: 'Chờ duyệt', value: 'pending' },
             { label: 'Đã duyệt', value: 'approved' },
+            { label: 'Duyệt một phần', value: 'partially_approved' },
             { label: 'Bị từ chối', value: 'rejected' }
           ]}
           className="mb-0 min-w-[200px]"

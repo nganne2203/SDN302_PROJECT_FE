@@ -90,7 +90,7 @@ const ReviewModal = ({
     resolver: zodResolver(schema),
     defaultValues: {
       rating: existingReview?.rating ?? 0,
-      comment: existingReview?.comment ?? '',
+      comment: existingReview?.comment ?? ''
     }
   })
 
@@ -101,7 +101,7 @@ const ReviewModal = ({
     if (!isOpen) return
     reset({
       rating: existingReview?.rating ?? 0,
-      comment: existingReview?.comment ?? '',
+      comment: existingReview?.comment ?? ''
     })
     setFileList(existingReview?.images?.length ? mapReviewImagesToUploadFiles(existingReview.images) : [])
     dismissError()

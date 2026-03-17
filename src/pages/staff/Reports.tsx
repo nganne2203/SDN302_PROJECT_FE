@@ -4,10 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Card, Col, DatePicker, Empty, Pagination, Row, Select, Skeleton, Space, Statistic, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
-  BarChartOutlined,
-  DollarOutlined,
-  ReloadOutlined,
-  ShoppingCartOutlined
+  ReloadOutlined
 } from '@ant-design/icons'
 import {
   Bar,
@@ -192,8 +189,6 @@ const StaffReports = () => {
     productsQuery.error,
     recentOrdersQuery.error
   ])
-
-  const dashboard = dashboardQuery.data
 
   const orderStatusBreakdown = useMemo(() => {
     const source = ordersQuery.data?.statusBreakdown ?? []
@@ -387,7 +382,7 @@ const StaffReports = () => {
       {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
 
       <Row gutter={[16, 16]}>
-        </Row>
+      </Row>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>

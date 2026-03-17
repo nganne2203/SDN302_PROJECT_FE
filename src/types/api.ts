@@ -311,13 +311,14 @@ export interface StoreInventoryRecord {
   updatedAt: string;
 }
 
-export type StockRequestStatus = 'pending' | 'approved' | 'rejected';
+export type StockRequestStatus = 'pending' | 'approved' | 'partially_approved' | 'rejected';
 
 export interface StockRequestRecord {
   _id: string;
   branch: Branch;
   product: Product;
   quantity: number;
+  approvedQuantity?: number;
   requester: BackendUser;
   reason?: string;
   status: StockRequestStatus;
