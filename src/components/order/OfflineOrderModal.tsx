@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Card, Divider, Empty, Input, InputNumber, Select, Spin, Switch, Tag } from 'antd'
+import { useCallback, useEffect, useMemo, useState, type UIEvent } from 'react'
+import { Button, Card, Divider, Empty, Input, InputNumber, Select, Spin, Switch, Tag } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { ModalCommon, ButtonCommon, LocationSelectGroupOffline } from '@/components/common'
 import useAuth from '@/hooks/useAuth'
@@ -8,9 +8,10 @@ import storeInventoryApi from '@/apis/storeInventory'
 import { userManageApi } from '@/apis/userManage'
 import serviceProductApi from '@/apis/serviceProduct'
 import { orderApi } from '@/apis/order'
-import type { Branch, StoreInventoryRecord } from '@/types/api'
+import type { Branch, PaginationMeta, StoreInventoryRecord } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 import type { ServiceProduct } from '@/features/serviceProduct/serviceProductTypes'
+import { USER_ROLES } from '@/constants/constant'
 import { toast } from '@/utils/toast'
 import { extractApiError } from '@/utils/apiError'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -54,12 +55,29 @@ const createEmptyLine = (): OfflineOrderLine => ({
   serviceIds: []
 })
 
+const CUSTOMER_PAGE_SIZE = 10
+
+type CreateCustomerForm = {
+  fullname: string
+  email: string
+  phone: string
+  password: string
+}
+
+const EMPTY_CREATE_CUSTOMER_FORM: CreateCustomerForm = {
+  fullname: '',
+  email: '',
+  phone: '',
+  password: ''
+}
+
 const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProps) => {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
 
   const [branches, setBranches] = useState<Branch[]>([])
   const [customers, setCustomers] = useState<User[]>([])
+  const [customerPagination, setCustomerPagination] = useState<PaginationMeta | null>(null)
   const [inventory, setInventory] = useState<StoreInventoryRecord[]>([])
   const [servicesByProduct, setServicesByProduct] = useState<Record<string, ServiceProduct[]>>({})
   const [branchId, setBranchId] = useState<string>(user?.branch || '')
@@ -69,7 +87,11 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
   const [address, setAddress] = useState<DeliveryAddress>(EMPTY_ADDRESS)
   const [items, setItems] = useState<OfflineOrderLine[]>([createEmptyLine()])
   const [loading, setLoading] = useState(false)
+  const [loadingMoreCustomers, setLoadingMoreCustomers] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [isCreateCustomerModalOpen, setIsCreateCustomerModalOpen] = useState(false)
+  const [createCustomerForm, setCreateCustomerForm] = useState<CreateCustomerForm>(EMPTY_CREATE_CUSTOMER_FORM)
+  const [creatingCustomer, setCreatingCustomer] = useState(false)
 
   const resetForm = useCallback(() => {
     setBranchId(user?.branch || '')
@@ -80,6 +102,8 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
     setItems([createEmptyLine()])
     setInventory([])
     setServicesByProduct({})
+    setIsCreateCustomerModalOpen(false)
+    setCreateCustomerForm(EMPTY_CREATE_CUSTOMER_FORM)
   }, [user?.branch])
 
   const loadServices = useCallback(async (productId: string) => {
@@ -112,6 +136,28 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
     setInventory((response.data || []).filter((item) => item.product?.isActive))
   }, [])
 
+  const loadCustomers = useCallback(async (page: number, append = false) => {
+    const response = await userManageApi.getCustomers({
+      page,
+      limit: CUSTOMER_PAGE_SIZE,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    })
+
+    setCustomerPagination(response.pagination)
+    setCustomers((prev) => {
+      if (!append) {
+        return response.data || []
+      }
+
+      const existingCustomerIds = new Set(prev.map((customer) => customer._id))
+      const nextCustomers = (response.data || []).filter((customer) => !existingCustomerIds.has(customer._id))
+      return [...prev, ...nextCustomers]
+    })
+
+    return response
+  }, [])
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -119,17 +165,18 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
     setLoading(true)
 
     Promise.all([
-      isAdmin ? branchApi.getAllBranches({ isActive: true }) : Promise.resolve({ data: [] as Branch[] }),
-      userManageApi.getCustomers({ page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' })
+      isAdmin
+        ? branchApi.getAllBranches({ isActive: true })
+        : branchId
+          ? branchApi.getBranchById(branchId).then((response) => ({ data: [response.data] as Branch[] }))
+          : Promise.resolve({ data: [] as Branch[] }),
+      loadCustomers(1)
     ])
       .then(async ([branchRes, customerRes]) => {
         if (!isMounted) return
 
         setBranches(branchRes.data || [])
-        setCustomers(customerRes.data || [])
-        if (branchId) {
-          await loadInventory(branchId)
-        }
+        setCustomerPagination(customerRes.pagination)
       })
       .catch(() => {
         if (isMounted) {
@@ -143,7 +190,7 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
     return () => {
       isMounted = false
     }
-  }, [branchId, isAdmin, isOpen, loadInventory])
+  }, [branchId, isAdmin, isOpen, loadCustomers])
 
   useEffect(() => {
     if (!isOpen) {
@@ -163,6 +210,91 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
         toast.error('Không thể tải tồn kho chi nhánh')
       })
   }, [branchId, isOpen, loadInventory])
+
+  const handleCustomerPopupScroll = async (event: UIEvent<HTMLDivElement>) => {
+    if (loadingMoreCustomers || !customerPagination?.hasNextPage) {
+      return
+    }
+
+    const target = event.currentTarget
+    const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight
+
+    if (distanceToBottom > 16) {
+      return
+    }
+
+    try {
+      setLoadingMoreCustomers(true)
+      await loadCustomers(customerPagination.currentPage + 1, true)
+    } catch {
+      toast.error('Không thể tải thêm khách hàng')
+    } finally {
+      setLoadingMoreCustomers(false)
+    }
+  }
+
+  const autofillDeliveryContactFromCustomer = useCallback((selectedCustomer?: User) => {
+    if (!hasDelivery || !selectedCustomer) return
+
+    setAddress((prev) => ({
+      ...prev,
+      fullname: selectedCustomer.fullname || '',
+      phone: selectedCustomer.phone || ''
+    }))
+  }, [hasDelivery])
+
+  const handleCreateCustomer = async () => {
+    const fullname = createCustomerForm.fullname.trim()
+    const email = createCustomerForm.email.trim().toLowerCase()
+    const phone = createCustomerForm.phone.trim()
+    const password = createCustomerForm.password
+
+    if (!fullname) {
+      toast.error('Vui lòng nhập họ tên khách hàng')
+      return
+    }
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error('Email không hợp lệ')
+      return
+    }
+
+    if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+      toast.error('Số điện thoại không hợp lệ (10-11 số)')
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('Mật khẩu phải có ít nhất 6 ký tự')
+      return
+    }
+
+    try {
+      setCreatingCustomer(true)
+      const response = await userManageApi.createUser({
+        fullname,
+        email,
+        phone: phone || undefined,
+        password,
+        role: USER_ROLES.CUSTOMER
+      })
+
+      const createdCustomer = response.data
+      setCustomers((prev) => {
+        const deduped = prev.filter((customer) => customer._id !== createdCustomer._id)
+        return [createdCustomer, ...deduped]
+      })
+      setCustomerId(createdCustomer._id)
+      autofillDeliveryContactFromCustomer(createdCustomer)
+      setCreateCustomerForm(EMPTY_CREATE_CUSTOMER_FORM)
+      setIsCreateCustomerModalOpen(false)
+      toast.success('Tạo khách hàng thành công')
+    } catch (error) {
+      toast.error(extractApiError(error, 'Không thể tạo khách hàng'))
+    } finally {
+      setCreatingCustomer(false)
+    }
+  }
 
   const inventoryByProductId = useMemo(
     () => Object.fromEntries(inventory.map((item) => [item.product._id, item])),
@@ -274,9 +406,7 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
             phone: address.phone,
             addressLine: address.addressLine,
             city: address.city,
-            ward: address.ward,
-            provinceCode: address.provinceCode,
-            wardCode: address.wardCode
+            ward: address.ward
           }
           : undefined,
         paymentMethod: 'cod',
@@ -296,228 +426,343 @@ const OfflineOrderModal = ({ isOpen, onClose, onSuccess }: OfflineOrderModalProp
   }
 
   return (
-    <ModalCommon
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Tạo đơn hàng tại quầy"
-      size="xl"
-      footer={
-        <div className="flex justify-end gap-2">
-          <ButtonCommon variant="outline" onClick={onClose} disabled={submitting}>
-            Hủy
-          </ButtonCommon>
-          <ButtonCommon variant="primary" onClick={handleSubmit} isLoading={submitting}>
-            Tạo đơn COD
-          </ButtonCommon>
-        </div>
-      }
-    >
-      <Spin spinning={loading}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {isAdmin && (
+    <>
+      <ModalCommon
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Tạo đơn hàng tại quầy"
+        size="xl"
+        footer={
+          <div className="flex justify-end gap-2">
+            <ButtonCommon variant="outline" onClick={onClose} disabled={submitting}>
+              Hủy
+            </ButtonCommon>
+            <ButtonCommon variant="primary" onClick={handleSubmit} isLoading={submitting}>
+              Tạo đơn COD
+            </ButtonCommon>
+          </div>
+        }
+      >
+        <Spin spinning={loading}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Chi nhánh</label>
                 <Select
                   value={branchId || undefined}
                   options={branchOptions}
                   onChange={(value) => setBranchId(value)}
+                  disabled={!isAdmin}
                   placeholder="Chọn chi nhánh"
                   style={{ width: '100%' }}
                 />
               </div>
+
+              <div className='w-full'>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <label className="block text-sm font-medium text-gray-700">Khách hàng đã đăng ký</label>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsCreateCustomerModalOpen(true)}
+                  >
+                    Thêm khách
+                  </Button>
+                </div>
+                <Select
+                  value={customerId || undefined}
+                  options={customerOptions}
+                  onChange={(value) => {
+                    const nextCustomerId = value || ''
+                    setCustomerId(nextCustomerId)
+
+                    if (!nextCustomerId) return
+
+                    const selectedCustomer = customers.find((customer) => customer._id === nextCustomerId)
+                    autofillDeliveryContactFromCustomer(selectedCustomer)
+                  }}
+                  placeholder="Chọn khách hàng (tùy chọn)"
+                  allowClear
+                  style={{ width: '100%' }}
+                  showSearch
+                  optionFilterProp="label"
+                  onPopupScroll={handleCustomerPopupScroll}
+                  loading={loading && customers.length === 0}
+                  notFoundContent={loadingMoreCustomers ? <Spin size="small" /> : undefined}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-medium text-gray-900">Giao hàng tận nơi</p>
+                </div>
+                <Switch
+                  checked={hasDelivery}
+                  onChange={(checked) => {
+                    setHasDelivery(checked)
+
+                    if (!checked || !customerId) return
+
+                    const selectedCustomer = customers.find((customer) => customer._id === customerId)
+                    if (!selectedCustomer) return
+
+                    setAddress((prev) => ({
+                      ...prev,
+                      fullname: selectedCustomer.fullname || '',
+                      phone: selectedCustomer.phone || ''
+                    }))
+                  }}
+                />
+              </div>
+
+              {hasDelivery && (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Người nhận</label>
+                    <Input
+                      value={address.fullname}
+                      onChange={(event) => setAddress((prev) => ({ ...prev, fullname: event.target.value }))}
+                      placeholder="Nguyễn Văn A"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                    <Input
+                      value={address.phone}
+                      onChange={(event) => setAddress((prev) => ({ ...prev, phone: event.target.value }))}
+                      placeholder="0912345678"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết</label>
+                    <Input
+                      value={address.addressLine}
+                      onChange={(event) => setAddress((prev) => ({ ...prev, addressLine: event.target.value }))}
+                      placeholder="123 Nguyễn Trãi"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <LocationSelectGroupOffline
+                      provinceCode={address.provinceCode}
+                      wardCode={address.wardCode}
+                      onChange={(changes) => {
+                        setAddress((prev) => {
+                          const next = { ...prev }
+
+                          if ('province' in changes) {
+                            next.city = changes.province ?? ''
+                          }
+
+                          if ('ward' in changes) {
+                            next.ward = changes.ward ?? ''
+                          }
+
+                          if ('provinceCode' in changes) {
+                            next.provinceCode = changes.provinceCode
+                          }
+
+                          if ('wardCode' in changes) {
+                            next.wardCode = changes.wardCode
+                          }
+
+                          return next
+                        })
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Divider>Sản phẩm</Divider>
+
+            {inventory.length === 0 ? (
+              <Empty description="Chi nhánh hiện chưa có dữ liệu tồn kho để tạo đơn" />
+            ) : (
+              <div className="space-y-4">
+                {items.map((item, index) => {
+                  const stock = inventoryByProductId[item.productId]
+                  const availableServices = servicesByProduct[item.productId] || []
+                  const linePrice = stock?.product.price || 0
+                  const lineServiceTotal = availableServices
+                    .filter((service) => item.serviceIds.includes(service._id))
+                    .reduce((sum, service) => sum + service.price, 0)
+
+                  return (
+                    <Card
+                      key={`offline-order-item-${index}`}
+                      size="small"
+                      extra={items.length > 1 ? (
+                        <ButtonCommon
+                          variant="ghost"
+                          icon={<DeleteOutlined />}
+                          onClick={() => setItems((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
+                        >
+                        Xóa
+                        </ButtonCommon>
+                      ) : null}
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Sản phẩm</label>
+                          <Select
+                            value={item.productId || undefined}
+                            options={productOptions}
+                            onChange={(value) => handleProductChange(index, value)}
+                            placeholder="Chọn sản phẩm"
+                            style={{ width: '100%' }}
+                            showSearch
+                            optionFilterProp="label"
+                          />
+                          {stock && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Tag color="blue">Còn {stock.quantity}</Tag>
+                              <Tag color="green">{formatCurrency(stock.product.price)}</Tag>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                          <InputNumber
+                            min={1}
+                            max={stock?.quantity || 1}
+                            value={item.quantity}
+                            onChange={(value) => updateItem(index, (current) => ({
+                              ...current,
+                              quantity: Number(value || 1)
+                            }))}
+                            style={{ width: '100%' }}
+                          />
+                        </div>
+
+                        <div className="md:col-span-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Dịch vụ kèm theo</label>
+                          <Select
+                            mode="multiple"
+                            value={item.serviceIds}
+                            options={availableServices.map((service) => ({
+                              label: `${service.name} - ${formatCurrency(service.price)}`,
+                              value: service._id
+                            }))}
+                            onChange={(value) => updateItem(index, (current) => ({
+                              ...current,
+                              serviceIds: value
+                            }))}
+                            placeholder="Không bắt buộc"
+                            style={{ width: '100%' }}
+                            disabled={!item.productId || availableServices.length === 0}
+                          />
+                        </div>
+
+                        <div className="md:col-span-3 text-right text-sm text-gray-600">
+                        Tạm tính dòng này: <span className="font-semibold text-gray-900">{formatCurrency((linePrice + lineServiceTotal) * item.quantity)}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  )
+                })}
+
+                <ButtonCommon
+                  variant="outline"
+                  icon={<PlusOutlined />}
+                  onClick={() => setItems((prev) => [...prev, createEmptyLine()])}
+                >
+                Thêm sản phẩm
+                </ButtonCommon>
+              </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Khách hàng đã đăng ký</label>
-              <Select
-                value={customerId || undefined}
-                options={customerOptions}
-                onChange={(value) => setCustomerId(value || '')}
-                placeholder="Bỏ trống nếu là khách vãng lai"
-                allowClear
-                style={{ width: '100%' }}
-                showSearch
-                optionFilterProp="label"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+              <Input.TextArea
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="Ghi chú cho đơn hàng"
+                rows={3}
               />
             </div>
-          </div>
 
-          <div className="rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-medium text-gray-900">Giao hàng tận nơi</p>
-                <p className="text-sm text-gray-500">Nếu tắt, đơn sẽ được tính là nhận tại quầy</p>
+            <div className="rounded-lg bg-gray-50 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Tạm tính</span>
+                <span className="text-lg font-semibold text-gray-900">{formatCurrency(orderEstimate)}</span>
               </div>
-              <Switch checked={hasDelivery} onChange={setHasDelivery} />
             </div>
-
-            {hasDelivery && (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Người nhận</label>
-                  <Input
-                    value={address.fullname}
-                    onChange={(event) => setAddress((prev) => ({ ...prev, fullname: event.target.value }))}
-                    placeholder="Nguyễn Văn A"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                  <Input
-                    value={address.phone}
-                    onChange={(event) => setAddress((prev) => ({ ...prev, phone: event.target.value }))}
-                    placeholder="0912345678"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết</label>
-                  <Input
-                    value={address.addressLine}
-                    onChange={(event) => setAddress((prev) => ({ ...prev, addressLine: event.target.value }))}
-                    placeholder="123 Nguyễn Trãi"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <LocationSelectGroupOffline
-                    provinceCode={address.provinceCode}
-                    wardCode={address.wardCode}
-                    onChange={(changes) => {
-                      setAddress((prev) => ({
-                        ...prev,
-                        city: changes.province ?? prev.city,
-                        ward: changes.ward ?? prev.ward,
-                        provinceCode: changes.provinceCode,
-                        wardCode: changes.wardCode
-                      }))
-                    }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
+        </Spin>
+      </ModalCommon>
 
-          <Divider orientation="left">Sản phẩm</Divider>
-
-          {inventory.length === 0 ? (
-            <Empty description="Chi nhánh hiện chưa có dữ liệu tồn kho để tạo đơn" />
-          ) : (
-            <div className="space-y-4">
-              {items.map((item, index) => {
-                const stock = inventoryByProductId[item.productId]
-                const availableServices = servicesByProduct[item.productId] || []
-                const linePrice = stock?.product.price || 0
-                const lineServiceTotal = availableServices
-                  .filter((service) => item.serviceIds.includes(service._id))
-                  .reduce((sum, service) => sum + service.price, 0)
-
-                return (
-                  <Card
-                    key={`offline-order-item-${index}`}
-                    size="small"
-                    extra={items.length > 1 ? (
-                      <ButtonCommon
-                        variant="ghost"
-                        icon={<DeleteOutlined />}
-                        onClick={() => setItems((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
-                      >
-                        Xóa
-                      </ButtonCommon>
-                    ) : null}
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sản phẩm</label>
-                        <Select
-                          value={item.productId || undefined}
-                          options={productOptions}
-                          onChange={(value) => handleProductChange(index, value)}
-                          placeholder="Chọn sản phẩm"
-                          style={{ width: '100%' }}
-                          showSearch
-                          optionFilterProp="label"
-                        />
-                        {stock && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <Tag color="blue">Còn {stock.quantity}</Tag>
-                            <Tag color="green">{formatCurrency(stock.product.price)}</Tag>
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                        <InputNumber
-                          min={1}
-                          max={stock?.quantity || 1}
-                          value={item.quantity}
-                          onChange={(value) => updateItem(index, (current) => ({
-                            ...current,
-                            quantity: Number(value || 1)
-                          }))}
-                          style={{ width: '100%' }}
-                        />
-                      </div>
-
-                      <div className="md:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Dịch vụ kèm theo</label>
-                        <Select
-                          mode="multiple"
-                          value={item.serviceIds}
-                          options={availableServices.map((service) => ({
-                            label: `${service.name} - ${formatCurrency(service.price)}`,
-                            value: service._id
-                          }))}
-                          onChange={(value) => updateItem(index, (current) => ({
-                            ...current,
-                            serviceIds: value
-                          }))}
-                          placeholder="Không bắt buộc"
-                          style={{ width: '100%' }}
-                          disabled={!item.productId || availableServices.length === 0}
-                        />
-                      </div>
-
-                      <div className="md:col-span-3 text-right text-sm text-gray-600">
-                        Tạm tính dòng này: <span className="font-semibold text-gray-900">{formatCurrency((linePrice + lineServiceTotal) * item.quantity)}</span>
-                      </div>
-                    </div>
-                  </Card>
-                )
-              })}
-
-              <ButtonCommon
-                variant="outline"
-                icon={<PlusOutlined />}
-                onClick={() => setItems((prev) => [...prev, createEmptyLine()])}
-              >
-                Thêm sản phẩm
-              </ButtonCommon>
-            </div>
-          )}
-
+      <ModalCommon
+        isOpen={isCreateCustomerModalOpen}
+        onClose={() => {
+          if (creatingCustomer) return
+          setIsCreateCustomerModalOpen(false)
+          setCreateCustomerForm(EMPTY_CREATE_CUSTOMER_FORM)
+        }}
+        title="Thêm khách hàng"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <ButtonCommon
+              variant="outline"
+              onClick={() => {
+                setIsCreateCustomerModalOpen(false)
+                setCreateCustomerForm(EMPTY_CREATE_CUSTOMER_FORM)
+              }}
+              disabled={creatingCustomer}
+            >
+              Hủy
+            </ButtonCommon>
+            <ButtonCommon
+              variant="primary"
+              onClick={handleCreateCustomer}
+              isLoading={creatingCustomer}
+            >
+              Tạo khách hàng
+            </ButtonCommon>
+          </div>
+        }
+      >
+        <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
-            <Input.TextArea
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              placeholder="Ghi chú cho đơn hàng"
-              rows={3}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+            <Input
+              value={createCustomerForm.fullname}
+              onChange={(event) => setCreateCustomerForm((prev) => ({ ...prev, fullname: event.target.value }))}
+              placeholder="Nguyễn Văn A"
             />
           </div>
-
-          <div className="rounded-lg bg-gray-50 p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Tạm tính</span>
-              <span className="text-lg font-semibold text-gray-900">{formatCurrency(orderEstimate)}</span>
-            </div>
-            <p className="mt-2 text-xs text-gray-500">
-              Hệ thống BE sẽ tính chiết khấu và phí giao hàng thực tế khi tạo đơn.
-            </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <Input
+              value={createCustomerForm.email}
+              onChange={(event) => setCreateCustomerForm((prev) => ({ ...prev, email: event.target.value }))}
+              placeholder="customer@email.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+            <Input
+              value={createCustomerForm.phone}
+              onChange={(event) => setCreateCustomerForm((prev) => ({ ...prev, phone: event.target.value }))}
+              placeholder="0912345678"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+            <Input.Password
+              value={createCustomerForm.password}
+              onChange={(event) => setCreateCustomerForm((prev) => ({ ...prev, password: event.target.value }))}
+              placeholder="Tối thiểu 6 ký tự"
+            />
           </div>
         </div>
-      </Spin>
-    </ModalCommon>
+      </ModalCommon>
+    </>
   )
 }
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Card, Col, Empty, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag } from 'antd'
+import { Alert, Button, Card, Col, Empty, Row, Select, Space, Spin, Statistic, Table, Tabs } from 'antd'
 import {
   DollarOutlined,
   ShoppingCartOutlined,
@@ -46,7 +46,58 @@ const PERIOD_OPTIONS = [
   { label: 'Năm nay', value: 'this_year' }
 ] as const
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đang giao',
+  delivered: 'Đã giao',
+  cancelled: 'Đã hủy',
+  canceled: 'Đã hủy'
+}
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cod: 'Thanh toán khi nhận hàng',
+  cash: 'Tiền mặt',
+  banking: 'Chuyển khoản',
+  bank_transfer: 'Chuyển khoản',
+  vnpay: 'VNPay',
+  momo: 'MoMo',
+  card: 'Thẻ'
+}
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  pending: 'Đang chờ thanh toán',
+  unpaid: 'Chưa thanh toán',
+  paid: 'Đã thanh toán',
+  completed: 'Hoàn tất',
+  failed: 'Thanh toán thất bại',
+  cancelled: 'Đã hủy thanh toán',
+  canceled: 'Đã hủy thanh toán',
+  refunded: 'Đã hoàn tiền',
+  processing: 'Đang xử lý',
+  success: 'Thành công'
+}
+
 type ReportPeriod = (typeof PERIOD_OPTIONS)[number]['value']
+
+const normalizeFieldKey = (value: string) => value.trim().toLowerCase()
+
+const mapOrderStatusLabel = (value: string) => ORDER_STATUS_LABELS[normalizeFieldKey(value)] || value
+
+const mapPaymentMethodLabel = (value: string) => PAYMENT_METHOD_LABELS[normalizeFieldKey(value)] || value
+
+const mapPaymentStatusLabel = (value: string) => PAYMENT_STATUS_LABELS[normalizeFieldKey(value)] || value
+
+const pieTooltipFormatter = (
+  value: number | string | undefined,
+  _name: string | undefined,
+  item?: { payload?: { methodLabel?: string; statusLabel?: string } }
+) => {
+  const label = item?.payload?.methodLabel || item?.payload?.statusLabel || ''
+  return [value ?? 0, label]
+}
+
+const barTooltipFormatter = (value: number | string | undefined, name: string | undefined) => [value ?? 0, name ?? '']
 
 const renderEmpty = (description: string) => (
   <div className="py-8">
@@ -116,6 +167,7 @@ const ManagementReports = () => {
     const source = paymentStats?.byMethod ?? {}
     return Object.entries(source as Record<string, { count?: number; totalAmount?: number; successRate?: number }>).map(([method, value]) => ({
       method,
+      methodLabel: mapPaymentMethodLabel(method),
       count: value?.count ?? 0,
       totalAmount: value?.totalAmount ?? 0,
       successRate: value?.successRate ?? 0
@@ -126,12 +178,20 @@ const ManagementReports = () => {
     const source = paymentStats?.byStatus ?? {}
     return Object.entries(source as Record<string, { count?: number; totalAmount?: number }>).map(([status, value]) => ({
       status,
+      statusLabel: mapPaymentStatusLabel(status),
       count: value?.count ?? 0,
       totalAmount: value?.totalAmount ?? 0
     }))
   }, [paymentStats])
 
-  const orderStatusData = useMemo(() => orderStatus?.statuses || [], [orderStatus])
+  const orderStatusData = useMemo(
+    () =>
+      (orderStatus?.statuses || []).map((item) => ({
+        ...item,
+        statusLabel: mapOrderStatusLabel(item.status)
+      })),
+    [orderStatus]
+  )
 
   return (
     <Spin spinning={loading}>
@@ -251,7 +311,7 @@ const ManagementReports = () => {
                               <Pie
                                 data={paymentMethodData}
                                 dataKey="count"
-                                nameKey="method"
+                                nameKey="methodLabel"
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={100}
@@ -261,7 +321,7 @@ const ManagementReports = () => {
                                   <Cell key={`payment-method-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
-                              <Tooltip />
+                              <Tooltip formatter={pieTooltipFormatter} />
                             </PieChart>
                           </ResponsiveContainer>
                         )}
@@ -279,7 +339,7 @@ const ManagementReports = () => {
                               <Pie
                                 data={paymentStatusData}
                                 dataKey="count"
-                                nameKey="status"
+                                nameKey="statusLabel"
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={100}
@@ -289,7 +349,7 @@ const ManagementReports = () => {
                                   <Cell key={`payment-status-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
-                              <Tooltip />
+                              <Tooltip formatter={pieTooltipFormatter} />
                             </PieChart>
                           </ResponsiveContainer>
                         )}
@@ -311,9 +371,9 @@ const ManagementReports = () => {
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={orderStatusData}>
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="status" />
+                          <XAxis dataKey="statusLabel" />
                           <YAxis />
-                          <Tooltip />
+                          <Tooltip formatter={barTooltipFormatter} />
                           <Legend />
                           <Bar dataKey="count" name="Số đơn" fill="#1890ff" />
                           <Bar dataKey="percentage" name="Tỷ lệ" fill="#52c41a" />
@@ -384,7 +444,14 @@ const StaffReports = () => {
     [productStats]
   )
 
-  const orderStatusData = useMemo(() => orderStatus?.statuses ?? [], [orderStatus])
+  const orderStatusData = useMemo(
+    () =>
+      (orderStatus?.statuses ?? []).map((item) => ({
+        ...item,
+        statusLabel: mapOrderStatusLabel(item.status)
+      })),
+    [orderStatus]
+  )
 
   return (
     <Spin spinning={loading}>
@@ -464,7 +531,7 @@ const StaffReports = () => {
                       <Pie
                         data={orderStatusData}
                         dataKey="count"
-                        nameKey="status"
+                        nameKey="statusLabel"
                         cx="50%"
                         cy="50%"
                         outerRadius={110}
@@ -474,7 +541,7 @@ const StaffReports = () => {
                           <Cell key={`order-status-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={pieTooltipFormatter} />
                     </PieChart>
                   </ResponsiveContainer>
                 )}

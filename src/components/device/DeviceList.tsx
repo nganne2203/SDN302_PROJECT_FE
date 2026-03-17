@@ -3,6 +3,7 @@ import { Edit, Trash2, Power } from 'lucide-react'
 import { TableCommon, LoaderCommon } from '@/components/common'
 import type { TableColumn } from '@/components/common/TableCommon'
 import type { Device } from '@/features/device/deviceTypes'
+import { getDeviceTypeLabel } from '@/features/device/deviceTypes'
 import dayjs from 'dayjs'
 
 interface DeviceWithKey extends Record<string, unknown> {
@@ -60,7 +61,8 @@ const DeviceListComponent = ({
       key: 'type',
       title: 'Loại',
       dataIndex: 'type',
-      width: 120
+      width: 160,
+      render: (value: unknown) => getDeviceTypeLabel(value as string)
     },
     {
       key: 'brand',

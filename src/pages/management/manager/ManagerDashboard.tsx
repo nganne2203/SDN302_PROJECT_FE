@@ -19,7 +19,7 @@ import useManagerOrders from '@/hooks/useManagerOrders'
 import useManagerStockRequests from '@/hooks/useManagerStockRequests'
 import useManagerLowStock from '@/hooks/useManagerLowStock'
 import dashboardApi from '@/apis/dashboard'
-import type { DashboardData } from '@/features/dashboard/dashboardTypes'
+import type { DashboardData, RecentOrder } from '@/features/dashboard/dashboardTypes'
 import type { StockRequestRecord, StoreInventoryRecord } from '@/types/api'
 import { ROUTES } from '@/constants/constant'
 import dayjs from 'dayjs'
@@ -28,12 +28,14 @@ import OrderStatusBadge from '@/components/order/OrderStatusBadge'
 const STOCK_STATUS_COLOR: Record<string, string> = {
   pending: 'warning',
   approved: 'success',
-  rejected: 'error'
+  rejected: 'error',
+  partially_approved: 'processing'
 }
 const STOCK_STATUS_LABEL: Record<string, string> = {
   pending: 'Chờ duyệt',
   approved: 'Đã duyệt',
-  rejected: 'Từ chối'
+  rejected: 'Từ chối',
+  partially_approved: 'Duyệt một phần'
 }
 const formatCurrency = (v: number) => v.toLocaleString('vi-VN') + ' ₫'
 
@@ -82,9 +84,7 @@ const ManagerDashboard = () => {
   }, [branchIdParam])
 
   const {
-    data: ordersData,
-    loading: ordersLoading,
-    error: ordersError
+    data: ordersData
   } = useManagerOrders({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
 
   const {
@@ -99,15 +99,14 @@ const ManagerDashboard = () => {
     refresh: refreshLowStock
   } = useManagerLowStock(branchId, 5)
 
-  const orders = ordersData?.data ?? []
   const totalOrders = ordersData?.pagination?.totalItems ?? 0
   const stockRequests = stockRequestsData?.data ?? []
   const pendingStockCount = stockRequests.filter(r => r.status === 'pending').length
   const lowStockItems = lowStockData?.data ?? []
-
-  const orderColumns = [
+  const recentOrders = dashboard?.recentOrders ?? []
+  const recentOrderColumns = [
     {
-      title: 'Mã đơn hàng',
+      title: 'Mã đơn',
       dataIndex: 'orderNumber',
       key: 'orderNumber',
       render: (v: string) => <span className="font-mono text-xs">{v}</span>
@@ -115,10 +114,13 @@ const ManagerDashboard = () => {
     {
       title: 'Khách hàng',
       key: 'customer',
-      render: (_: unknown, record: Record<string, unknown>) => {
-        const customer = record.customer as { fullname?: string; email?: string } | undefined
-        return customer?.fullname ?? customer?.email ?? '—'
-      }
+      render: (_: unknown, record: RecentOrder) =>
+        record.customer ?? '—'
+    },
+    {
+      title: 'Chi nhánh',
+      key: 'branch',
+      render: (_: unknown, record: RecentOrder) => record.branch ?? '—'
     },
     {
       title: 'Tổng tiền',
@@ -127,16 +129,16 @@ const ManagerDashboard = () => {
       render: (v: number) => formatCurrency(v)
     },
     {
-      title: 'Trạng thái đơn',
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => <OrderStatusBadge status={status} />
     },
     {
-      title: 'Ngày',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (v: string) => dayjs(v).format('DD/MM/YYYY')
+      render: (v: string) => dayjs(v).format('DD/MM/YYYY HH:mm')
     }
   ]
 
@@ -188,7 +190,7 @@ const ManagerDashboard = () => {
       {/* Low stock alert */}
       {lowStockItems.length > 0 && (
         <Alert
-          message={`⚠️ Cảnh báo: ${lowStockItems.length} sản phẩm sắp hết hàng`}
+          message={`Cảnh báo: ${lowStockItems.length} sản phẩm sắp hết hàng`}
           description="Vui lòng tạo yêu cầu nhập kho từ kho tổng"
           type="warning"
           showIcon
@@ -285,7 +287,7 @@ const ManagerDashboard = () => {
       {/* Low Stock Items */}
       <Card
         className="mt-6"
-        title="⚠️ Sản phẩm sắp hết hàng"
+        title="Sản phẩm sắp hết hàng"
         extra={
           <Button size="small" icon={<ReloadOutlined />} onClick={refreshLowStock} loading={lowStockLoading}>
             Làm mới
@@ -329,7 +331,7 @@ const ManagerDashboard = () => {
       </Card>
 
       {/* Stock Requests */}
-      <Card className="mt-6" title="📦 Yêu cầu nhập kho">
+      <Card className="mt-6" title="Yêu cầu nhập kho">
         {stockRequestsError && (
           <Alert message={stockRequestsError} type="error" showIcon className="mb-3" />
         )}
@@ -345,19 +347,14 @@ const ManagerDashboard = () => {
       </Card>
 
       {/* Recent Orders */}
-      <Card className="mt-6" title="📋 Đơn hàng gần đây">
-        {ordersError && (
-          <Alert message={ordersError} type="error" showIcon className="mb-3" />
-        )}
-        <Spin spinning={ordersLoading}>
-          <Table
-            columns={orderColumns}
-            dataSource={orders.map((o, i) => ({ ...o, key: (o as unknown as { _id?: string })._id ?? i }))}
-            pagination={{ pageSize: 5, showSizeChanger: false }}
-            size="small"
-            locale={{ emptyText: ordersLoading ? 'Đang tải...' : 'Không có dữ liệu' }}
-          />
-        </Spin>
+      <Card className="my-6" title="Đơn hàng gần đây">
+        <Table
+          columns={recentOrderColumns}
+          dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
+          pagination={false}
+          size="small"
+          // locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
+        />
       </Card>
 
       {/* Quick Actions */}
