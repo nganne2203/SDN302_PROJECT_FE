@@ -1,29 +1,50 @@
-import { EnvironmentOutlined } from '@ant-design/icons'
+import { EnvironmentOutlined, UserOutlined } from '@ant-design/icons'
 import type { Branch } from '@/types/api'
 
 interface BranchCardProps {
   branch: Branch
+  className?: string
+  showManager?: boolean
 }
 
-const BranchCard = ({ branch }: BranchCardProps) => {
+const BranchCard = ({
+  branch,
+  className = '',
+  showManager = false
+}: BranchCardProps) => {
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    branch.address
+    `${branch.name} ${branch.address}`
   )}`
 
   return (
-    <div className="h-full bg-white rounded-xl shadow-sm hover:shadow-lg transition-all border border-gray-200 p-6 flex flex-col">
-      <h3 className="text-lg font-semibold text-gray-900 mb-3 min-h-[56px] line-clamp-2">{branch.name}</h3>
-      <div className="text-gray-700 min-h-[72px]">
+    <div className={`flex h-full flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg ${className}`}>
+      <h3 className="mb-3 min-h-[56px] line-clamp-2 text-lg font-semibold text-gray-900">
+        {branch.name}
+      </h3>
+
+      <div className="min-h-[72px] text-gray-700">
         <p className="flex items-start gap-2">
-          <EnvironmentOutlined className="text-red-500 mt-1 text-base" />
+          <EnvironmentOutlined className="mt-1 text-base text-red-500" />
           <span className="line-clamp-2">{branch.address}</span>
         </p>
       </div>
+
+      {showManager ? (
+        <div className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-gray-600">
+          <p className="flex items-center gap-2">
+            <UserOutlined className="text-slate-500" />
+            <span className="line-clamp-1">
+              {branch.manager?.name ? `Quản lý: ${branch.manager.name}` : 'Đang cập nhật quản lý'}
+            </span>
+          </p>
+        </div>
+      ) : null}
+
       <a
         href={mapLink}
         target="_blank"
         rel="noreferrer"
-        className="mt-auto pt-5 inline-flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+        className="mt-auto inline-flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 pt-5 text-sm font-semibold text-gray-800 hover:bg-gray-50"
       >
         Xem bản đồ
       </a>

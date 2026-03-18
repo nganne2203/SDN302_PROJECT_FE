@@ -1,23 +1,29 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 interface SectionHeaderProps {
   title: string
+  viewAllPath?: string
+  viewAllLabel?: string
 }
 
-const SectionHeader = ({ title }: SectionHeaderProps) => {
-  const navigate = useNavigate()
-
+const SectionHeader = ({
+  title,
+  viewAllPath,
+  viewAllLabel = 'Xem tất cả →'
+}: SectionHeaderProps) => {
   return (
-    <div className="flex justify-between items-center mb-4 md:mb-5">
+    <div className="mb-4 flex items-center justify-between md:mb-5">
       <h2 className="text-3xl font-bold text-gray-800">
         {title}
       </h2>
-      <button
-        onClick={() => navigate('/products')}
-        className="text-blue-600 hover:text-blue-800 font-semibold"
-      >
-        Xem tất cả →
-      </button>
+      {viewAllPath ? (
+        <Link
+          to={viewAllPath}
+          className="font-semibold text-blue-600 hover:text-blue-800"
+        >
+          {viewAllLabel}
+        </Link>
+      ) : null}
     </div>
   )
 }

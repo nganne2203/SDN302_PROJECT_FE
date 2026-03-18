@@ -23,6 +23,7 @@ const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
+const BranchBrowse = lazy(() => import('@/pages/customer/BranchBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 const Checkout = lazy(() => import('@/pages/customer/Checkout'))
 const PaymentResult = lazy(() => import('@/pages/customer/PaymentResult'))
@@ -184,6 +185,10 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.PRODUCTS,
     element: withCustomerLayout(ProductBrowse)
+  },
+  {
+    path: ROUTES.BRANCHES,
+    element: withCustomerLayout(BranchBrowse)
   },
   {
     path: ROUTES.PRODUCT_DETAIL,
