@@ -183,9 +183,9 @@ const BranchBrowse = () => {
               Hiển thị {visibleBranches.length} trên {totalBranches} chi nhánh đang hoạt động
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {visibleBranches.map((branch) => (
-                <div key={branch._id} className="h-full">
+                <div key={branch._id} className="h-full w-full">
                   <BranchCard branch={branch} showManager />
                 </div>
               ))}

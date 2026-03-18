@@ -1,4 +1,9 @@
-import { EnvironmentOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  EnvironmentOutlined,
+  RightOutlined,
+  ShopOutlined,
+  UserOutlined
+} from '@ant-design/icons'
 import type { Branch } from '@/types/api'
 
 interface BranchCardProps {
@@ -17,37 +22,63 @@ const BranchCard = ({
   )}`
 
   return (
-    <div className={`flex h-full flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg ${className}`}>
-      <h3 className="mb-3 min-h-[56px] line-clamp-2 text-lg font-semibold text-gray-900">
-        {branch.name}
-      </h3>
-
-      <div className="min-h-[72px] text-gray-700">
-        <p className="flex items-start gap-2">
-          <EnvironmentOutlined className="mt-1 text-base text-red-500" />
-          <span className="line-clamp-2">{branch.address}</span>
-        </p>
-      </div>
-
-      {showManager ? (
-        <div className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-gray-600">
-          <p className="flex items-center gap-2">
-            <UserOutlined className="text-slate-500" />
-            <span className="line-clamp-1">
-              {branch.manager?.name ? `Quản lý: ${branch.manager.name}` : 'Đang cập nhật quản lý'}
-            </span>
-          </p>
+    <div
+      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg ${className}`}
+    >
+      <div className="flex h-full flex-col">
+        <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          <ShopOutlined />
+          Chi nhánh
         </div>
-      ) : null}
 
-      <a
-        href={mapLink}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-auto inline-flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 pt-5 text-sm font-semibold text-gray-800 hover:bg-gray-50"
-      >
-        Xem bản đồ
-      </a>
+        <h3 className="text-xl font-semibold leading-snug text-slate-900">
+          {branch.name}
+        </h3>
+
+        <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm ring-1 ring-slate-100">
+              <EnvironmentOutlined className="text-base" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Địa chỉ
+              </p>
+              <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-700">
+                {branch.address}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {showManager ? (
+          <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-100">
+                <UserOutlined className="text-base" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">
+                  Quản lý
+                </p>
+                <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-700">
+                  {branch.manager?.name || 'Đang cập nhật quản lý'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <a
+          href={mapLink}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
+        >
+          Xem bản đồ
+          <RightOutlined className="text-xs transition-transform duration-300 group-hover:translate-x-0.5" />
+        </a>
+      </div>
     </div>
   )
 }
