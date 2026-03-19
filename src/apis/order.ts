@@ -7,6 +7,8 @@ import type {
   CreateOrderRequest
 } from '@/types/api'
 
+const ORDER_CREATE_TIMEOUT_MS = 90_000
+
 export interface CreateCodOrderRequest {
   shippingAddress: {
     fullname: string
@@ -90,7 +92,8 @@ export const orderApi = {
   createOrder: async (data: CreateOrderRequest): Promise<ApiResponse<Order>> => {
     const response = await apiClient.post<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.CREATE,
-      data
+      data,
+      { timeout: ORDER_CREATE_TIMEOUT_MS }
     )
     return response.data
   },
@@ -99,7 +102,8 @@ export const orderApi = {
   createCodOrder: async (data: CreateCodOrderRequest): Promise<ApiResponse<Order>> => {
     const response = await apiClient.post<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.CREATE,
-      data
+      data,
+      { timeout: ORDER_CREATE_TIMEOUT_MS }
     )
     return response.data
   },
@@ -108,7 +112,8 @@ export const orderApi = {
   createOfflineOrder: async (data: CreateOfflineOrderRequest): Promise<ApiResponse<Order>> => {
     const response = await apiClient.post<ApiResponse<Order>>(
       API_ENDPOINTS.ORDER.OFFLINE,
-      data
+      data,
+      { timeout: ORDER_CREATE_TIMEOUT_MS }
     )
     return response.data
   },
