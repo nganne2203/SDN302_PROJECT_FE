@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button,
   Card,
@@ -66,6 +66,9 @@ const normalizeText = (value: string) =>
     .toLowerCase()
     .trim()
 
+const normalizeComparable = (value: unknown) => String(value ?? '').trim().toLowerCase()
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 /** Mirror the backend isInterProvince logic: check if any branch address contains the customer city */
 const estimateShippingFee = (city: string, branches: Branch[]): number => {
   if (!city || branches.length === 0) return INTRA_PROVINCE_FEE
@@ -96,6 +99,7 @@ const Checkout = () => {
   const [shippingFee, setShippingFee] = useState<number>(INTRA_PROVINCE_FEE)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isSubmittingRef = useRef(false)
   const [isMetaLoading, setIsMetaLoading] = useState(true)
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<
     number | 'new'
@@ -132,6 +136,71 @@ const Checkout = () => {
   )
 
   const hasItems = cartItems.length > 0
+
+  const verifyRecentlyCreatedCodOrder = useCallback(
+    async (
+      address: {
+        phone?: string
+        city?: string
+        ward?: string
+      },
+      options?: { attempts?: number; delayMs?: number }
+    ) => {
+      const attempts = Math.max(1, options?.attempts ?? 1)
+      const delayMs = Math.max(0, options?.delayMs ?? 0)
+
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        if (attempt > 0 && delayMs > 0) {
+          await sleep(delayMs)
+        }
+
+        try {
+          const latestOrders = await orderApi.getMyOrders({
+            page: 1,
+            limit: 3,
+            sortBy: 'createdAt',
+            sortOrder: 'desc'
+          })
+
+          const recentMatchingOrder = (latestOrders.data ?? []).find((order) => {
+            const target = order as unknown as {
+              createdAt?: string
+              shippingAddress?: {
+                phone?: string
+                phoneNumber?: string
+                city?: string
+                ward?: string
+              }
+            }
+
+            if (!target?.createdAt) return false
+            const createdMs = new Date(target.createdAt).getTime()
+            const isRecent =
+              Number.isFinite(createdMs) && Date.now() - createdMs <= 2 * 60 * 1000
+            if (!isRecent) return false
+
+            const latestAddress = target.shippingAddress || {}
+            const samePhone =
+              normalizeComparable(latestAddress.phone ?? latestAddress.phoneNumber)
+              === normalizeComparable(address.phone)
+            const sameCity =
+              normalizeComparable(latestAddress.city) === normalizeComparable(address.city)
+            const sameWard =
+              normalizeComparable(latestAddress.ward) === normalizeComparable(address.ward)
+
+            return samePhone && sameCity && sameWard
+          })
+
+          if (recentMatchingOrder) return true
+        } catch {
+          // ignore and continue polling
+        }
+      }
+
+      return false
+    },
+    []
+  )
 
   const fillFormWithAddress = useCallback(
     (address: Address) => {
@@ -460,12 +529,16 @@ const Checkout = () => {
   }
 
   const handleSubmit = async (values: CheckoutFormValues) => {
+    if (isSubmittingRef.current) return
+
     if (!buyNow && !hasItems) {
       message.warning('Giỏ hàng trống')
       return
     }
 
+    isSubmittingRef.current = true
     setIsSubmitting(true)
+    const sanitizedAddress = stripLocationCodes(values.shippingAddress)
 
     // Buy-now currently reuses cart-based checkout APIs by temporarily replacing the cart.
     // To avoid losing the user's existing cart:
@@ -524,8 +597,6 @@ const Checkout = () => {
         )
       }
 
-      const sanitizedAddress = stripLocationCodes(values.shippingAddress)
-
       if (values.paymentMethod === 'cod') {
         await cartApi.validateBeforeCheckout()
         const codPayload: CreateCodOrderRequest = {
@@ -565,17 +636,32 @@ const Checkout = () => {
           message.error('Không nhận được liên kết thanh toán')
         }
       }
-    } catch {
-      message.error(
-        values.paymentMethod === 'cod'
-          ? 'Đặt hàng thất bại'
-          : 'Tạo thanh toán VNPay thất bại'
-      )
+    } catch (error) {
+      if (values.paymentMethod === 'cod') {
+        const err = error as { code?: string; message?: string } | undefined
+        const isTimeout =
+          err?.code === 'ECONNABORTED'
+          || normalizeComparable(err?.message).includes('timeout')
+
+        const recovered = await verifyRecentlyCreatedCodOrder(sanitizedAddress, {
+          attempts: isTimeout ? 6 : 2,
+          delayMs: isTimeout ? 1500 : 500
+        })
+
+        if (recovered) {
+          message.success('Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.')
+          navigate(ROUTES.ORDERS)
+          return
+        }
+      }
+
+      message.error(values.paymentMethod === 'cod' ? 'Đặt hàng thất bại' : 'Tạo thanh toán VNPay thất bại')
     } finally {
       // If something failed after we replaced the cart for buy-now, restore it.
       if (buyNow && didReplaceCart && !isRedirectingToVnpay) {
         await restoreCartFromBackup()
       }
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
