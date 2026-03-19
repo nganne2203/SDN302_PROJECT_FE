@@ -48,6 +48,10 @@ export interface FilterCommonProps {
   className?: string
   extra?: ReactNode
   compact?: boolean
+  stackSearchRow?: boolean
+  compactFillRow?: boolean
+  compactSingleRow?: boolean
+  wideSearchInRow?: boolean
 }
 
 const FilterCommon = ({
@@ -78,7 +82,11 @@ const FilterCommon = ({
 
   className = '',
   extra,
-  compact = false
+  compact = false,
+  stackSearchRow = false,
+  compactFillRow = false,
+  compactSingleRow = false,
+  wideSearchInRow = false
 }: FilterCommonProps) => {
   const renderFilterField = (field: FilterField) => {
     const rawValue = filterValues[field.key]
@@ -134,47 +142,60 @@ const FilterCommon = ({
   if (compact) {
     return (
       <CardCommon className={`filter-common-compact ${className}`} style={{ marginBottom: 16 }}>
-        <div className="flex flex-wrap items-center gap-3 w-full">
+        <div className={`flex items-center gap-3 w-full ${compactSingleRow ? 'flex-nowrap overflow-x-auto' : 'flex-wrap'}`}>
           {showSearch && (
-            <Input
-              placeholder={searchPlaceholder}
-              prefix={<SearchOutlined />}
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              allowClear
-              style={{ width: 250, minWidth: 220 }}
-            />
+            <div style={{ flex: compactFillRow ? '2.6 1 380px' : '0 1 auto', minWidth: compactFillRow ? 320 : 220 }}>
+              <Input
+                placeholder={searchPlaceholder}
+                prefix={<SearchOutlined />}
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                allowClear
+                style={{ width: compactFillRow ? '100%' : 250, minWidth: compactFillRow ? 0 : 220 }}
+              />
+            </div>
           )}
 
           {filters.map((filter) => (
-            <div key={filter.key}>
+            <div
+              key={filter.key}
+              style={{ flex: compactFillRow ? '1 1 180px' : '0 1 auto', minWidth: 150 }}
+            >
               {renderFilterField(filter)}
             </div>
           ))}
 
           {showSort && sortOptions.length > 0 && (
-            <Select
-              placeholder="Sort by"
-              value={sortBy || undefined}
-              onChange={(value) => onSortChange?.(value, sortOrder || 'desc')}
-              allowClear
-              style={{ width: 150 }}
-            >
-              {sortOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
+            <div style={{ flex: compactFillRow ? '1 1 180px' : '0 1 auto', minWidth: 150 }}>
+              <Select
+                placeholder="Sort by"
+                value={sortBy || undefined}
+                onChange={(value) => onSortChange?.(value, sortOrder || 'desc')}
+                allowClear
+                style={{ width: compactFillRow ? '100%' : 150 }}
+              >
+                {sortOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
           )}
 
           {showReset && (
-            <Button icon={<ReloadOutlined />} onClick={onReset}>
-              Reset
-            </Button>
+            <div style={{ flex: compactFillRow ? '0 1 132px' : '0 1 auto', minWidth: compactFillRow ? 120 : 140 }}>
+              <Button icon={<ReloadOutlined />} onClick={onReset} style={{ width: compactFillRow ? 'auto' : undefined }}>
+                Làm mới
+              </Button>
+            </div>
           )}
 
-          {extra}
+          {extra && (
+            <div style={{ flex: compactFillRow ? '1 1 160px' : '0 1 auto' }}>
+              {extra}
+            </div>
+          )}
         </div>
 
         {showPagination && total > 0 && (
@@ -198,7 +219,12 @@ const FilterCommon = ({
     <CardCommon className={`filter-common ${className}`} style={{ marginBottom: 16 }}>
       <Row gutter={[16, 16]}>
         {showSearch && (
-          <Col xs={24} sm={12} md={8} lg={6}>
+          <Col
+            xs={24}
+            sm={24}
+            md={stackSearchRow ? 24 : (wideSearchInRow ? 12 : 8)}
+            lg={stackSearchRow ? 24 : (wideSearchInRow ? 10 : 6)}
+          >
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                 Search
@@ -215,7 +241,13 @@ const FilterCommon = ({
         )}
 
         {filters.map((filter) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={filter.key}>
+          <Col
+            xs={24}
+            sm={12}
+            md={8}
+            lg={wideSearchInRow ? 8 : 6}
+            key={filter.key}
+          >
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                 {filter.label}
@@ -251,12 +283,17 @@ const FilterCommon = ({
         )}
 
         {(showReset || extra) && (
-          <Col xs={24} sm={12} md={8} lg={6}>
+          <Col
+            xs={24}
+            sm={12}
+            md={wideSearchInRow ? 4 : 8}
+            lg={6}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
               <Space>
                 {showReset && (
                   <Button icon={<ReloadOutlined />} onClick={onReset}>
-                    Reset Filters
+                    Làm mới
                   </Button>
                 )}
                 {extra}

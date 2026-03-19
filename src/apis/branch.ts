@@ -10,6 +10,15 @@ import type {
 import type { User } from '@/features/user/userTypes'
 
 type BranchFilterAll = Omit<BranchFilter, 'page' | 'limit'>
+type BranchRequestWithAddresses = (CreateBranchPayload | UpdateBranchPayload) & {
+  addresses?: unknown
+}
+
+const sanitizeBranchPayload = (data: CreateBranchPayload | UpdateBranchPayload): CreateBranchPayload | UpdateBranchPayload => {
+  const sanitizedPayload = { ...data } as BranchRequestWithAddresses
+  delete sanitizedPayload.addresses
+  return sanitizedPayload as CreateBranchPayload | UpdateBranchPayload
+}
 
 type BranchManagerFilter = {
   search?: string
@@ -48,12 +57,14 @@ export const branchApi = {
   },
 
   createBranch: async (data: CreateBranchPayload): Promise<ApiResponse<Branch>> => {
-    const response = await apiClient.post<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.CREATE, data)
+    const sanitizedData = sanitizeBranchPayload(data) as CreateBranchPayload
+    const response = await apiClient.post<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.CREATE, sanitizedData)
     return response.data
   },
 
   updateBranch: async (id: string, data: UpdateBranchPayload): Promise<ApiResponse<Branch>> => {
-    const response = await apiClient.put<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.UPDATE(id), data)
+    const sanitizedData = sanitizeBranchPayload(data) as UpdateBranchPayload
+    const response = await apiClient.put<ApiResponse<Branch>>(API_ENDPOINTS.BRANCH.UPDATE(id), sanitizedData)
     return response.data
   },
 

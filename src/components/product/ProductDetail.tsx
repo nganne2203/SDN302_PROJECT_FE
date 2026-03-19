@@ -47,7 +47,6 @@ const ProductDetail = ({
   onQuantityChange,
   selectedServices,
   pricingData,
-  isPricingLoading: _isPricingLoading = false,
   onAddToCart,
   onBuyNow
 }: ProductDetailProps) => {
@@ -109,10 +108,10 @@ const ProductDetail = ({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-7">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 p-6 lg:p-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-5 lg:gap-6 p-4 lg:p-6">
+          <div className="space-y-3">
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               {imageUrls.length > 0 ? (
                 <img
@@ -122,7 +121,7 @@ const ProductDetail = ({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  <svg className="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
@@ -135,7 +134,7 @@ const ProductDetail = ({
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${
                       selectedImage === index
                         ? 'border-blue-500'
                         : 'border-gray-200 hover:border-gray-300'
@@ -152,23 +151,23 @@ const ProductDetail = ({
             )}
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
-              <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              <div className="inline-block px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                 {categoryName}
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl lg:text-[28px] font-bold text-gray-900 leading-tight">
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
-                    className={`w-5 h-5 ${
+                    className={`w-4 h-4 ${
                       i < Math.floor(ratingAvg)
                         ? 'text-yellow-400'
                         : 'text-gray-300'
@@ -179,26 +178,26 @@ const ProductDetail = ({
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 ))}
-                <span className="text-lg font-semibold text-gray-900 ml-2">
+                <span className="text-base font-semibold text-gray-900 ml-1.5">
                   {ratingAvg.toFixed(1)}
                 </span>
               </div>
-              <span className="text-gray-600">
+              <span className="text-sm text-gray-600">
                 ({ratingCount} đánh giá)
               </span>
             </div>
 
-            <div className="py-4 border-y border-gray-200 space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-4xl font-bold text-blue-600">
+            <div className="py-3 border-y border-gray-200 space-y-1.5">
+              <div className="flex items-center gap-2.5">
+                <span className="text-3xl font-bold text-blue-600">
                   {formatCurrency(unitPrice)}
                 </span>
                 {hasDiscount && (
                   <>
-                    <span className="text-sm text-gray-400 line-through">
+                    <span className="text-xs text-gray-400 line-through">
                       {formatCurrency(Math.round(originalUnitPrice))}
                     </span>
-                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                    <span className="text-[11px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
                       -{Math.round(discountPercent)}%
                     </span>
                   </>
@@ -207,20 +206,20 @@ const ProductDetail = ({
               <p className="text-xs text-gray-500">Đã bao gồm VAT</p>
             </div>
 
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-600 leading-relaxed">
               {product.description}
             </p>
 
             {product.material && (
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-sm text-gray-700">
                 <span className="font-medium">Chất liệu:</span>
                 <span>{product.material}</span>
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">Chọn chi nhánh:</p>
+                <p className="text-sm font-semibold text-gray-700 mb-1.5">Chọn chi nhánh:</p>
                 <select
                   value={selectedBranchId || ''}
                   onChange={(e) => onBranchChange(e.target.value)}
@@ -233,7 +232,7 @@ const ProductDetail = ({
                   ))}
                 </select>
                 {selectedBranch && (
-                  <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm">
+                  <div className="mt-2.5 rounded-lg border border-blue-100 bg-blue-50 p-2.5 text-xs">
                     <div className="font-medium text-blue-700">{selectedBranch.name}</div>
                     <div className="text-blue-600">{selectedBranch.address}</div>
                     <div className="text-blue-600">Hotline: 028 2345 6789</div>
@@ -254,8 +253,8 @@ const ProductDetail = ({
                 )}
               </div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-gray-700 font-medium">Số lượng:</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-700 font-medium">Số lượng:</span>
 
                 <div className={`flex items-center border rounded-lg ${isOutOfStock ? 'border-gray-200 opacity-50' : 'border-gray-300'}`}>
 
@@ -266,7 +265,7 @@ const ProductDetail = ({
                       setQuantityInput(String(next))
                     }}
                     disabled={isOutOfStock}
-                    className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
       -
                   </button>
@@ -305,7 +304,7 @@ const ProductDetail = ({
                       setQuantityInput(String(num))
                       onQuantityChange(num)
                     }}
-                    className="w-16 text-center border-x border-gray-300 py-2 outline-none"
+                    className="w-14 text-center text-sm border-x border-gray-300 py-1.5 outline-none"
                   />
 
                   <button
@@ -315,7 +314,7 @@ const ProductDetail = ({
                       setQuantityInput(String(next))
                     }}
                     disabled={isOutOfStock}
-                    className="px-4 py-2 hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
                   >
       +
                   </button>
@@ -329,10 +328,10 @@ const ProductDetail = ({
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 <ButtonCommon
                   variant="primary"
-                  size="lg"
+                  size="md"
                   className="flex-1 !bg-black !border-black !text-white hover:!bg-gray-900 hover:!border-gray-900 disabled:!bg-gray-400 disabled:!border-gray-400 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock || quantity <= 0}
@@ -341,7 +340,7 @@ const ProductDetail = ({
                 </ButtonCommon>
                 <ButtonCommon
                   variant="outline"
-                  size="lg"
+                  size="md"
                   className="flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBuyNow}
                   disabled={isOutOfStock || quantity <= 0}
@@ -351,21 +350,21 @@ const ProductDetail = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2.5">
               {[
                 { title: 'Giao hàng nhanh', desc: '2-3 ngày' },
                 { title: 'Bảo hành', desc: '12 tháng' },
                 { title: 'Đổi trả', desc: '7 ngày' }
               ].map((item) => (
-                <div key={item.title} className="border border-gray-200 rounded-lg p-3 text-center text-xs">
+                <div key={item.title} className="border border-gray-200 rounded-lg p-2.5 text-center text-[11px]">
                   <div className="font-semibold text-gray-700">{item.title}</div>
                   <div className="text-gray-500">{item.desc}</div>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-xl border border-purple-200 p-4 space-y-3">
-              <div className="flex items-center gap-2 text-purple-700 font-semibold">
+            <div className="rounded-xl border border-purple-200 p-3 space-y-2.5">
+              <div className="flex items-center gap-2 text-purple-700 text-sm font-semibold">
                 <span>Dịch vụ bổ sung</span>
               </div>
               {isServiceLoading ? (
@@ -373,19 +372,19 @@ const ProductDetail = ({
               ) : services.length === 0 ? (
                 <div className="text-sm text-gray-500">Chưa có dịch vụ bổ sung</div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {services.map((svc) => (
-                    <label key={svc._id} className="flex items-start gap-3 border border-gray-200 rounded-lg p-3">
+                    <label key={svc._id} className="flex items-start gap-2.5 border border-gray-200 rounded-lg p-2.5">
                       <input
                         type="checkbox"
-                        className="mt-1"
+                        className="mt-0.5"
                         checked={selectedServiceIds.includes(svc._id)}
                         onChange={() => onToggleService(svc._id)}
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="font-semibold text-gray-900">{svc.name}</div>
-                          <div className="text-purple-600 font-semibold">
+                          <div className="text-sm font-semibold text-gray-900">{svc.name}</div>
+                          <div className="text-sm text-purple-600 font-semibold">
                             +{formatCurrency(svc.price)}
                           </div>
                         </div>
@@ -405,7 +404,7 @@ const ProductDetail = ({
             </div>
 
             {quantity > 0 && (
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 space-y-1.5">
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Giá sản phẩm:</span>
                   <span>{formatCurrency(productTotal)}</span>
@@ -424,7 +423,7 @@ const ProductDetail = ({
                   <span>Số lượng:</span>
                   <span>{quantity}</span>
                 </div>
-                <div className="flex justify-between font-semibold text-blue-600">
+                <div className="flex justify-between text-sm font-semibold text-blue-600">
                   <span>Tổng cộng:</span>
                   <span>{formatCurrency(totalPrice)}</span>
                 </div>
@@ -434,8 +433,8 @@ const ProductDetail = ({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
+        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2.5">
           {[
             { key: 'description', label: 'Mô tả' },
             { key: 'specs', label: 'Thông số kỹ thuật' },
@@ -445,7 +444,7 @@ const ProductDetail = ({
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
                 activeTab === tab.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'
               }`}
             >
@@ -454,10 +453,10 @@ const ProductDetail = ({
           ))}
         </div>
 
-        <div className="pt-4 text-sm text-gray-600 leading-relaxed">
+        <div className="pt-3 text-sm text-gray-600 leading-relaxed">
           {activeTab === 'description' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Chi tiết sản phẩm</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-2">Chi tiết sản phẩm</h3>
               <p>{product.description}</p>
             </div>
           )}
@@ -477,18 +476,18 @@ const ProductDetail = ({
       </div>
 
       {relatedProducts && relatedProducts.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
             Sản phẩm liên quan
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {relatedProducts.map((relatedProduct) => (
               <a
                 key={relatedProduct._id}
                 href={`/products/${relatedProduct._id}`}
                 className="group"
               >
-                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2.5">
                   {(() => {
                     const imgUrl = getProductImageUrl(relatedProduct.images)
                     return imgUrl ? (
@@ -500,17 +499,17 @@ const ProductDetail = ({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                     )
                   })()}
                 </div>
-                <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
+                <h3 className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1.5">
                   {relatedProduct.name}
                 </h3>
-                <span className="text-lg font-bold text-blue-600">
+                <span className="text-base font-bold text-blue-600">
                   {formatCurrency(relatedProduct.price)}
                 </span>
               </a>

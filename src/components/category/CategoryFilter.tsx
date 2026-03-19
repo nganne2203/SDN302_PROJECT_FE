@@ -55,6 +55,9 @@ const CategoryFilterComponent = ({
       showPagination={true}
       onReset={onReset}
       showReset={true}
+      compact
+      compactFillRow
+      compactSingleRow
     />
   )
 }

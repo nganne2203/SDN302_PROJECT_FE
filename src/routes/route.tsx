@@ -23,6 +23,7 @@ const Cart = lazy(() => import('@/pages/customer/Cart'))
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
 const AuthError = lazy(() => import('@/pages/auth/AuthError'))
 const ProductBrowse = lazy(() => import('@/pages/customer/ProductBrowse'))
+const BranchBrowse = lazy(() => import('@/pages/customer/BranchBrowse'))
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'))
 const Checkout = lazy(() => import('@/pages/customer/Checkout'))
 const PaymentResult = lazy(() => import('@/pages/customer/PaymentResult'))
@@ -62,6 +63,7 @@ const ProductManagement = lazy(() => import('@/pages/management/ProductManagemen
 const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
 const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
+const ReviewManagement = lazy(() => import('@/pages/management/ReviewManagement'))
 
 const LoadingFallback = () => (
   <div className='flex items-center justify-center min-h-screen'>
@@ -184,6 +186,10 @@ export const routes: RouteObject[] = [
   {
     path: ROUTES.PRODUCTS,
     element: withCustomerLayout(ProductBrowse)
+  },
+  {
+    path: ROUTES.BRANCHES,
+    element: withCustomerLayout(BranchBrowse)
   },
   {
     path: ROUTES.PRODUCT_DETAIL,
@@ -310,6 +316,10 @@ export const routes: RouteObject[] = [
       {
         path: 'orders',
         element: withSuspense(ManagementOrders)
+      },
+      {
+        path: 'reviews',
+        element: <ManagementRoute>{withSuspense(ReviewManagement)}</ManagementRoute>
       },
       {
         path: 'inventory',

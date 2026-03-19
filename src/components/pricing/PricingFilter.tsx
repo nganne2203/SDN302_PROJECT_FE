@@ -47,7 +47,10 @@ const PricingFilterComponent = ({
 
   return (
     <FilterCommon
-      showSearch={false}
+      searchPlaceholder="Tìm theo mô tả bảng giá, tên sản phẩm hoặc SKU"
+      searchValue={(filter.search as string) || ''}
+      onSearchChange={(value) => onFilterChange('search', value)}
+      showSearch
       filters={filterFields}
       filterValues={filter as Record<string, unknown>}
       onFilterChange={onFilterChange}
@@ -55,6 +58,7 @@ const PricingFilterComponent = ({
       onReset={onReset}
       showReset={true}
       compact
+      compactFillRow
     />
   )
 }

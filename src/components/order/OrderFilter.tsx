@@ -18,6 +18,7 @@ const OrderFilterComponent = ({ filter, onFilterChange, onReset }: OrderFilterPr
       type: 'select',
       placeholder: 'Tất cả trạng thái',
       options: [
+        { label: 'Tất cả', value: '' },
         { label: 'Đã xác nhận', value: 'confirmed' },
         { label: 'Đang giao', value: 'shipped' },
         { label: 'Đã giao', value: 'delivered' },
@@ -58,6 +59,7 @@ const OrderFilterComponent = ({ filter, onFilterChange, onReset }: OrderFilterPr
       onReset={onReset}
       showPagination={false}
       compact={true}
+      compactFillRow
     />
   )
 }

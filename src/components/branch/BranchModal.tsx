@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ModalCommon, ButtonCommon } from '@/components/common'
 import { Input } from 'antd'
 import LocationSelectGroupOffline from '@/components/common/LocationSelectGroupOffline'
+import { vietnamAddressService } from '@/services/vietnamAddressService'
 import { combineAddress, type AddressComponents } from '@/utils/addressHelper'
 
 interface ExtendedBranchFormData {
@@ -27,6 +28,120 @@ interface BranchModalOfflineProps {
   onSubmit: (data: { name: string; address: string }) => void
 }
 
+const normalizeVietnameseText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const findProvinceByName = (provinceName: string) => {
+  if (!provinceName) return undefined
+
+  const normalizedInput = normalizeVietnameseText(provinceName)
+  const provinces = vietnamAddressService.getProvinces()
+
+  const byCode = provinces.find((province) => {
+    const rawInput = provinceName.trim()
+    return province.province_code === rawInput || province.code.toLowerCase() === rawInput.toLowerCase()
+  })
+  if (byCode) return byCode
+
+  return (
+    provinces.find((province) => normalizeVietnameseText(province.name) === normalizedInput) ||
+    provinces.find((province) => {
+      const normalizedProvinceName = normalizeVietnameseText(province.name)
+      return (
+        normalizedProvinceName.includes(normalizedInput) ||
+        normalizedInput.includes(normalizedProvinceName)
+      )
+    })
+  )
+}
+
+const findWardByName = (wardName: string, provinceCode?: string) => {
+  if (!wardName) return undefined
+
+  const normalizedInput = normalizeVietnameseText(wardName)
+  const wards = provinceCode
+    ? vietnamAddressService.getWardsByProvinceCode(provinceCode)
+    : vietnamAddressService
+      .getProvinces()
+      .flatMap((province) => vietnamAddressService.getWardsByProvinceCode(province.province_code))
+
+  const byCode = wards.find((ward) => ward.ward_code === wardName.trim())
+  if (byCode) return byCode
+
+  return (
+    wards.find((ward) => normalizeVietnameseText(ward.name) === normalizedInput) ||
+    wards.find((ward) => {
+      const normalizedWardName = normalizeVietnameseText(ward.name)
+      return normalizedWardName.includes(normalizedInput) || normalizedInput.includes(normalizedWardName)
+    })
+  )
+}
+
+// Parse with rule: last two comma-separated segments are ward and province.
+const parseAddress = (fullAddress: string): AddressComponents => {
+  if (!fullAddress?.trim()) return {}
+
+  const segments = fullAddress
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+
+  if (segments.length === 0) return {}
+
+  if (segments.length === 1) {
+    return { addressLine: segments[0] }
+  }
+
+  if (segments.length === 2) {
+    const addressLine = segments[0]
+    const lastSegment = segments[1]
+
+    const ward = findWardByName(lastSegment)
+    if (ward) {
+      const province = vietnamAddressService.getProvinceByCode(ward.province_code)
+      return {
+        addressLine,
+        city: province?.name || '',
+        provinceCode: province?.province_code,
+        ward: ward.name,
+        wardCode: ward.ward_code
+      }
+    }
+
+    const province = findProvinceByName(lastSegment)
+    return {
+      addressLine,
+      city: province?.name || lastSegment,
+      provinceCode: province?.province_code,
+      ward: '',
+      wardCode: undefined
+    }
+  }
+
+  const provinceName = segments[segments.length - 1]
+  const wardName = segments[segments.length - 2]
+  const addressLine = segments.slice(0, -2).join(', ')
+
+  const province = findProvinceByName(provinceName)
+  const ward = findWardByName(wardName, province?.province_code)
+  const fallbackProvince =
+    province ||
+    (ward?.province_code ? vietnamAddressService.getProvinceByCode(ward.province_code) : undefined)
+
+  return {
+    addressLine,
+    city: fallbackProvince?.name || provinceName,
+    provinceCode: fallbackProvince?.province_code,
+    ward: ward?.name || wardName,
+    wardCode: ward?.ward_code
+  }
+}
+
 const BranchModalComponent = ({
   isOpen,
   isEditMode,
@@ -45,13 +160,6 @@ const BranchModalComponent = ({
     wardCode: undefined
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  // Simple address parsing function
-  const parseAddress = (fullAddress: string): AddressComponents => {
-    // Simple parsing - just put everything in addressLine for now
-    // Could be enhanced to parse components from existing address
-    return { addressLine: fullAddress }
-  }
 
   // Initialize form data when modal opens or initialData changes
   React.useEffect(() => {

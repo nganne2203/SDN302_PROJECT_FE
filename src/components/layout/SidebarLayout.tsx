@@ -13,7 +13,8 @@ import {
   CustomerServiceOutlined,
   FileTextOutlined,
   MobileOutlined,
-  PercentageOutlined
+  PercentageOutlined,
+  StarOutlined
 } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ROUTES, USER_ROLES } from '@/constants/constant'
@@ -51,6 +52,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Danh mục', ROUTES.MANAGEMENT.CATEGORIES, <TagOutlined />),
       getItem('Thiết bị', ROUTES.MANAGEMENT.DEVICES, <MobileOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Đánh giá', ROUTES.MANAGEMENT.REVIEWS, <StarOutlined />),
       getItem('Quản lý người dùng', 'users-group', <UserOutlined />, [
         getItem('Tất cả người dùng', ROUTES.MANAGEMENT.USERS),
         getItem('Quản lý nhân viên', ROUTES.MANAGEMENT.STAFF)
@@ -67,6 +69,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
       getItem('Bảng giá', ROUTES.MANAGEMENT.PRICINGS, <PercentageOutlined />),
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Đánh giá', ROUTES.MANAGEMENT.REVIEWS, <StarOutlined />),
       getItem('Người dùng chi nhánh', ROUTES.MANAGEMENT.MANAGER_USERS, <UserOutlined />),
       getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Yêu cầu nhập kho', ROUTES.MANAGEMENT.STOCK_REQUESTS, <FileTextOutlined />),
@@ -77,6 +80,7 @@ const getMenuItemsByRole = (role: UserRole): MenuItem[] => {
     return [
       ...commonItems,
       getItem('Đơn hàng', ROUTES.MANAGEMENT.ORDERS, <ShoppingCartOutlined />),
+      getItem('Đánh giá', ROUTES.MANAGEMENT.REVIEWS, <StarOutlined />),
       getItem('Sản phẩm', ROUTES.MANAGEMENT.PRODUCTS, <ShoppingOutlined />),
       getItem('Dịch vụ', ROUTES.MANAGEMENT.SERVICES, <CustomerServiceOutlined />),
       getItem('Kho chi nhánh', ROUTES.MANAGEMENT.BRANCH_INVENTORY, <InboxOutlined />),

@@ -65,6 +65,8 @@ const BranchFilterComponent = ({
       onReset={onReset}
       showReset
       compact
+      compactFillRow
+      compactSingleRow
     />
   )
 }
