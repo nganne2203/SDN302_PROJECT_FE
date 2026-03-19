@@ -23,7 +23,18 @@ const StockRequestPage = () => {
     error,
     statusFilter,
     setStatusFilter,
+    searchFilter,
+    setSearchFilter,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    branchFilter,
+    setBranchFilter,
+    productFilter,
+    setProductFilter,
     products,
+    branches,
     availableInventoryByProduct,
     pendingCount,
     approvedCount,
@@ -37,6 +48,44 @@ const StockRequestPage = () => {
     fetchDetail,
     retry
   } = useStockRequest()
+
+  const handleFilterChange = (key: string, value: unknown) => {
+    if (key === 'search') {
+      setSearchFilter((value as string) || '')
+    }
+
+    if (key === 'status') {
+      setStatusFilter((value as 'all' | 'pending' | 'approved' | 'partially_approved' | 'rejected') || 'all')
+    }
+
+    if (key === 'sortOrder') {
+      setSortOrder((value as 'asc' | 'desc') || 'desc')
+    }
+
+    if (key === 'sortBy') {
+      setSortBy((value as 'createdAt' | 'quantity' | 'status') || 'createdAt')
+    }
+
+    if (key === 'branchId') {
+      setBranchFilter((value as string) || 'all')
+    }
+
+    if (key === 'productId') {
+      setProductFilter((value as string) || 'all')
+    }
+
+    setPagination((prev) => ({ ...prev, current: 1 }))
+  }
+
+  const handleResetFilters = () => {
+    setSearchFilter('')
+    setStatusFilter('all')
+    setSortBy('createdAt')
+    setSortOrder('desc')
+    setBranchFilter('all')
+    setProductFilter('all')
+    setPagination((prev) => ({ ...prev, current: 1 }))
+  }
 
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [actionModalOpen, setActionModalOpen] = useState(false)
@@ -176,11 +225,23 @@ const StockRequestPage = () => {
       )}
 
       <StockRequestFilters
+        isAdmin={isAdmin}
+        search={searchFilter}
         statusFilter={statusFilter}
-        onStatusChange={(value) => {
-          setStatusFilter(value)
-          setPagination((prev) => ({ ...prev, current: 1 }))
-        }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        branchId={branchFilter}
+        productId={productFilter}
+        branchOptions={branches.map((branch) => ({
+          label: branch.name,
+          value: branch._id
+        }))}
+        productOptions={products.map((product) => ({
+          label: product.name,
+          value: product._id
+        }))}
+        onFilterChange={handleFilterChange}
+        onReset={handleResetFilters}
       />
 
       <StockRequestTable

@@ -48,8 +48,9 @@ export interface PricingState {
 export interface PricingFilter {
   page?: number
   limit?: number
+  search?: string
   productId?: string
-  isActive?: boolean
+  isActive?: boolean | string
 }
 
 export interface CreatePricingPayload {

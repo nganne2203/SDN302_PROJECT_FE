@@ -77,7 +77,9 @@ const ProductFilterComponent = ({
       onReset={onClearFilter}
       showReset={true}
       showSort={false}
-      stackSearchRow={true}
+      compact
+      compactFillRow
+      compactSingleRow
     />
   )
 }

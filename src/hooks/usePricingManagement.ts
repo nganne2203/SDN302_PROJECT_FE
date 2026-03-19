@@ -136,6 +136,7 @@ export const usePricingManagement = () => {
   }, [])
 
   useEffect(() => {
+    const normalizedSearch = typeof filter.search === 'string' ? filter.search.trim() : ''
     const isActiveFilter = filter.isActive === 'true'
       ? true
       : filter.isActive === 'false'
@@ -145,6 +146,7 @@ export const usePricingManagement = () => {
     const filterParams: PricingFilter = {
       page: (filter.page as number) || 1,
       limit: (filter.limit as number) || 10,
+      search: normalizedSearch || undefined,
       productId: (filter.productId as string) || undefined,
       isActive: isActiveFilter
     }
@@ -342,9 +344,12 @@ export const usePricingManagement = () => {
           : filter.isActive === 'false'
             ? false
             : undefined
+        const normalizedSearch = typeof filter.search === 'string' ? filter.search.trim() : ''
+
         fetchPricings({
           page: (filter.page as number) || 1,
           limit: (filter.limit as number) || 10,
+          search: normalizedSearch || undefined,
           productId: (filter.productId as string) || undefined,
           isActive: isActiveFilter
         })
