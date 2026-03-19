@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import useAuth from '@/hooks/useAuth'
 import { USER_ROLES } from '@/constants/constant'
-import stockRequestApi, { type StockRequestQuery } from '@/apis/stockRequest'
+import stockRequestApi from '@/apis/stockRequest'
 import inventoryApi from '@/apis/inventory'
 import productApi from '@/apis/product'
+import { branchApi } from '@/apis/branch'
 import userApi from '@/apis/user'
-import type { Product, StockRequestRecord, StockRequestStatus } from '@/types/api'
+import type { Branch, Product, StockRequestRecord, StockRequestStatus } from '@/types/api'
 import { toast } from '@/utils/toast'
 import { extractApiError } from '@/utils/apiError'
 
@@ -60,16 +61,21 @@ export const useStockRequest = () => {
   const [statusFilter, setStatusFilter] = useState<StockRequestStatus | 'all'>(
     (searchParams.get('status') as StockRequestStatus | 'all') || 'all'
   )
+  const [searchFilter, setSearchFilter] = useState(searchParams.get('search') || '')
+  const [sortBy, setSortBy] = useState<'createdAt' | 'quantity' | 'status'>(
+    (searchParams.get('sortBy') as 'createdAt' | 'quantity' | 'status') || 'createdAt'
+  )
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(
+    (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc'
+  )
+  const [branchFilter, setBranchFilter] = useState(searchParams.get('branchId') || 'all')
+  const [productFilter, setProductFilter] = useState(searchParams.get('productId') || 'all')
   const [products, setProducts] = useState<Product[]>([])
+  const [branches, setBranches] = useState<Branch[]>([])
   const [availableInventoryByProduct, setAvailableInventoryByProduct] = useState<Record<string, number>>({})
   const [selectedRequest, setSelectedRequest] = useState<StockRequestRecord | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [resolvedBranch, setResolvedBranch] = useState<string | null | undefined>(user?.branch)
-
-  const query: StockRequestQuery = useMemo(
-    () => ({ page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' }),
-    []
-  )
 
   useEffect(() => {
     setResolvedBranch(user?.branch)
@@ -94,7 +100,6 @@ export const useStockRequest = () => {
 
   const fetchProducts = useCallback(
     async (force = false) => {
-      if (!isManager) return
       const cacheKey = 'stock-request-products'
       const cached = !force ? getCached<Product[]>(cacheKey) : null
       if (cached) {
@@ -105,7 +110,26 @@ export const useStockRequest = () => {
       setProducts(response.data)
       setCached(cacheKey, response.data)
     },
-    [getCached, isManager, setCached]
+    [getCached, setCached]
+  )
+
+  const fetchBranches = useCallback(
+    async (force = false) => {
+      if (!isAdmin) return
+
+      const cacheKey = 'stock-request-branches'
+      const cached = !force ? getCached<Branch[]>(cacheKey) : null
+      if (cached) {
+        setBranches(cached)
+        return
+      }
+
+      const response = await branchApi.getAllBranches({ isActive: true })
+      const branchItems = response.data || []
+      setBranches(branchItems)
+      setCached(cacheKey, branchItems)
+    },
+    [getCached, isAdmin, setCached]
   )
 
   const fetchAvailableInventory = useCallback(
@@ -133,11 +157,17 @@ export const useStockRequest = () => {
       const branchId = isManager ? (resolvedBranch || await resolveBranchFromProfile()) : null
       if (isManager && !branchId) return
 
+      const normalizedSearch = searchFilter.trim()
+
       const params = {
-        ...query,
         page: pagination.current,
         limit: pagination.pageSize,
-        status: statusFilter === 'all' ? undefined : statusFilter
+        search: normalizedSearch || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        sortBy,
+        sortOrder,
+        productId: productFilter !== 'all' ? productFilter : undefined,
+        branchId: isAdmin && branchFilter !== 'all' ? branchFilter : undefined
       }
       const cacheKey = buildKey(`stock-request:${isAdmin ? 'admin' : 'manager'}:${branchId || ''}`, params)
       const cached = !force ? getCached<{ data: StockRequestRecord[]; pagination: typeof pagination }>(cacheKey) : null
@@ -154,7 +184,15 @@ export const useStockRequest = () => {
       try {
         const response = isAdmin
           ? await stockRequestApi.getAll(params)
-          : await stockRequestApi.getByBranch(branchId || '', params)
+          : await stockRequestApi.getByBranch(branchId || '', {
+            page: params.page,
+            limit: params.limit,
+            search: params.search,
+            status: params.status,
+            sortBy: params.sortBy,
+            sortOrder: params.sortOrder,
+            productId: params.productId
+          })
         const nextPagination = {
           total: response.pagination?.totalItems || 0,
           current: response.pagination?.currentPage || pagination.current,
@@ -188,9 +226,13 @@ export const useStockRequest = () => {
       isManager,
       pagination.current,
       pagination.pageSize,
-      query,
       resolveBranchFromProfile,
       resolvedBranch,
+      searchFilter,
+      sortBy,
+      sortOrder,
+      branchFilter,
+      productFilter,
       setCached,
       statusFilter,
       fetchAvailableInventory
@@ -200,6 +242,10 @@ export const useStockRequest = () => {
   useEffect(() => {
     fetchProducts().catch(() => undefined)
   }, [fetchProducts])
+
+  useEffect(() => {
+    fetchBranches().catch(() => undefined)
+  }, [fetchBranches])
 
   useEffect(() => {
     fetchRequests().catch(() => undefined)
@@ -316,7 +362,18 @@ export const useStockRequest = () => {
     error,
     statusFilter,
     setStatusFilter,
+    searchFilter,
+    setSearchFilter,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    branchFilter,
+    setBranchFilter,
+    productFilter,
+    setProductFilter,
     products,
+    branches,
     availableInventoryByProduct,
     pendingCount,
     approvedCount,

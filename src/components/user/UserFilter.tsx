@@ -86,6 +86,8 @@ const UserFilterComponent = ({
       onReset={onReset}
       showReset
       compact
+      compactFillRow
+      compactSingleRow
     />
   )
 }
