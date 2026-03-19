@@ -26,6 +26,7 @@ interface UserListProps {
   onViewUser?: (user: User) => void
   onEditUser?: (user: User) => void
   canEditUser?: (user: User) => boolean
+  canToggleStatusUser?: (user: User) => boolean
   hideStatusToggle?: boolean
 }
 
@@ -38,6 +39,7 @@ const UserListComponent = ({
   onViewUser,
   onEditUser,
   canEditUser,
+  canToggleStatusUser,
   hideStatusToggle = false
 }: UserListProps) => {
   const { user: currentUser } = useAuth()
@@ -58,6 +60,7 @@ const UserListComponent = ({
   const canToggleStatusForUser = (targetUser: User) => {
     if (hideStatusToggle || !onUpdateStatus) return false
     if (currentUserId && targetUser._id === currentUserId) return false
+    if (canToggleStatusUser && !canToggleStatusUser(targetUser)) return false
 
     if (currentUserRole === 'admin') return true
 
