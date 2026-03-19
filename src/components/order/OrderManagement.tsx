@@ -96,7 +96,12 @@ const OrderManagement = ({
   }
 
   const handleUpdateStatus = async (orderId: string, status: string) => {
-    const updatedOrder = await updateOrderStatus(orderId, status)
+    const result = await updateOrderStatus(orderId, status)
+    const updatedOrder = result.order
+    if (!updatedOrder && result.error) {
+      toast.error(result.error)
+      return
+    }
     if (updatedOrder) {
       toast.success('Cập nhật trạng thái đơn hàng thành công')
       // Update local selectedOrder if the modal is showing this order

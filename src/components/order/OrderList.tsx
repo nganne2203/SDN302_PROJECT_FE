@@ -5,7 +5,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order, PaginationMeta } from '@/types/api'
 import type { TableColumn } from '@/components/common/TableCommon'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { getOrderPaymentDisplay } from '@/utils/orderPayment'
+import { getOrderPaymentDisplay, isOrderPaid } from '@/utils/orderPayment'
 interface OrderListProps {
   orders: Order[]
   pagination: PaginationMeta | null
@@ -62,6 +62,9 @@ const OrderList = ({
   }
 
   const normalizeStatus = (status?: string) => (typeof status === 'string' ? status.toLowerCase() : '')
+  const isUnpaidVnpayOrder = (order: Order) => (
+    String(order.paymentMethod || '').toLowerCase() === 'vnpay' && !isOrderPaid(order)
+  )
 
   const getNextStatus = (currentStatus: string) => {
     const statusFlow: Record<string, string | null> = {
@@ -180,10 +183,12 @@ const OrderList = ({
         const orderStatus = getOrderStatus(order)
         const nextStatus = getNextStatus(orderStatus)
         const currentStatus = normalizeStatus(orderStatus)
+        const blockedByUnpaidVnpay = isUnpaidVnpayOrder(order)
         const canUpdate =
           canManage &&
           nextStatus &&
           onUpdateStatus &&
+          !blockedByUnpaidVnpay &&
           currentStatus !== 'cancelled' &&
           currentStatus !== 'delivered'
         const canCancel =
@@ -210,6 +215,19 @@ const OrderList = ({
                   onClick={() => onUpdateStatus(getOrderId(order), nextStatus)}
                   icon={<CheckCircle className="w-4 h-4" />}
                 />
+              </Tooltip>
+            )}
+
+            {!canUpdate && blockedByUnpaidVnpay && nextStatus && (
+              <Tooltip title="Đơn VNPay chưa thanh toán nên không thể cập nhật trạng thái">
+                <span>
+                  <ButtonCommon
+                    variant="primary"
+                    size="sm"
+                    disabled
+                    icon={<CheckCircle className="w-4 h-4" />}
+                  />
+                </span>
               </Tooltip>
             )}
 
