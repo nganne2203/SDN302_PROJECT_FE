@@ -63,6 +63,7 @@ const ProductManagement = lazy(() => import('@/pages/management/ProductManagemen
 const ServiceProductManagement = lazy(() => import('@/pages/management/ServiceProduct'))
 const ManagerUsersManagement = lazy(() => import('@/pages/management/ManagerUser'))
 const StaffCustomerManagement = lazy(() => import('@/pages/management/StaffCustomer'))
+const ReviewManagement = lazy(() => import('@/pages/management/ReviewManagement'))
 
 const LoadingFallback = () => (
   <div className='flex items-center justify-center min-h-screen'>
@@ -315,6 +316,10 @@ export const routes: RouteObject[] = [
       {
         path: 'orders',
         element: withSuspense(ManagementOrders)
+      },
+      {
+        path: 'reviews',
+        element: <ManagementRoute>{withSuspense(ReviewManagement)}</ManagementRoute>
       },
       {
         path: 'inventory',

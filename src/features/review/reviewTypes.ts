@@ -3,7 +3,15 @@ import type { PaginationMeta } from '@/types/api'
 export interface ReviewUser {
   _id: string
   fullname: string
+  email?: string
   avatar?: string
+}
+
+export interface ReviewProduct {
+  _id: string
+  name: string
+  slug?: string
+  images?: Array<string | { imageUrl: string }>
 }
 
 export interface ReviewImage {
@@ -14,15 +22,17 @@ export interface ReviewImage {
 export interface Review {
   _id: string
   userId: string | ReviewUser
-  productId: string
+  productId: string | ReviewProduct
   orderId?: string
   rating: number
   comment?: string
   images?: ReviewImage[]
   isVerifiedPurchase: boolean
+  isDeleted?: boolean
   createdAt: string
   updatedAt: string
   user?: ReviewUser
+  product?: ReviewProduct
 }
 
 export interface ReviewStats {
