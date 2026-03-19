@@ -159,12 +159,15 @@ export const useCart = () => {
       delete pendingQuantitiesRef.current[lineId]
 
       try {
-        await cartApi.updateCartItemQuantityByItemId(lineId, finalQty, { emit: false })
-
         if (productId) {
+          await cartApi.updateCartItemQuantity(productId, finalQty, { emit: false })
+
           pricingApi.calculatePrice(productId, finalQty)
             .then((res) => setPricingMap((prev) => ({ ...prev, [lineId]: res.data })))
             .catch(() => setPricingMap((prev) => ({ ...prev, [lineId]: null })))
+        } else {
+          message.error('Không xác định được sản phẩm (productId)')
+          loadCart(() => true)
         }
       } catch {
         message.error('Cập nhật số lượng thất bại')
