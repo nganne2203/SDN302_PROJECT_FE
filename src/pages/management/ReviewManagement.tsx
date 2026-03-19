@@ -239,10 +239,18 @@ const ReviewManagement = () => {
       title: 'Nội dung',
       dataIndex: 'comment',
       key: 'comment',
+      width: 280,
       ellipsis: true,
       render: (value) => {
         const comment = String(value || '').trim()
-        return <span className='text-sm text-gray-700'>{comment || '--'}</span>
+        return (
+          <div
+            className='max-w-[320px] overflow-hidden whitespace-nowrap text-ellipsis text-sm text-gray-700'
+            title={comment || '--'}
+          >
+            {comment || '--'}
+          </div>
+        )
       }
     },
     {

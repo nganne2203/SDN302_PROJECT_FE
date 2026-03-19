@@ -77,7 +77,14 @@ const BranchListComponent = ({
       width: 220,
       render: (value: unknown) => {
         const manager = value as { id: string; name: string } | null | undefined
-        return manager?.name || '-'
+        const managerName = manager?.name || '-'
+        return (
+          <Tooltip title={managerName}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis">
+              {managerName}
+            </div>
+          </Tooltip>
+        )
       }
     },
     {
