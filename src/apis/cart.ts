@@ -92,7 +92,7 @@ export const cartApi = {
   updateCartItemQuantityByItemId: async (itemId: string, quantity: number, options?: CartMutationOptions): Promise<ApiResponse<CartItem>> => {
     const response = await apiClient.put<ApiResponse<CartItem>>(
       API_ENDPOINTS.CART.UPDATE_QUANTITY,
-      { itemId, quantity }
+      { productId: itemId, quantity }
     )
     invalidateCartCache()
     if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
