@@ -1,16 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Tabs, Table, Button, Pagination } from 'antd'
+import { Tabs, Table, Button, Pagination, Modal } from 'antd'
 import { EyeOutlined } from '@ant-design/icons'
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { LoaderCommon } from '@/components/common'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge'
+import ReviewModal from '@/components/review/ReviewModal'
 import useOrder from '@/hooks/useOrder'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getProductImageUrl } from '@/utils/imageHelper'
 import { getOrderPaymentDisplay } from '@/utils/orderPayment'
 import { ROUTES } from '@/constants/constant'
 import type { Order } from '@/types/api'
 import type { OrderFilter } from '@/features/order/orderTypes'
+
+interface ProductReviewTarget {
+  productId: string
+  productName: string
+  productImage?: string
+}
 
 const OrderHistory = () => {
   const navigate = useNavigate()
@@ -23,6 +31,65 @@ const OrderHistory = () => {
 
   const [activeTab, setActiveTab] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null)
+  const [selectedProductForReview, setSelectedProductForReview] = useState<ProductReviewTarget | null>(null)
+  const [isReviewPickerOpen, setIsReviewPickerOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+
+  const getOrderId = (order: Order): string => {
+    const withMongoId = order as unknown as { _id?: string }
+    return withMongoId._id || order.id
+  }
+
+  const getOrderStatus = (order: Order): string => {
+    const withOrderStatus = order as unknown as { orderStatus?: string; status?: string }
+    return String(withOrderStatus.orderStatus || withOrderStatus.status || '').toLowerCase()
+  }
+
+  const isDeliveredOrder = (order: Order): boolean => {
+    const status = getOrderStatus(order)
+    const deliveryStatus = String((order as unknown as { delivery?: { status?: string } }).delivery?.status || '').toLowerCase()
+    return status === 'delivered' || deliveryStatus === 'delivered'
+  }
+
+  const getReviewTargetsFromOrder = (order: Order): ProductReviewTarget[] => {
+    const items = Array.isArray(order.items) ? order.items : []
+
+    const targets: ProductReviewTarget[] = []
+
+    items.forEach((item) => {
+      const normalized = item as unknown as {
+        productId?: string
+        productName?: string
+        productImage?: string
+        product?: {
+          _id?: string
+          name?: string
+          images?: string[] | string
+        }
+      }
+
+      const productId = normalized.product?._id || normalized.productId
+      if (!productId) return
+
+      const productName = normalized.product?.name || normalized.productName || 'Sản phẩm'
+      const productImage = normalized.product?.images
+        ? getProductImageUrl(normalized.product.images as never)
+        : normalized.productImage
+
+      targets.push({
+        productId,
+        productName,
+        productImage
+      })
+    })
+
+    const uniqueTargets = Array.from(
+      new Map(targets.map((target) => [target.productId, target])).values()
+    )
+
+    return uniqueTargets
+  }
 
   // Build filter based on active tab
   const buildFilter = useCallback((): OrderFilter => {
@@ -60,6 +127,24 @@ const OrderHistory = () => {
   const handleTabChange = (key: string) => {
     setActiveTab(key)
     setCurrentPage(1)
+  }
+
+  const handleOpenReviewPicker = (order: Order) => {
+    setSelectedOrderForReview(order)
+    setSelectedProductForReview(null)
+    setIsReviewPickerOpen(true)
+  }
+
+  const handleSelectReviewProduct = (target: ProductReviewTarget) => {
+    setSelectedProductForReview(target)
+    setIsReviewPickerOpen(false)
+    setIsReviewModalOpen(true)
+  }
+
+  const handleReviewSuccess = () => {
+    loadOrders()
+    setIsReviewModalOpen(false)
+    setSelectedProductForReview(null)
   }
 
   const orderColumns = [
@@ -121,20 +206,32 @@ const OrderHistory = () => {
       key: 'actions',
       align: 'center' as const,
       render: (_: unknown, order: Order) => (
-        <Button
-          type="primary"
-          size="small"
-          icon={<EyeOutlined />}
-          onClick={() => {
-            const id = (order as unknown as { _id: string })._id || order.id
-            navigate(ROUTES.ORDER_DETAIL.replace(':id', id))
-          }}
-        >
-          Xem chi tiết
-        </Button>
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            type="primary"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              const id = getOrderId(order)
+              navigate(ROUTES.ORDER_DETAIL.replace(':id', id))
+            }}
+          >
+            Xem chi tiết
+          </Button>
+          {isDeliveredOrder(order) && getReviewTargetsFromOrder(order).length > 0 && (
+            <Button
+              size="small"
+              onClick={() => handleOpenReviewPicker(order)}
+            >
+              Đánh giá
+            </Button>
+          )}
+        </div>
       )
     }
   ]
+
+  const reviewTargets = selectedOrderForReview ? getReviewTargetsFromOrder(selectedOrderForReview) : []
 
   const tabItems = [
     {
@@ -246,6 +343,54 @@ const OrderHistory = () => {
           </div>
         )}
       </div>
+
+      <Modal
+        open={isReviewPickerOpen}
+        title="Chọn sản phẩm để đánh giá"
+        onCancel={() => setIsReviewPickerOpen(false)}
+        footer={null}
+      >
+        <div className="space-y-3">
+          {reviewTargets.map((target) => (
+            <div
+              key={target.productId}
+              className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 p-3"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                  {target.productImage && (
+                    <img src={target.productImage} alt={target.productName} className="w-full h-full object-cover" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 max-w-[320px] overflow-hidden whitespace-nowrap text-ellipsis" title={target.productName}>
+                    {target.productName}
+                  </p>
+                </div>
+              </div>
+
+              <Button type="primary" size="small" onClick={() => handleSelectReviewProduct(target)}>
+                Đánh giá
+              </Button>
+            </div>
+          ))}
+
+          {reviewTargets.length === 0 && (
+            <p className="text-sm text-gray-500">Không tìm thấy sản phẩm để đánh giá trong đơn hàng này.</p>
+          )}
+        </div>
+      </Modal>
+
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false)
+          setSelectedProductForReview(null)
+        }}
+        productId={selectedProductForReview?.productId || ''}
+        productName={selectedProductForReview?.productName}
+        onSuccess={handleReviewSuccess}
+      />
 
     </div>
   )

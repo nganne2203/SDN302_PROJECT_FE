@@ -67,7 +67,10 @@ export const authApi = {
   confirmResetPassword: async (data: ConfirmResetPasswordRequest): Promise<SimpleResponse> => {
     const response = await apiClient.post<SimpleResponse>(
       API_ENDPOINTS.USER.CONFIRM_RESET_PASSWORD,
-      data
+      {
+        email: data.email,
+        password: data.newPassword
+      }
     )
     return response.data
   },
