@@ -75,6 +75,7 @@ const HeaderLayout = () => {
       { key: 'profile', label: 'Tài khoản' },
       { key: 'change-password', label: 'Đổi mật khẩu' },
       { key: 'orders', label: 'Đơn hàng' },
+      { key: 'my-reviews', label: 'Lịch sử đánh giá' },
       ...(managementItem ? [managementItem] : []),
       { type: 'divider' as const },
       { key: 'logout', label: 'Đăng xuất' }
@@ -94,6 +95,9 @@ const HeaderLayout = () => {
       break
     case 'orders':
       navigate(ROUTES.ORDERS)
+      break
+    case 'my-reviews':
+      navigate(ROUTES.MY_REVIEWS)
       break
     case 'management':
       navigate(ROUTES.MANAGEMENT.DASHBOARD)
@@ -186,6 +190,12 @@ const HeaderLayout = () => {
                   className="block text-gray-600 hover:text-blue-600"
                 >
                   Đơn hàng
+                </Link>
+                <Link
+                  to={ROUTES.MY_REVIEWS}
+                  className="block text-gray-600 hover:text-blue-600"
+                >
+                  Lịch sử đánh giá
                 </Link>
                 <Link
                   to={ROUTES.CHANGE_PASSWORD}

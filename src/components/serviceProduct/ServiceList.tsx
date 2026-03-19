@@ -89,8 +89,16 @@ const ServiceProductList = ({
       sortable: true,
       render: (value, record) => (
         <div className='flex flex-col'>
-          <span className='font-medium text-gray-800'>{value as string}</span>
-          <span className='text-xs text-gray-500 line-clamp-1'>{record.description}</span>
+          <Tooltip title={String(value || '-') }>
+            <span className='font-medium text-gray-800 max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis'>
+              {String(value || '-')}
+            </span>
+          </Tooltip>
+          <Tooltip title={String(record.description || '-') }>
+            <span className='text-xs text-gray-500 max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis'>
+              {String(record.description || '-')}
+            </span>
+          </Tooltip>
         </div>
       )
     },

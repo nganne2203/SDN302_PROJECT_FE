@@ -116,9 +116,17 @@ const OrderList = ({
       title: 'Khách hàng',
       width: 200,
       render: (_, order) => (
-        <div>
-          <div className="text-sm text-gray-900">{getShippingName(order)}</div>
-          <div className="text-xs text-gray-500">{getShippingPhone(order)}</div>
+        <div className="min-w-0">
+          <Tooltip title={getShippingName(order)}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis text-sm text-gray-900">
+              {getShippingName(order)}
+            </div>
+          </Tooltip>
+          <Tooltip title={getShippingPhone(order)}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis text-xs text-gray-500">
+              {getShippingPhone(order)}
+            </div>
+          </Tooltip>
         </div>
       )
     },
@@ -147,8 +155,12 @@ const OrderList = ({
       render: (_, order) => {
         const paymentDisplay = getOrderPaymentDisplay(order, (order as unknown as { paymentStatus?: string }).paymentStatus)
         return (
-          <div>
-            <div className="text-sm text-gray-900">{order.paymentMethod}</div>
+          <div className="min-w-0">
+            <Tooltip title={order.paymentMethod}>
+              <div className="max-w-[180px] overflow-hidden whitespace-nowrap text-ellipsis text-sm text-gray-900">
+                {order.paymentMethod}
+              </div>
+            </Tooltip>
             <div className="text-xs">
               <span className={
                 paymentDisplay.tone === 'success' ? 'text-green-600' :

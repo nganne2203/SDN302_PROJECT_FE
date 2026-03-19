@@ -18,7 +18,6 @@ interface ReviewModalProps {
   onClose: () => void
   productId: string
   productName?: string
-  orderId?: string
   existingReview?: Review | null
   onSuccess?: () => void
 }
@@ -71,7 +70,6 @@ const ReviewModal = ({
   onClose,
   productId,
   productName,
-  orderId,
   existingReview,
   onSuccess
 }: ReviewModalProps) => {
@@ -139,7 +137,6 @@ const ReviewModal = ({
     } else {
       success = await createReview({
         productId,
-        orderId: orderId || undefined,
         rating: data.rating as number,
         comment: data.comment || undefined,
         images: newFiles.length > 0 ? newFiles : undefined

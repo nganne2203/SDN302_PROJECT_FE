@@ -47,7 +47,6 @@ export interface ReviewStats {
 
 export interface CreateReviewRequest {
   productId: string
-  orderId?: string
   rating: number
   comment?: string
   images?: File[]
@@ -73,7 +72,6 @@ export const reviewApi = {
   createReview: async (data: CreateReviewRequest): Promise<ApiResponse<Review>> => {
     const formData = new FormData()
     formData.append('productId', data.productId)
-    if (data.orderId) formData.append('orderId', data.orderId)
     formData.append('rating', String(data.rating))
     if (data.comment) formData.append('comment', data.comment)
     if (data.images) {
