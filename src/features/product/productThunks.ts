@@ -19,11 +19,16 @@ export const fetchProductsThunk = createAsyncThunk<
 >(
   'product/fetchProducts',
   async ({ filter, forceRefresh = false }, { rejectWithValue, getState }) => {
+    const hasFilterParams = Boolean(
+      filter && Object.entries(filter).some(([, value]) => value !== undefined && value !== '')
+    )
+
     // Check cache
     const state = getState() as RootState
     const { cache, products, pagination } = state.product
     if (
       !forceRefresh &&
+      !hasFilterParams &&
       products.length > 0 &&
       isCacheValid(cache.products.lastFetched, CACHE_DURATION.MEDIUM)
     ) {
@@ -125,7 +130,7 @@ export const updateProductStatusThunk = createAsyncThunk<
 )
 
 export const fetchCategoriesThunk = createAsyncThunk<
-  { _id: string; name: string; slug: string }[],
+  { id: string; name: string; slug: string }[],
   { forceRefresh?: boolean } | void
 >(
   'product/fetchCategories',
@@ -147,6 +152,15 @@ export const fetchCategoriesThunk = createAsyncThunk<
     try {
       const response = await productApi.getCategories()
       return response.data
+        .map((category) => {
+          const normalized = category as { _id?: string; id?: string; name: string; slug: string }
+          return {
+            id: normalized._id || normalized.id || '',
+            name: normalized.name,
+            slug: normalized.slug
+          }
+        })
+        .filter((category) => Boolean(category.id))
     } catch (error) {
       return rejectWithValue(extractApiError(error, 'Không thể tải danh mục'))
     }
