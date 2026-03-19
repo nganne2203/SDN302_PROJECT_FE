@@ -10,6 +10,34 @@ import type {
 } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
 
+type UserRequestWithAddress = (CreateUserRequest | UpdateUserRequest) & {
+  address?: unknown
+  addresses?: Array<Record<string, unknown>>
+}
+
+const sanitizeUserPayload = (data: CreateUserRequest | UpdateUserRequest): CreateUserRequest | UpdateUserRequest => {
+  const sanitizedPayload = { ...data } as UserRequestWithAddress
+  const addresses = sanitizedPayload.addresses
+
+  delete sanitizedPayload.address
+  delete sanitizedPayload.addresses
+
+  if (!addresses) {
+    return sanitizedPayload as CreateUserRequest | UpdateUserRequest
+  }
+
+  const sanitizedAddresses = addresses.map((addressItem) => {
+    const sanitizedAddressItem = { ...addressItem }
+    delete sanitizedAddressItem.address
+    return sanitizedAddressItem
+  })
+
+  return {
+    ...sanitizedPayload,
+    addresses: sanitizedAddresses
+  } as CreateUserRequest | UpdateUserRequest
+}
+
 export interface ResetPasswordRequest {
   email: string
 }
@@ -57,9 +85,10 @@ export const userManageApi = {
   },
 
   createUser: async (data: CreateUserRequest): Promise<ApiResponse<User>> => {
+    const sanitizedData = sanitizeUserPayload(data) as CreateUserRequest
     const response = await apiClient.post<ApiResponse<User>>(
       API_ENDPOINTS.USER.CREATE_USER,
-      data
+      sanitizedData
     )
     return response.data
   },
@@ -72,9 +101,10 @@ export const userManageApi = {
   },
 
   updateUser: async (id: string, data: UpdateUserRequest): Promise<ApiResponse<User>> => {
+    const sanitizedData = sanitizeUserPayload(data) as UpdateUserRequest
     const response = await apiClient.put<ApiResponse<User>>(
       API_ENDPOINTS.USER.UPDATE(id),
-      data
+      sanitizedData
     )
     return response.data
   },

@@ -3,6 +3,7 @@ import { Rate, Progress, Pagination, Spin, Empty, Popconfirm } from 'antd'
 import { Star, Edit2, Trash2 } from 'lucide-react'
 import { useReview } from '@/hooks/useReview'
 import { useAppSelector } from '@/apps/hooks'
+import ModalCommon from '@/components/common/ModalCommon'
 import ReviewModal from './ReviewModal'
 import { toast } from '@/utils/toast'
 import type { Review } from '@/features/review/reviewTypes'
@@ -35,6 +36,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false)
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [reviewerAvatarUrls, setReviewerAvatarUrls] = useState<Record<string, string>>({})
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!productId) return
@@ -302,6 +304,7 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
                               src={img.imageUrl}
                               alt={`review-${idx}`}
                               className="w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform"
+                              onClick={() => setPreviewImageUrl(img.imageUrl)}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                             />
                           ))}
@@ -364,6 +367,23 @@ const ReviewSection = ({ productId, productName }: ReviewSectionProps) => {
         existingReview={editingReview}
         onSuccess={handleReviewSuccess}
       />
+
+      <ModalCommon
+        isOpen={!!previewImageUrl}
+        onClose={() => setPreviewImageUrl(null)}
+        title="Ảnh đánh giá"
+        size="md"
+      >
+        {previewImageUrl && (
+          <div className="flex items-center justify-center">
+            <img
+              src={previewImageUrl}
+              alt="Review preview"
+              className="max-h-[75vh] w-auto max-w-full rounded-lg object-contain"
+            />
+          </div>
+        )}
+      </ModalCommon>
     </div>
   )
 }

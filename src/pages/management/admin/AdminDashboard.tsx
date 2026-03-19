@@ -362,41 +362,41 @@ const AdminDashboard = () => {
 
           {/* Recent Orders Table */}
           <div className="pt-4">
-          <Card title="Đơn hàng gần đây">
-            <Table
-              columns={recentOrderColumns}
-              dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
-              pagination={false}
-              size="small"
-              locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
-            />
-          </Card>
+            <Card title="Đơn hàng gần đây">
+              <Table
+                columns={recentOrderColumns}
+                dataSource={recentOrders.map((o) => ({ ...o, key: o._id ?? o.orderNumber }))}
+                pagination={false}
+                size="small"
+                locale={{ emptyText: loading ? 'Đang tải...' : 'Không có dữ liệu' }}
+              />
+            </Card>
           </div>
 
           {/* Quick navigation */}
           <div className="">
-          <Card title="Quản lý nhanh">
-            <Row gutter={[16, 16]}>
-              {[
-                { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
-                { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShoppingOutlined /> },
-                { label: 'Người dùng', path: ROUTES.MANAGEMENT.USERS, icon: <UserOutlined /> },
-                { label: 'Chi nhánh', path: ROUTES.MANAGEMENT.BRANCHES, icon: <FileTextOutlined /> },
-                { label: 'Danh mục', path: ROUTES.MANAGEMENT.CATEGORIES, icon: <FileTextOutlined /> },
-                { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> }
-              ].map(({ label, path, icon }) => (
-                <Col xs={12} sm={8} lg={4} key={path}>
-                  <Button
-                    block
-                    icon={icon}
-                    onClick={() => navigate(path)}
-                  >
-                    {label}
-                  </Button>
-                </Col>
-              ))}
-            </Row>
-          </Card>
+            <Card title="Quản lý nhanh">
+              <Row gutter={[16, 16]}>
+                {[
+                  { label: 'Đơn hàng', path: ROUTES.MANAGEMENT.ORDERS, icon: <ShoppingCartOutlined /> },
+                  { label: 'Sản phẩm', path: ROUTES.MANAGEMENT.PRODUCTS, icon: <ShoppingOutlined /> },
+                  { label: 'Người dùng', path: ROUTES.MANAGEMENT.USERS, icon: <UserOutlined /> },
+                  { label: 'Chi nhánh', path: ROUTES.MANAGEMENT.BRANCHES, icon: <FileTextOutlined /> },
+                  { label: 'Danh mục', path: ROUTES.MANAGEMENT.CATEGORIES, icon: <FileTextOutlined /> },
+                  { label: 'Nhập kho', path: ROUTES.MANAGEMENT.STOCK_REQUESTS, icon: <TruckOutlined /> }
+                ].map(({ label, path, icon }) => (
+                  <Col xs={12} sm={8} lg={4} key={path}>
+                    <Button
+                      block
+                      icon={icon}
+                      onClick={() => navigate(path)}
+                    >
+                      {label}
+                    </Button>
+                  </Col>
+                ))}
+              </Row>
+            </Card>
           </div>
         </div>
       </Spin>

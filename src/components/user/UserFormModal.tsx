@@ -8,6 +8,7 @@ import type { Branch, UserRole } from '@/types/api'
 import { USER_ROLES, ROLE_LABELS } from '@/constants/constant'
 import { emailSchema, passwordSchema, fullNameSchema, userAddressSchema } from '@/utils/validator'
 import { combineAddress } from '@/utils/addressHelper'
+import { vietnamAddressService } from '@/services/vietnamAddressService'
 import { useBranch } from '@/hooks/useBranch'
 import uploadApi from '@/apis/upload'
 import { toast } from '@/utils/toast'
@@ -46,6 +47,44 @@ const emptyAddress: Address = {
   isDefault: false
 }
 
+const normalizeVietnameseText = (value: string): string => {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .trim()
+    .toLowerCase()
+}
+
+const hydrateAddressCodes = (address: Address): Address => {
+  const normalizedCity = normalizeVietnameseText(address.city || '')
+  const normalizedWard = normalizeVietnameseText(address.ward || '')
+
+  let provinceCode = address.provinceCode ? String(address.provinceCode) : undefined
+  let wardCode = address.wardCode ? String(address.wardCode) : undefined
+
+  if (!provinceCode && normalizedCity) {
+    const matchedProvince = vietnamAddressService
+      .getProvinces()
+      .find((province) => normalizeVietnameseText(province.name) === normalizedCity)
+    provinceCode = matchedProvince?.province_code
+  }
+
+  if (!wardCode && provinceCode && normalizedWard) {
+    const matchedWard = vietnamAddressService
+      .getWardsByProvinceCode(provinceCode)
+      .find((ward) => normalizeVietnameseText(ward.name) === normalizedWard)
+    wardCode = matchedWard?.ward_code
+  }
+
+  return {
+    ...address,
+    provinceCode,
+    wardCode
+  }
+}
+
 const UserFormModal = ({
   isOpen,
   isEditMode,
@@ -65,7 +104,7 @@ const UserFormModal = ({
         role: user.role || USER_ROLES.CUSTOMER as UserRole,
         branch: user.branch || '',
         avatar: user.avatarId || user.avatar || '',
-        addresses: user.addresses?.length > 0 ? user.addresses : []
+        addresses: user.addresses?.length > 0 ? user.addresses.map(hydrateAddressCodes) : []
       }
     }
     return {
@@ -162,23 +201,31 @@ const UserFormModal = ({
     }
   }
 
-  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean | number | undefined) => {
-    const newAddresses = [...formData.addresses]
-    newAddresses[index] = { ...newAddresses[index], [field]: value }
+  const handleAddressPatch = (index: number, patch: Partial<Address>) => {
+    setFormData((prev) => {
+      const newAddresses = [...prev.addresses]
+      const nextAddress = { ...newAddresses[index], ...patch }
+      newAddresses[index] = nextAddress
 
-    if (field === 'isDefault' && value === true) {
-      newAddresses.forEach((addr, i) => {
-        if (i !== index) {
-          addr.isDefault = false
-        }
-      })
-    }
+      if (patch.isDefault === true) {
+        newAddresses.forEach((addr, i) => {
+          if (i !== index) {
+            addr.isDefault = false
+          }
+        })
+      }
 
-    setFormData(prev => ({ ...prev, addresses: newAddresses }))
+      return { ...prev, addresses: newAddresses }
+    })
+
     const errorKey = `address_${index}`
     if (errors[errorKey]) {
       setErrors(prev => ({ ...prev, [errorKey]: '' }))
     }
+  }
+
+  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean | number | undefined) => {
+    handleAddressPatch(index, { [field]: value } as Partial<Address>)
   }
 
   const handleAddAddress = () => {
@@ -538,18 +585,12 @@ const UserFormModal = ({
                         provinceCode={address.provinceCode}
                         wardCode={address.wardCode}
                         onChange={(changes) => {
-                          if ('province' in changes) {
-                            handleAddressChange(index, 'city', changes.province || '')
-                          }
-                          if ('ward' in changes) {
-                            handleAddressChange(index, 'ward', changes.ward || '')
-                          }
-                          if ('provinceCode' in changes) {
-                            handleAddressChange(index, 'provinceCode', changes.provinceCode)
-                          }
-                          if ('wardCode' in changes) {
-                            handleAddressChange(index, 'wardCode', changes.wardCode)
-                          }
+                          const patch: Partial<Address> = {}
+                          if ('province' in changes) patch.city = changes.province || ''
+                          if ('ward' in changes) patch.ward = changes.ward || ''
+                          if ('provinceCode' in changes) patch.provinceCode = changes.provinceCode
+                          if ('wardCode' in changes) patch.wardCode = changes.wardCode
+                          handleAddressPatch(index, patch)
                         }}
                       />
 

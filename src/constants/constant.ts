@@ -265,6 +265,7 @@ export const ROUTES = {
     BRANCH_INVENTORY: '/management/branch-inventory',
     STOCK_REQUESTS: '/management/stock-requests',
     BRANCH_REPORTS: '/management/branch-reports',
+    REVIEWS: '/management/reviews',
     BRANCH_PROMOTIONS: '/management/branch-promotions',
     CUSTOMER_SUPPORT: '/management/customer-support',
     SERVICES: '/management/services',
