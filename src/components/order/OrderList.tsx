@@ -5,7 +5,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order, PaginationMeta } from '@/types/api'
 import type { TableColumn } from '@/components/common/TableCommon'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { getOrderPaymentDisplay } from '@/utils/orderPayment'
+import { getOrderPaymentDisplay, isOrderPaid } from '@/utils/orderPayment'
 interface OrderListProps {
   orders: Order[]
   pagination: PaginationMeta | null
@@ -62,6 +62,9 @@ const OrderList = ({
   }
 
   const normalizeStatus = (status?: string) => (typeof status === 'string' ? status.toLowerCase() : '')
+  const isUnpaidVnpayOrder = (order: Order) => (
+    String(order.paymentMethod || '').toLowerCase() === 'vnpay' && !isOrderPaid(order)
+  )
 
   const getNextStatus = (currentStatus: string) => {
     const statusFlow: Record<string, string | null> = {
@@ -113,9 +116,17 @@ const OrderList = ({
       title: 'Khách hàng',
       width: 200,
       render: (_, order) => (
-        <div>
-          <div className="text-sm text-gray-900">{getShippingName(order)}</div>
-          <div className="text-xs text-gray-500">{getShippingPhone(order)}</div>
+        <div className="min-w-0">
+          <Tooltip title={getShippingName(order)}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis text-sm text-gray-900">
+              {getShippingName(order)}
+            </div>
+          </Tooltip>
+          <Tooltip title={getShippingPhone(order)}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis text-xs text-gray-500">
+              {getShippingPhone(order)}
+            </div>
+          </Tooltip>
         </div>
       )
     },
@@ -144,8 +155,12 @@ const OrderList = ({
       render: (_, order) => {
         const paymentDisplay = getOrderPaymentDisplay(order, (order as unknown as { paymentStatus?: string }).paymentStatus)
         return (
-          <div>
-            <div className="text-sm text-gray-900">{order.paymentMethod}</div>
+          <div className="min-w-0">
+            <Tooltip title={order.paymentMethod}>
+              <div className="max-w-[180px] overflow-hidden whitespace-nowrap text-ellipsis text-sm text-gray-900">
+                {order.paymentMethod}
+              </div>
+            </Tooltip>
             <div className="text-xs">
               <span className={
                 paymentDisplay.tone === 'success' ? 'text-green-600' :
@@ -180,10 +195,12 @@ const OrderList = ({
         const orderStatus = getOrderStatus(order)
         const nextStatus = getNextStatus(orderStatus)
         const currentStatus = normalizeStatus(orderStatus)
+        const blockedByUnpaidVnpay = isUnpaidVnpayOrder(order)
         const canUpdate =
           canManage &&
           nextStatus &&
           onUpdateStatus &&
+          !blockedByUnpaidVnpay &&
           currentStatus !== 'cancelled' &&
           currentStatus !== 'delivered'
         const canCancel =
@@ -210,6 +227,19 @@ const OrderList = ({
                   onClick={() => onUpdateStatus(getOrderId(order), nextStatus)}
                   icon={<CheckCircle className="w-4 h-4" />}
                 />
+              </Tooltip>
+            )}
+
+            {!canUpdate && blockedByUnpaidVnpay && nextStatus && (
+              <Tooltip title="Đơn VNPay chưa thanh toán nên không thể cập nhật trạng thái">
+                <span>
+                  <ButtonCommon
+                    variant="primary"
+                    size="sm"
+                    disabled
+                    icon={<CheckCircle className="w-4 h-4" />}
+                  />
+                </span>
               </Tooltip>
             )}
 

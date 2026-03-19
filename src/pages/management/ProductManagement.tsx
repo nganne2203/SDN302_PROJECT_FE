@@ -87,15 +87,13 @@ const ProductManagement = () => {
   })
 
   useEffect(() => {
-    fetchProducts()
     fetchCategories()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    if (Object.keys(filter).length > 0) {
-      fetchProducts(filter)
-    }
+    const activeFilter = Object.keys(filter).length > 0 ? filter : undefined
+    fetchProducts(activeFilter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
 

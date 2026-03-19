@@ -4,7 +4,7 @@ import OrderStatusBadge from './OrderStatusBadge'
 import type { Order } from '@/types/api'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { getProductImageUrl } from '@/utils/imageHelper'
-import { getOrderPaymentDisplay } from '@/utils/orderPayment'
+import { getOrderPaymentDisplay, isOrderPaid } from '@/utils/orderPayment'
 
 interface OrderDetailModalProps {
   order: Order | null
@@ -130,10 +130,14 @@ const OrderDetailModal = ({
   const orderStatus = getOrderStatus(order)
   const nextStatus = getNextStatus(orderStatus)
   const currentStatus = normalizeStatus(orderStatus)
+  const blockedByUnpaidVnpay =
+    String(order.paymentMethod || '').toLowerCase() === 'vnpay' &&
+    !isOrderPaid(order)
   const canUpdate =
     canManage &&
     nextStatus &&
     onUpdateStatus &&
+    !blockedByUnpaidVnpay &&
     currentStatus !== 'cancelled' &&
     currentStatus !== 'delivered'
   const canCancel =
@@ -346,6 +350,16 @@ const OrderDetailModal = ({
               }}
             >
               {getStatusActionLabel(nextStatus)}
+            </ButtonCommon>
+          )}
+
+          {!canUpdate && blockedByUnpaidVnpay && nextStatus && (
+            <ButtonCommon
+              variant="primary"
+              size="sm"
+              disabled
+            >
+              Đơn VNPay chưa thanh toán
             </ButtonCommon>
           )}
         </div>

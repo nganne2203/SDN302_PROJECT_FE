@@ -244,6 +244,7 @@ export const ROUTES = {
   PAYMENT_FAILED: '/payment/failed',
   PAYMENT_ERROR: '/payment/error',
   ORDERS: '/orders',
+  MY_REVIEWS: '/my-reviews',
   ORDER_DETAIL: '/orders/:id',
   AUTH_CALLBACK: '/auth/callback',
   AUTH_ERROR: '/auth/error',

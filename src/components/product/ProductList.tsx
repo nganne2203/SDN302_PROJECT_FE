@@ -100,7 +100,17 @@ const ProductList = ({
       title: 'Mô tả',
       dataIndex: 'description',
       width: 200,
-      ellipsis: true
+      ellipsis: true,
+      render: (value: unknown) => {
+        const description = typeof value === 'string' ? value : ''
+        return (
+          <Tooltip title={description || '-'}>
+            <div className="max-w-[360px] overflow-hidden whitespace-nowrap text-ellipsis text-gray-700">
+              {description || '-'}
+            </div>
+          </Tooltip>
+        )
+      }
     },
     {
       key: 'price',
