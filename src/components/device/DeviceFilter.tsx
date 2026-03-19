@@ -51,6 +51,7 @@ const DeviceFilterComponent = ({
       onReset={onReset}
       showReset={true}
       compact
+      compactFillRow
     />
   )
 }

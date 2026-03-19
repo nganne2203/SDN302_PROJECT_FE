@@ -3,11 +3,14 @@ import { API_ENDPOINTS } from '@/constants/constant'
 import type { ApiResponse, PaginatedResponse, StockRequestRecord, StockRequestStatus } from '@/types/api'
 
 export interface StockRequestQuery {
+  search?: string
   page?: number
   limit?: number
   status?: StockRequestStatus
   sortBy?: 'createdAt' | 'quantity' | 'status'
   sortOrder?: 'asc' | 'desc'
+  branchId?: string
+  productId?: string
 }
 
 export interface CreateStockRequestPayload {

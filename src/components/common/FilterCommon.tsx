@@ -50,6 +50,7 @@ export interface FilterCommonProps {
   compact?: boolean
   stackSearchRow?: boolean
   compactFillRow?: boolean
+  compactSingleRow?: boolean
   wideSearchInRow?: boolean
 }
 
@@ -84,6 +85,7 @@ const FilterCommon = ({
   compact = false,
   stackSearchRow = false,
   compactFillRow = false,
+  compactSingleRow = false,
   wideSearchInRow = false
 }: FilterCommonProps) => {
   const renderFilterField = (field: FilterField) => {
@@ -140,7 +142,7 @@ const FilterCommon = ({
   if (compact) {
     return (
       <CardCommon className={`filter-common-compact ${className}`} style={{ marginBottom: 16 }}>
-        <div className="flex flex-wrap items-center gap-3 w-full">
+        <div className={`flex items-center gap-3 w-full ${compactSingleRow ? 'flex-nowrap overflow-x-auto' : 'flex-wrap'}`}>
           {showSearch && (
             <div style={{ flex: compactFillRow ? '2.6 1 380px' : '0 1 auto', minWidth: compactFillRow ? 320 : 220 }}>
               <Input

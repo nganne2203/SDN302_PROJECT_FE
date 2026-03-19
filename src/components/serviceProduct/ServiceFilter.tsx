@@ -61,6 +61,8 @@ const ServiceProductFilter = ({
       onReset={onReset}
       showReset
       compact
+      compactFillRow
+      compactSingleRow
     />
   )
 }
