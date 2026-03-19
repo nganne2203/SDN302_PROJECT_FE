@@ -4,7 +4,7 @@ import type { ProductFilter } from '@/types/api'
 
 interface ProductFilterProps {
   filter: ProductFilter
-  categories: { id: string; name: string; slug: string }[]
+  categories: Array<{ id?: string; _id?: string; name: string; slug: string }>
   // eslint-disable-next-line no-unused-vars
   onFilterChange: (filter: ProductFilter) => void
   onClearFilter: () => void
@@ -16,7 +16,9 @@ const ProductFilterComponent = ({
   onFilterChange,
   onClearFilter
 }: ProductFilterProps) => {
-  const categoryOptions = categories.map(cat => ({ value: cat.id, label: cat.name }))
+  const categoryOptions = categories
+    .map((cat) => ({ value: cat.id || cat._id || '', label: cat.name }))
+    .filter((option) => Boolean(option.value))
 
   const statusOptions = [
     { label: 'Tất cả', value: '' },
@@ -71,7 +73,10 @@ const ProductFilterComponent = ({
       onSearchChange={(value) => onFilterChange({ ...filter, search: value, page: 1 })}
       showSearch={true}
       filters={filterFields}
-      filterValues={filter as Record<string, unknown>}
+      filterValues={{
+        ...filter,
+        isActive: filter.isActive === undefined ? undefined : String(filter.isActive)
+      }}
       onFilterChange={handleFilterChange}
       showPagination={false}
       onReset={onClearFilter}

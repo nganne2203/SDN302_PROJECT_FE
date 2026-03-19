@@ -68,7 +68,17 @@ const PricingListComponent = ({
       key: 'product',
       title: 'Sản phẩm',
       dataIndex: ['product', 'name'],
-      width: 180
+      width: 180,
+      render: (value: unknown) => {
+        const productName = typeof value === 'string' ? value : '-'
+        return (
+          <Tooltip title={productName}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis">
+              {productName}
+            </div>
+          </Tooltip>
+        )
+      }
     },
     {
       key: 'range',

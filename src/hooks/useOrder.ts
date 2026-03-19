@@ -65,9 +65,15 @@ export const useOrder = () => {
     async (orderId: string, status: string) => {
       const result = await dispatch(updateOrderStatusThunk({ orderId, status }))
       if (updateOrderStatusThunk.fulfilled.match(result)) {
-        return result.payload
+        return {
+          order: result.payload,
+          error: null
+        }
       }
-      return null
+      return {
+        order: null,
+        error: (result.payload as string) || 'Không thể cập nhật trạng thái đơn hàng'
+      }
     },
     [dispatch]
   )

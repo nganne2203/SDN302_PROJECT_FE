@@ -66,14 +66,35 @@ const CategoryListComponent = ({
       title: 'Tên danh mục',
       dataIndex: 'name',
       width: 200,
-      sortable: true
+      sortable: true,
+      ellipsis: true,
+      render: (value: unknown) => {
+        const categoryName = typeof value === 'string' ? value : '-'
+        return (
+          <Tooltip title={categoryName}>
+            <div className="max-w-[220px] overflow-hidden whitespace-nowrap text-ellipsis">
+              {categoryName}
+            </div>
+          </Tooltip>
+        )
+      }
     },
     {
       key: 'description',
       title: 'Mô tả',
       dataIndex: 'description',
       width: 200,
-      ellipsis: true
+      ellipsis: true,
+      render: (value: unknown) => {
+        const description = typeof value === 'string' ? value : ''
+        return (
+          <Tooltip title={description || '-'}>
+            <div className="max-w-[320px] overflow-hidden whitespace-nowrap text-ellipsis text-gray-700">
+              {description || '-'}
+            </div>
+          </Tooltip>
+        )
+      }
     },
     {
       key: 'isActive',

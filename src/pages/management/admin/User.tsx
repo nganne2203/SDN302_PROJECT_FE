@@ -11,8 +11,10 @@ import { stripLocationCodesFromList } from '@/utils/address'
 import { getChangedEmailField } from '@/utils/userUpdate'
 import type { UserRole } from '@/types/api'
 import type { User } from '@/features/user/userTypes'
+import useAuth from '@/hooks/useAuth'
 
 const ManagementUser = () => {
+  const { user: currentUser } = useAuth()
   const {
     users,
     pagination,
@@ -115,7 +117,22 @@ const ManagementUser = () => {
     setIsFormModalOpen(true)
   }, [])
 
+  const canEditUser = useCallback((user: User) => {
+    if (!currentUser) return false
+    if (user._id === currentUser.id) return false
+    return user.role !== 'admin'
+  }, [currentUser])
+
+  const canToggleStatusUser = useCallback((user: User) => {
+    if (!currentUser) return false
+    if (user._id === currentUser.id) return false
+    return user.role !== 'admin'
+  }, [currentUser])
+
   const handleEditUser = useCallback(async (user: User) => {
+    if (!canEditUser(user)) {
+      return
+    }
     // Fetch fresh user data to ensure we have all details including addresses
     try {
       const result = await getUserById(user._id)
@@ -129,7 +146,7 @@ const ManagementUser = () => {
     } catch {
       toast.error('Đã xảy ra lỗi khi tải thông tin người dùng')
     }
-  }, [getUserById])
+  }, [canEditUser, getUserById])
 
   const handleViewUser = useCallback((user: User) => {
     setSelectedUser(user)
@@ -248,6 +265,8 @@ const ManagementUser = () => {
         onPageChange={handlePageChange}
         onViewUser={handleViewUser}
         onEditUser={handleEditUser}
+        canEditUser={canEditUser}
+        canToggleStatusUser={canToggleStatusUser}
       />
 
       <UserFormModal
@@ -263,7 +282,7 @@ const ManagementUser = () => {
         isOpen={isDetailModalOpen}
         user={selectedUser}
         onClose={handleCloseDetailModal}
-        onEdit={handleEditFromDetail}
+        onEdit={selectedUser && canEditUser(selectedUser) ? handleEditFromDetail : undefined}
       />
     </div>
   )

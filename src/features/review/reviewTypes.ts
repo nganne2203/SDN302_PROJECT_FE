@@ -50,7 +50,6 @@ export interface ReviewEligibility {
 
 export interface CreateReviewRequest {
   productId: string
-  orderId?: string
   rating: number
   comment?: string
   images?: File[]
