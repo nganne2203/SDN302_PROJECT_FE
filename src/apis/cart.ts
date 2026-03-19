@@ -11,6 +11,10 @@ interface CartChangedEventDetail {
   delta?: number
 }
 
+interface CartMutationOptions {
+  emit?: boolean
+}
+
 const CART_CACHE_TTL_MS = 1000
 
 let cartCache: ApiResponse<Cart> | null = null
@@ -28,6 +32,8 @@ const emitCartChanged = (detail: CartChangedEventDetail = { type: 'sync' }) => {
     window.dispatchEvent(new CustomEvent<CartChangedEventDetail>('cart:changed', { detail }))
   }
 }
+
+const shouldEmit = (options?: CartMutationOptions) => options?.emit !== false
 
 export const cartApi = {
   getCart: async (): Promise<ApiResponse<Cart>> => {
@@ -57,7 +63,8 @@ export const cartApi = {
   addToCart: async (
     productId: string,
     quantity: number,
-    services?: CartServicePayload[]
+    services?: CartServicePayload[],
+    options?: CartMutationOptions
   ): Promise<ApiResponse<CartItem>> => {
     const payload = { productId, quantity, services }
 
@@ -68,37 +75,69 @@ export const cartApi = {
       payload
     )
     invalidateCartCache()
-    emitCartChanged({ type: 'sync' })
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
     return response.data
   },
 
-  updateCartItemQuantity: async (productId: string, quantity: number): Promise<ApiResponse<CartItem>> => {
+  updateCartItemQuantity: async (productId: string, quantity: number, options?: CartMutationOptions): Promise<ApiResponse<CartItem>> => {
     const response = await apiClient.put<ApiResponse<CartItem>>(
       API_ENDPOINTS.CART.UPDATE_QUANTITY,
       { productId, quantity }
     )
     invalidateCartCache()
-    emitCartChanged({ type: 'sync' })
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
     return response.data
   },
 
-  updateCartItemServices: async (productId: string, services: CartServicePayload[]): Promise<ApiResponse<CartItem>> => {
+  updateCartItemQuantityByItemId: async (itemId: string, quantity: number, options?: CartMutationOptions): Promise<ApiResponse<CartItem>> => {
+    const response = await apiClient.put<ApiResponse<CartItem>>(
+      API_ENDPOINTS.CART.UPDATE_QUANTITY,
+      { itemId, quantity }
+    )
+    invalidateCartCache()
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
+    return response.data
+  },
+
+  updateCartItemServices: async (productId: string, services: CartServicePayload[], options?: CartMutationOptions): Promise<ApiResponse<CartItem>> => {
     const response = await apiClient.put<ApiResponse<CartItem>>(
       API_ENDPOINTS.CART.UPDATE_SERVICES,
       { productId, services }
     )
     invalidateCartCache()
-    emitCartChanged({ type: 'sync' })
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
     return response.data
   },
 
-  removeFromCart: async (productId: string): Promise<ApiResponse<null>> => {
-    const response = await apiClient.delete<ApiResponse<null>>(
-      API_ENDPOINTS.CART.REMOVE_ITEM,
-      { data: { productId } }
+  updateCartItemServicesByItemId: async (itemId: string, services: CartServicePayload[], options?: CartMutationOptions): Promise<ApiResponse<CartItem>> => {
+    const response = await apiClient.put<ApiResponse<CartItem>>(
+      API_ENDPOINTS.CART.UPDATE_SERVICES,
+      { itemId, services }
     )
     invalidateCartCache()
-    emitCartChanged({ type: 'sync' })
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
+    return response.data
+  },
+
+  removeFromCart: async (productId: string, options?: CartMutationOptions): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete<ApiResponse<null>>(
+      API_ENDPOINTS.CART.REMOVE_ITEM,
+      // Some backends validate `req.query` for DELETE requests, others validate `req.body`.
+      // Send in both places for compatibility.
+      { params: { productId }, data: { productId } }
+    )
+    invalidateCartCache()
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
+    return response.data
+  },
+
+  removeCartItemById: async (itemId: string, options?: CartMutationOptions): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete<ApiResponse<null>>(
+      API_ENDPOINTS.CART.REMOVE_ITEM,
+      { params: { itemId }, data: { itemId } }
+    )
+    invalidateCartCache()
+    if (shouldEmit(options)) emitCartChanged({ type: 'sync' })
     return response.data
   },
 
@@ -114,6 +153,10 @@ export const cartApi = {
       API_ENDPOINTS.CART.VALIDATE
     )
     return response.data
+  },
+
+  notifyCartChanged: (detail: CartChangedEventDetail = { type: 'sync' }) => {
+    emitCartChanged(detail)
   }
 }
 

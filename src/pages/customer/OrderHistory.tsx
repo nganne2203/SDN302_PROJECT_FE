@@ -147,15 +147,6 @@ const OrderHistory = () => {
       )
     },
     {
-      key: 'pending',
-      label: (
-        <span className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          Chờ xác nhận
-        </span>
-      )
-    },
-    {
       key: 'confirmed',
       label: (
         <span className="flex items-center gap-2">
