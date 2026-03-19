@@ -201,23 +201,31 @@ const UserFormModal = ({
     }
   }
 
-  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean | number | undefined) => {
-    const newAddresses = [...formData.addresses]
-    newAddresses[index] = { ...newAddresses[index], [field]: value }
+  const handleAddressPatch = (index: number, patch: Partial<Address>) => {
+    setFormData((prev) => {
+      const newAddresses = [...prev.addresses]
+      const nextAddress = { ...newAddresses[index], ...patch }
+      newAddresses[index] = nextAddress
 
-    if (field === 'isDefault' && value === true) {
-      newAddresses.forEach((addr, i) => {
-        if (i !== index) {
-          addr.isDefault = false
-        }
-      })
-    }
+      if (patch.isDefault === true) {
+        newAddresses.forEach((addr, i) => {
+          if (i !== index) {
+            addr.isDefault = false
+          }
+        })
+      }
 
-    setFormData(prev => ({ ...prev, addresses: newAddresses }))
+      return { ...prev, addresses: newAddresses }
+    })
+
     const errorKey = `address_${index}`
     if (errors[errorKey]) {
       setErrors(prev => ({ ...prev, [errorKey]: '' }))
     }
+  }
+
+  const handleAddressChange = (index: number, field: keyof Address, value: string | boolean | number | undefined) => {
+    handleAddressPatch(index, { [field]: value } as Partial<Address>)
   }
 
   const handleAddAddress = () => {
@@ -577,18 +585,12 @@ const UserFormModal = ({
                         provinceCode={address.provinceCode}
                         wardCode={address.wardCode}
                         onChange={(changes) => {
-                          if ('province' in changes) {
-                            handleAddressChange(index, 'city', changes.province || '')
-                          }
-                          if ('ward' in changes) {
-                            handleAddressChange(index, 'ward', changes.ward || '')
-                          }
-                          if ('provinceCode' in changes) {
-                            handleAddressChange(index, 'provinceCode', changes.provinceCode)
-                          }
-                          if ('wardCode' in changes) {
-                            handleAddressChange(index, 'wardCode', changes.wardCode)
-                          }
+                          const patch: Partial<Address> = {}
+                          if ('province' in changes) patch.city = changes.province || ''
+                          if ('ward' in changes) patch.ward = changes.ward || ''
+                          if ('provinceCode' in changes) patch.provinceCode = changes.provinceCode
+                          if ('wardCode' in changes) patch.wardCode = changes.wardCode
+                          handleAddressPatch(index, patch)
                         }}
                       />
 
