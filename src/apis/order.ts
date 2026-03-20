@@ -42,6 +42,32 @@ export interface CreateOfflineOrderRequest {
   hasDelivery?: boolean
 }
 
+export interface CheckoutPreviewRequest {
+  shippingAddress: {
+    fullname?: string
+    phone?: string
+    addressLine?: string
+    city: string
+    ward?: string
+    provinceCode?: string
+    wardCode?: string
+  }
+  items?: Array<{
+    product: string
+    quantity: number
+    services?: string[]
+  }>
+}
+
+export interface CheckoutPreviewResponse {
+  subtotal: number
+  shippingFee: number
+  totalDiscount: number
+  totalAmount: number
+  branchId: string | null
+  fulfillmentSource: 'branch' | 'main_inventory'
+}
+
 export interface OrderFilter {
   page?: number
   limit?: number
@@ -104,6 +130,14 @@ export const orderApi = {
       API_ENDPOINTS.ORDER.CREATE,
       data,
       { timeout: ORDER_CREATE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  previewCheckout: async (data: CheckoutPreviewRequest): Promise<ApiResponse<CheckoutPreviewResponse>> => {
+    const response = await apiClient.post<ApiResponse<CheckoutPreviewResponse>>(
+      API_ENDPOINTS.ORDER.CHECKOUT_PREVIEW,
+      data
     )
     return response.data
   },
