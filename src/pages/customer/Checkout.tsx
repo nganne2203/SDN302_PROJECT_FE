@@ -32,8 +32,7 @@ import paymentApi, {
 } from '@/apis/payment'
 import { orderApi, type CreateCodOrderRequest } from '@/apis/order'
 import cartApi from '@/apis/cart'
-import branchApi from '@/apis/branch'
-import type { Branch, CartItem, Product } from '@/types/api'
+import type { CartItem, Product } from '@/types/api'
 import type { Address } from '@/features/user/userTypes'
 import { ROUTES } from '@/constants/constant'
 import { stripLocationCodes } from '@/utils/address'
@@ -56,9 +55,6 @@ interface BuyNowState {
   pricingData: PricingCalculation | null;
 }
 
-const INTER_PROVINCE_FEE = 50000
-const INTRA_PROVINCE_FEE = 0
-
 const normalizeText = (value: string) =>
   value
     .normalize('NFD')
@@ -68,16 +64,6 @@ const normalizeText = (value: string) =>
 
 const normalizeComparable = (value: unknown) => String(value ?? '').trim().toLowerCase()
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-/** Mirror the backend isInterProvince logic: check if any branch address contains the customer city */
-const estimateShippingFee = (city: string, branches: Branch[]): number => {
-  if (!city || branches.length === 0) return INTRA_PROVINCE_FEE
-  const normalizedCity = normalizeText(city)
-  const hasSameProvinceBranch = branches.some((b) =>
-    normalizeText(b.address).includes(normalizedCity)
-  )
-  return hasSameProvinceBranch ? INTRA_PROVINCE_FEE : INTER_PROVINCE_FEE
-}
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -91,15 +77,19 @@ const Checkout = () => {
   }
 
   const [form] = Form.useForm<CheckoutFormValues>()
+  const shippingAddress = Form.useWatch(['shippingAddress'], form) as
+    | Partial<CreateCodOrderRequest['shippingAddress']>
+    | undefined
   const { cartItems, totalAmount, isLoading, isPricingLoading } = useCart()
   const { profile, fetchProfile, updateProfile } = useUser()
 
   const [banks, setBanks] = useState<BankInfo[]>([])
-  const [branches, setBranches] = useState<Branch[]>([])
-  const [shippingFee, setShippingFee] = useState<number>(INTRA_PROVINCE_FEE)
+  const [shippingFee, setShippingFee] = useState(0)
+  const [isShippingFeeLoading, setIsShippingFeeLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isSubmittingRef = useRef(false)
+  const shippingPreviewRequestRef = useRef(0)
   const [isMetaLoading, setIsMetaLoading] = useState(true)
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<
     number | 'new'
@@ -136,6 +126,37 @@ const Checkout = () => {
   )
 
   const hasItems = cartItems.length > 0
+  const shippingPreviewItems = useMemo(
+    () => (
+      buyNow
+        ? [
+          {
+            product: buyNow.product._id,
+            quantity: buyNow.quantity,
+            services: buyNow.serviceIds
+          }
+        ]
+        : undefined
+    ),
+    [buyNow]
+  )
+  const shippingPreviewItemKey = useMemo(
+    () => (
+      buyNow
+        ? `${buyNow.product._id}:${buyNow.quantity}:${buyNow.serviceIds.join(',')}`
+        : cartItems
+          .map((item) => {
+            const productId = String(item.product?._id || item.productId || '')
+            const services = (item.services || [])
+              .map((service) => String(service.serviceId || ''))
+              .sort()
+              .join(',')
+            return `${productId}:${item.quantity}:${services}`
+          })
+          .join('|')
+    ),
+    [buyNow, cartItems]
+  )
 
   const verifyRecentlyCreatedCodOrder = useCallback(
     async (
@@ -215,7 +236,6 @@ const Checkout = () => {
           wardCode: address.wardCode
         }
       })
-      setShippingFee(estimateShippingFee(address.city, branches))
       // Load location dropdowns for the selected address
       clearDistricts()
       clearWards()
@@ -226,7 +246,6 @@ const Checkout = () => {
     },
     [
       form,
-      branches,
       clearDistricts,
       clearWards,
       fetchDistricts,
@@ -246,7 +265,7 @@ const Checkout = () => {
         wardCode: undefined
       }
     })
-    setShippingFee(INTRA_PROVINCE_FEE)
+    setShippingFee(0)
     clearDistricts()
     clearWards()
   }, [form, clearDistricts, clearWards])
@@ -278,12 +297,8 @@ const Checkout = () => {
   const loadMeta = async () => {
     try {
       setIsMetaLoading(true)
-      const [bankRes, branchRes] = await Promise.all([
-        paymentApi.getBanks(),
-        branchApi.getAllBranches({ isActive: true })
-      ])
+      const bankRes = await paymentApi.getBanks()
       setBanks(bankRes.data || [])
-      setBranches(branchRes.data || [])
     } catch {
       message.error('Không tải được dữ liệu thanh toán')
     } finally {
@@ -303,20 +318,53 @@ const Checkout = () => {
 
   // Auto-fill default address when profile loads
   useEffect(() => {
-    if (userAddresses.length > 0 && branches.length > 0) {
+    if (userAddresses.length > 0) {
       const defaultIdx = userAddresses.findIndex((a) => a.isDefault)
       const idx = defaultIdx >= 0 ? defaultIdx : 0
       setSelectedAddressIndex(idx)
       fillFormWithAddress(userAddresses[idx])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userAddresses, branches])
+  }, [userAddresses])
 
   useEffect(() => {
     if (!buyNow && !isLoading && !hasItems) {
       navigate(ROUTES.CART, { replace: true })
     }
   }, [buyNow, hasItems, isLoading, navigate])
+
+  useEffect(() => {
+    const city = String(shippingAddress?.city || '').trim()
+    if (!city) {
+      setShippingFee(0)
+      setIsShippingFeeLoading(false)
+      return
+    }
+
+    const requestId = ++shippingPreviewRequestRef.current
+    const payload = {
+      shippingAddress: stripLocationCodes(
+        (shippingAddress || {}) as Record<string, unknown>
+      ) as CreateCodOrderRequest['shippingAddress'],
+      ...(shippingPreviewItems ? { items: shippingPreviewItems } : {})
+    }
+
+    setIsShippingFeeLoading(true)
+
+    void orderApi.previewCheckout(payload)
+      .then((response) => {
+        if (shippingPreviewRequestRef.current !== requestId) return
+        setShippingFee(Number(response.data?.shippingFee ?? 0))
+      })
+      .catch(() => {
+        if (shippingPreviewRequestRef.current !== requestId) return
+        setShippingFee(0)
+      })
+      .finally(() => {
+        if (shippingPreviewRequestRef.current !== requestId) return
+        setIsShippingFeeLoading(false)
+      })
+  }, [shippingAddress?.city, shippingPreviewItemKey, shippingPreviewItems])
 
   const orderSummary = useMemo(
     () => (
@@ -444,9 +492,11 @@ const Checkout = () => {
 
             <span
               className={
-                shippingFee === 0
-                  ? 'text-green-600 font-medium'
-                  : 'text-orange-500 font-medium'
+                isShippingFeeLoading
+                  ? 'text-gray-500 font-medium'
+                  : shippingFee === 0
+                    ? 'text-green-600 font-medium'
+                    : 'text-orange-500 font-medium'
               }
             >
               {shippingFee === 0
@@ -490,7 +540,7 @@ const Checkout = () => {
         </div>
       </Card>
     ),
-    [buyNow, buyNowTotal, cartItems, totalAmount, shippingFee]
+    [buyNow, buyNowTotal, cartItems, isShippingFeeLoading, totalAmount, shippingFee]
   )
 
   const handleSaveNewAddress = async () => {
@@ -844,9 +894,6 @@ const Checkout = () => {
                               wardCode: undefined
                             }
                           })
-                          setShippingFee(
-                            estimateShippingFee(cityLabel, branches)
-                          )
                           clearDistricts()
                           clearWards()
                           if (value) {
@@ -1009,7 +1056,7 @@ const Checkout = () => {
                     size="large"
                     htmlType="submit"
                     loading={isSubmitting}
-                    disabled={isPricingLoading}
+                    disabled={isPricingLoading || isShippingFeeLoading}
                   >
                     {paymentMethod === 'cod'
                       ? 'Đặt hàng (COD)'
@@ -1022,12 +1069,17 @@ const Checkout = () => {
                     Đang tính giá theo số lượng...
                   </div>
                 )}
+                {isShippingFeeLoading && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    Dang lay phi van chuyen tu he thong...
+                  </div>
+                )}
               </Form>
             </Card>
           </Col>
 
           <Col xs={24} lg={8}>
-            <Spin spinning={isPricingLoading}>{orderSummary}</Spin>
+            <Spin spinning={isPricingLoading || isShippingFeeLoading}>{orderSummary}</Spin>
           </Col>
         </Row>
       </div>
