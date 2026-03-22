@@ -134,6 +134,7 @@ export const API_ENDPOINTS = {
   },
   ORDER: {
     CREATE: '/api/v1/orders',
+    CHECKOUT_PREVIEW: '/api/v1/orders/checkout-preview',
     OFFLINE: '/api/v1/orders/offline',
     MY_ORDERS: '/api/v1/orders/my-orders',
     STATISTICS: '/api/v1/orders/statistics',
