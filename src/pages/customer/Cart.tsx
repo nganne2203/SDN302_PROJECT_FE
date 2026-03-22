@@ -232,10 +232,6 @@ const Cart = () => {
                     }, 0))}
                   </span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Phí vận chuyển</span>
-                  <span className="text-green-600">Miễn phí</span>
-                </div>
               </div>
 
               <div className="flex justify-between text-lg font-bold text-gray-800 mb-6">
